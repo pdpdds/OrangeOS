@@ -94,18 +94,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Common.cpp" />
-    <ClCompile Include="Console.cpp" />
     <ClCompile Include="entry.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="RTC.cpp" />
-    <ClCompile Include="sprintf.cpp" />
-    <ClCompile Include="stdio.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Console.h" />
-    <ClInclude Include="RTC.H" />
-    <ClInclude Include="sprintf.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -14,5 +14,8 @@ int print_decimal(char *A_szBuffer, int a, char flag);
 int print_hex(char *buf, int a, char flag);
 int __cdecl printf(const char *format, ...);
 
+void itoa_s(int i, unsigned int base, char* buf);
+void itoa(unsigned i, unsigned base, char* buf);
+
 
 #endif /* PRINTF_H_ */
