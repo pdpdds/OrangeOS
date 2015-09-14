@@ -51,7 +51,7 @@
       <AdditionalOptions>/Oy %(AdditionalOptions)</AdditionalOptions>
       <Optimization>MaxSpeed</Optimization>
       <OmitFramePointers>false</OmitFramePointers>
-      <AdditionalIncludeDirectories>./;../Include;../Lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;../Include;../KernelLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>ARCH_X86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <IgnoreStandardIncludePath>true</IgnoreStandardIncludePath>
       <ExceptionHandling />
@@ -69,9 +69,9 @@
     </ProjectReference>
     <Link>
       <AdditionalOptions>/ALIGN:512 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>$(NOINHERIT) </AdditionalDependencies>
+      <AdditionalDependencies>$(NOINHERIT);KernelLib.lib</AdditionalDependencies>
       <OutputFile>$(SolutionDir)$(Configuration)\krnl32.exe</OutputFile>
-      <AdditionalLibraryDirectories>..\Lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);../Debug</AdditionalLibraryDirectories>
       <EnableUAC>false</EnableUAC>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <GenerateMapFile>true</GenerateMapFile>
@@ -106,12 +106,6 @@
     <ClInclude Include="Console.h" />
     <ClInclude Include="RTC.H" />
     <ClInclude Include="sprintf.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Lib\Lib.vcxproj">
-      <Project>{c744d359-444d-4778-81a3-7c8346a39d96}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

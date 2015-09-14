@@ -4,8 +4,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Kernel", "Kernel\Kernel.vcxproj", "{1127FDC6-EBC7-4888-A5B4-DC12222D280A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C744D359-444D-4778-81A3-7C8346A39D96} = {C744D359-444D-4778-81A3-7C8346A39D96}
+	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KernelLib", "Lib\Lib.vcxproj", "{C744D359-444D-4778-81A3-7C8346A39D96}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KernelLib", "KernelLib\KernelLib.vcxproj", "{C744D359-444D-4778-81A3-7C8346A39D96}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
