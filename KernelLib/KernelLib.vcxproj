@@ -69,8 +69,19 @@
   <ItemGroup>
     <ClCompile Include="Common.cpp" />
     <ClCompile Include="Console.cpp" />
+    <ClCompile Include="cpu.cpp" />
     <ClCompile Include="cstd.cpp" />
+    <ClCompile Include="Exception.cpp" />
+    <ClCompile Include="GDT.cpp" />
+    <ClCompile Include="Hal.cpp" />
     <ClCompile Include="Hardware.cpp" />
+    <ClCompile Include="IDT.cpp" />
+    <ClCompile Include="IStream.cpp" />
+    <ClCompile Include="KeyboardController.cpp" />
+    <ClCompile Include="kybrd.cpp" />
+    <ClCompile Include="OStream.cpp" />
+    <ClCompile Include="pic.cpp" />
+    <ClCompile Include="PIT.cpp" />
     <ClCompile Include="RTC.cpp" />
     <ClCompile Include="sprintf.cpp" />
     <ClCompile Include="stdio.cpp" />
@@ -96,10 +107,23 @@
     <ClInclude Include="..\Include\_null.h" />
     <ClInclude Include="Common.h" />
     <ClInclude Include="Console.h" />
+    <ClInclude Include="cpu.h" />
+    <ClInclude Include="Exception.h" />
+    <ClInclude Include="GDT.h" />
+    <ClInclude Include="Hal.h" />
     <ClInclude Include="Hardware.h" />
+    <ClInclude Include="IDT.h" />
+    <ClInclude Include="IOStream.h" />
+    <ClInclude Include="IStream.h" />
+    <ClInclude Include="KeyboardController.h" />
+    <ClInclude Include="kybrd.h" />
     <ClInclude Include="Macro.h" />
+    <ClInclude Include="OStream.h" />
+    <ClInclude Include="pic.h" />
+    <ClInclude Include="PIT.h" />
     <ClInclude Include="RTC.H" />
     <ClInclude Include="sprintf.h" />
+    <ClInclude Include="sys_desc.h" />
     <ClInclude Include="windef.h" />
   </ItemGroup>
   <ItemGroup>

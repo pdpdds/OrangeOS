@@ -42,7 +42,12 @@ void itoa(unsigned i, unsigned base, char* buf) {
 
 void itoa_s(int i, unsigned int base, char* buf) {
 	if (base > 16) return;
-	if (i < 0) {
+
+	if (base == 16)
+	{
+		itoa(i, base, buf);
+	}
+	else  if (i < 0) {
 		*buf++ = '-';
 		i *= -1;
 	}

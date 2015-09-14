@@ -52,7 +52,8 @@ int vsprintf(char *str, const char *format, va_list ap) {
 					case 'X':
 					case 'x': {
 						int c = va_arg (ap, int);
-						char s[32]={0};
+						char s[32];
+						memset(s, 0, 32);
 						itoa_s (c,16,s);
 						strcpy (&str[loc], s);
 						i++;		// go to next character

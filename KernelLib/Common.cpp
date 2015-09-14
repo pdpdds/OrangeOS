@@ -1,10 +1,4 @@
 #include "Common.h"
-extern "C" int _outp(unsigned short, int);
-extern "C" int _outl(unsigned short, int);
-extern "C" unsigned short _outpw(unsigned short, unsigned short);
-extern "C" int _inp(unsigned short);
-extern "C" unsigned short _inpw(unsigned short);
-#pragma intrinsic(_inp, _inpw, _outp, _outpw)
 
 #define OutPortByte(prt, val) _outp(prt, val)
 #define OutPortWord(prt, val) _outpw(prt, val)

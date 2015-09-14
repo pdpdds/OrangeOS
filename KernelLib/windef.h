@@ -44,6 +44,11 @@
   typedef short INT16;
   typedef unsigned short UINT16;
   typedef unsigned short WORD;
+  typedef unsigned short USHORT;
+  typedef long INT32;
+  typedef unsigned long UINT32;
+  typedef unsigned int UINT;
+  typedef unsigned long DWORD;
 
   #ifndef _SIZE_T_DEFINED
     typedef unsigned int size_t;
@@ -103,5 +108,6 @@
   #define FALSE 0
   #define TRUE  1
 
+  typedef void(_cdecl *I86_IRQ_HANDLER)(void);
 
 #endif /* COMMONVAR_H_ */
