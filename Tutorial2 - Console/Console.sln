@@ -8,7 +8,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Kernel", "Kernel\Kernel.vcx
 		{C744D359-444D-4778-81A3-7C8346A39D96} = {C744D359-444D-4778-81A3-7C8346A39D96}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KernelLib", "KernelLib\KernelLib.vcxproj", "{C744D359-444D-4778-81A3-7C8346A39D96}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KernelLib", "..\KernelLib\KernelLib.vcxproj", "{C744D359-444D-4778-81A3-7C8346A39D96}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
