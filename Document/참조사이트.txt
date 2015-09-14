@@ -1,0 +1,10 @@
+http://zap.pe.kr/index.php?page=pages/projects/chobitsos_kr.php
+http://www.osdev.org/
+http://www.amazon.co.uk/Developing-Your-32-bit-Operating-System/dp/0672306557/ref=sr_1_1?ie=UTF8&s=books&qid=1215589290&sr=8-1
+http://osdever.net/tutorials/gettingstarted.php
+http://osdever.net
+http://www.newos.org/docs.php?view=usagenotes
+http://ecos.sourceware.org/
+http://www.l4ka.org/
+http://code.google.com/p/nanoos/
+http://stackoverflow.com/questions/580308/making-an-os-in-c
