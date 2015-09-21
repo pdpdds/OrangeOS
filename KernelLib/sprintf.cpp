@@ -63,12 +63,12 @@ char *strcpy(char *s1, const char *s2)
 }
 
 //! returns length of string
-size_t strlen(const char* str) {
+/*size_t strlen(const char* str) {
 
 	size_t	len = 0;
 	while (str[len++]);
 	return len;
-}
+}*/
 
 void *memset(char *dest, int c, size_t count)
 {
@@ -80,4 +80,60 @@ void *memset(char *dest, int c, size_t count)
 		count--;
 	}
 	return(dest);
+}
+
+char *strncpy(char *string1, const char *string2, size_t count)
+{
+	char *p = string1;
+	while (count)
+	{
+		*p = *string2;
+		if (*string2)
+		{
+			string2++;
+		}
+		p++;
+		count--;
+	}
+	return(string1);
+}
+
+int strcmp(const char *string1, const char *string2)
+{
+	int result = 0;
+	while ((*string1 == *string2) && (!result))
+	{
+		if (!(*string1) || !(*string2))
+		{
+			result = 1;
+		}
+		else {
+			string1++;
+			string2++;
+		}
+	}
+	result = 0;
+	if (*string1 != *string2)
+	{
+		result = 1;
+		if (*string1 < *string2)
+		{
+			result = -1;
+		}
+	}
+	return(result);
+}
+
+/*---------------------------------------------------------------------------*/
+/* strlen() - get the length of a string                                     */
+/*---------------------------------------------------------------------------*/
+size_t strlen(const char *string)
+{
+	size_t slen = 0;
+	while (*string)
+	{
+		slen++;
+		string++;
+	}
+	return(slen);
 }
