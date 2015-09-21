@@ -198,9 +198,9 @@ int createProcess (char* appname) {
         ntHeaders = (IMAGE_NT_HEADERS*)(dosHeader->e_lfanew + (uint32_t)buf);
 
         /* get process virtual address space */
-        addressSpace = vmmngr_createAddressSpace ();	
-//		addressSpace = vmmngr_get_directory ();
-		DebugPrintf("\npage directory adress %x", addressSpace);
+        //addressSpace = vmmngr_createAddressSpace ();	
+		addressSpace = vmmngr_get_directory ();
+		DebugPrintf("\npage directory address %x", addressSpace);
 		if (!addressSpace) {
                 volCloseFile (&file);
                 return 0;
@@ -209,8 +209,8 @@ int createProcess (char* appname) {
 			map kernel space into process address space.
 			Only needed if creating new address space
 		*/
-		mapKernelSpace (addressSpace);
-
+		//mapKernelSpace (addressSpace);
+		
         /* create PCB */
         proc = getCurrentProcess();
         proc->id            = 1;
@@ -233,9 +233,10 @@ int createProcess (char* appname) {
         mainThread->frame.eip    = ntHeaders->OptionalHeader.AddressOfEntryPoint
                 + ntHeaders->OptionalHeader.ImageBase;
         mainThread->frame.flags  = 0x200;
-
+		
         /* copy our 512 block read above and rest of 4k block */
         memory = (unsigned char*)pmmngr_alloc_block();
+		
         memset (memory, 0, 4096);
         memcpy (memory, buf, 512);
 
@@ -289,6 +290,24 @@ int createProcess (char* appname) {
         mainThread->frame.esp    = (uint32_t)mainThread->initialStack;
         mainThread->frame.ebp    = mainThread->frame.esp;
 
+//Create Heap
+		void* pHeap =
+			(void*)(ntHeaders->OptionalHeader.ImageBase
+			+ ntHeaders->OptionalHeader.SizeOfImage + PAGE_SIZE + PAGE_SIZE);		
+			
+		void* pHeapPhys = (void*)pmmngr_alloc_blocks(300);
+
+		DebugPrintf("\nExit command recieved; demo halted %d", pmmngr_get_block_count());
+
+		for (int i = 0; i < 300; i++)
+		{
+			vmmngr_mapPhysicalAddress(addressSpace,
+				(uint32_t)pHeap + i*4096,
+				(uint32_t)pHeapPhys + i * 4096,
+				I86_PTE_PRESENT | I86_PTE_WRITABLE | I86_PTE_USER);
+
+		}
+		
 		/* close file and return process ID */
 		volCloseFile(&file);
 
