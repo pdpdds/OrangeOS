@@ -1,11 +1,15 @@
 #pragma once
 #include "windef.h"
 
+typedef unsigned char UCHAR;
+
 extern "C" int _outp(unsigned short, int);
 extern "C" int _outl(unsigned short, int);
 extern "C" unsigned short _outpw(unsigned short, unsigned short);
 extern "C" int _inp(unsigned short);
 extern "C" unsigned short _inpw(unsigned short);
+
+
 #pragma intrinsic(_inp, _inpw, _outp, _outpw)
 
 typedef unsigned long  ulong;			//64 bit integer
@@ -68,12 +72,12 @@ typedef struct multiboot_header
   unsigned long entry_addr;
 } multiboot_header_t;
 
-void outportByte(ushort port, uchar value);
+void OutPortByte(ushort port, uchar value);
 void outportWord(ushort port, ushort value);
-
-uchar inportByte(ushort port);
-ushort inportWord(ushort port);
+uchar InPortByte(ushort port);
+ushort InPortWord(ushort port);
 ulong inportLong(ushort port);
+
 /*
 void *operator new ( size_t size);
 void *operator new[] ( size_t size);

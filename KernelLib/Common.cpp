@@ -1,29 +1,23 @@
 #include "Common.h"
 
-#define OutPortByte(prt, val) _outp(prt, val)
-#define OutPortWord(prt, val) _outpw(prt, val)
-#define OutPortLong(prt, val) _outl(prt, val)
-#define InportByte(prt) _inp(prt)
-#define InportWord(prt) _inpw(prt)
-
-void outportByte(ushort port, uchar value)
+void OutPortByte(ushort port, uchar value)
 {
-	OutPortByte(port, value);
+	_outp(port, value);
 }
 
-void outportWord(ushort port, ushort value)
+void OutPortWord(ushort port, ushort value)
 {
-	OutPortWord(port, value);
+	_outpw(port, value);
 }
 
-uchar inportByte(ushort port)
+uchar InPortByte(ushort port)
 {
-	return (uchar)InportByte(port);
+	return (uchar)_inp(port);
 }
 
-ushort inportWord(ushort port)
+ushort InPortWord(ushort port)
 {
-	return InportWord(port);
+	return _inpw(port);
 }
 
 extern "C" void __cxa_pure_virtual()

@@ -33,20 +33,20 @@ bool HalpEnableA20(void)
 	UCHAR status, flag;
 
 	/* read current falg */
-	do { status = InportByte(0x64); } while (status & 0x02);
+	do { status = InPortByte(0x64); } while (status & 0x02);
 	OutPortByte(0x64, 0xd0);
-	do { status = InportByte(0x64); } while (!(status & 0x01));
-	flag = InportByte(0x60);
+	do { status = InPortByte(0x64); } while (!(status & 0x01));
+	flag = InPortByte(0x60);
 	flag |= 0x02; /* enable a20 */
 
 	/* write modified flag */
-	do { status = InportByte(0x64); } while (status & 0x02);
+	do { status = InPortByte(0x64); } while (status & 0x02);
 	OutPortByte(0x64, 0xd1);
-	do { status = InportByte(0x64); } while (status & 0x02);
+	do { status = InPortByte(0x64); } while (status & 0x02);
 	OutPortByte(0x60, flag); /* write new flag */
 
 	/* wait until the new flag has adapted */
-	do { status = InportByte(0x64); } while (status & 0x02);
+	do { status = InPortByte(0x64); } while (status & 0x02);
 
 	/* test a20 line */
 	test_1_buf = *test_1;
@@ -435,7 +435,7 @@ _declspec(naked) static void Halp_IRQ_Keyboard(void)
 
 	/* program */
 	//Kbd_IRQ_Handler();
-	outportByte(0x20, 0x20);
+	OutPortByte(0x20, 0x20);
 
 	/* end */
 	_asm {
@@ -543,7 +543,7 @@ _declspec(naked) static void Halp_IRQ_FloppyDisk(void)
 
 	/* program */
 	//Fdd_IRQ_Handler();
-	outportByte(0x20, 0x20);
+	OutPortByte(0x20, 0x20);
 
 	/* end */
 	_asm {

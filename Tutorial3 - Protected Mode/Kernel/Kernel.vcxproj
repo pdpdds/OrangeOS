@@ -68,7 +68,7 @@
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
     <Link>
-      <AdditionalOptions>/ALIGN:512 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/ALIGN:512 /safeseh:no %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>$(NOINHERIT);KernelLib.lib</AdditionalDependencies>
       <OutputFile>$(SolutionDir)$(Configuration)\krnl32.exe</OutputFile>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);../Debug</AdditionalLibraryDirectories>

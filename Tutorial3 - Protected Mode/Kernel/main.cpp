@@ -15,6 +15,8 @@ main.cpp
 #include "PIT.h"
 #include "IDT.h"
 #include "kybrd.h"
+#include "IStream.h"
+#include "HardDisk.h"
 
 void Halt();
 void DbgError(char* pMsg);
@@ -28,6 +30,9 @@ PIT PITTimer(0);
 IDT idt;
 
 #include "Hal.h"
+
+
+using namespace std;
 void _cdecl main() 
 {	
 	WelComeMessage();
@@ -39,9 +44,10 @@ void _cdecl main()
 	//KeyboardController::SetupInterrupts();
 	//KeyboardController::SetLEDs(true, true, true);
 
-	//PITTimer.Enable(50);
+	//PITTimer.Enable(50);	
 
-	
+	HardDiskHandler aa;
+	aa.Initialize();
 	enable();
 	//HalpStartIntService();
 	kkybrd_install(33);

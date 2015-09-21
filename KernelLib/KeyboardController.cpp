@@ -249,16 +249,16 @@ void KeyboardController::FlushBuffers()
 
 	//The keyboard buffer is empty when two consecutive reads provide the same value
 	//Note: this is highly destructive, and will wipe the keyboard buffer. Use with caution
-	while((c = inportByte(0x60)) != inportByte(0x60))
+	while((c = InPortByte(0x60)) != InPortByte(0x60))
 		;
 }
 
 void KeyboardController::ResetComputer()
 {
 	//Loop until we've got a clean command buffer
-	while((inportByte(0x64) & 2) == 2)
+	while((InPortByte(0x64) & 2) == 2)
 		;
-	outportByte(0x64, 0xFE);
+	OutPortByte(0x64, 0xFE);
 }
 
 
@@ -283,15 +283,15 @@ void KeyboardController::SetLEDs(bool scroll, bool num, bool caps)
 	if(caps)//Bit 3: caps lock
 		status |= 4;
 	//Make sure the command buffer is clean
-	while((inportByte(0x64) & 2) == 2)
+	while((InPortByte(0x64) & 2) == 2)
 		;
 	//Send the command byte
-	outportByte(0x64, 0xED);
+	OutPortByte(0x64, 0xED);
 	//Loop again
-	while((inportByte(0x64) % 2) == 2)
+	while((InPortByte(0x64) % 2) == 2)
 		;
 	//Send the status byte
-	outportByte(0x60, status);
+	OutPortByte(0x60, status);
 }
 
 char KeyboardController::GetInput()		// Waits for a key to enter the buffer and returns it
@@ -319,7 +319,7 @@ void KeyboardController::HandleKeyboardInterrupt()
 	unsigned char asciiCode;
 	disable();			//Don't let interrupts bother us while handling one.
 
-	scanCode = inportByte(0x60);	//retrieve scan code
+	scanCode = InPortByte(0x60);	//retrieve scan code
 
 		if(!(kb_special(scanCode) | (scanCode >= 0x80)))
 		{

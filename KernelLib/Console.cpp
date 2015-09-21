@@ -140,10 +140,10 @@ void Console::MoveCursor(unsigned int  X,unsigned int  Y)
 	if(X > m_ScreenWidth)
 		X = 0;
 	unsigned short Offset = (unsigned short)((Y*m_ScreenWidth) + (X - 1));
-	outportByte(m_VideoCardType,VGA_CRT_CURSOR_H_LOCATION);
-	outportByte(m_VideoCardType+1,Offset>>8);
-	outportByte(m_VideoCardType,VGA_CRT_CURSOR_L_LOCATION);
-	outportByte(m_VideoCardType+1,(Offset<<8)>>8);
+	OutPortByte(m_VideoCardType,VGA_CRT_CURSOR_H_LOCATION);
+	OutPortByte(m_VideoCardType+1,Offset>>8);
+	OutPortByte(m_VideoCardType,VGA_CRT_CURSOR_L_LOCATION);
+	OutPortByte(m_VideoCardType+1,(Offset<<8)>>8);
 }
 /* Sets the Cursor Type
 	0 to 15 is possible value to pass
@@ -154,10 +154,10 @@ void Console::MoveCursor(unsigned int  X,unsigned int  Y)
 */
 void Console::SetCursorType(unsigned char  Bottom, unsigned char  Top)
 {
-	outportByte(m_VideoCardType,VGA_CRT_CURSOR_START);
-	outportByte(m_VideoCardType + 1,Top);
-	outportByte(m_VideoCardType,VGA_CRT_CURSOR_END);
-	outportByte(m_VideoCardType + 1,Bottom);
+	OutPortByte(m_VideoCardType,VGA_CRT_CURSOR_START);
+	OutPortByte(m_VideoCardType + 1,Top);
+	OutPortByte(m_VideoCardType,VGA_CRT_CURSOR_END);
+	OutPortByte(m_VideoCardType + 1,Bottom);
 }
 
 void Console::scrollup()		// scroll the screen up one line

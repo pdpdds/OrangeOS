@@ -1,14 +1,10 @@
-#ifndef _UTIL_H_
-#define _UTIL_H_
+#pragma once
 #include "windef.h"
 #include "Macro.h"
 
 /*---------------------------------------------------------------------------*/
 /* function prototpes                                                        */
 /*---------------------------------------------------------------------------*/
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 void ntostr(unsigned int i, char *s);		//Converts a number to a string (needs replacement)
 
@@ -70,9 +66,5 @@ static DWORD ConvertWordsToDoubleWord(WORD wHigh, WORD wLow)
     return dwResult;
 }
 */
-#ifdef __cplusplus
-}
-#endif
 
 
-#endif

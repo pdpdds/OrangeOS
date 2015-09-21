@@ -58,6 +58,7 @@
     </ClCompile>
     <Lib>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+      <AdditionalOptions>/ALIGN:512 /safeseh:no %(AdditionalOptions)</AdditionalOptions>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -74,6 +75,7 @@
     <ClCompile Include="Exception.cpp" />
     <ClCompile Include="GDT.cpp" />
     <ClCompile Include="Hal.cpp" />
+    <ClCompile Include="Harddisk.cpp" />
     <ClCompile Include="Hardware.cpp" />
     <ClCompile Include="IDT.cpp" />
     <ClCompile Include="IStream.cpp" />
@@ -85,6 +87,7 @@
     <ClCompile Include="RTC.cpp" />
     <ClCompile Include="sprintf.cpp" />
     <ClCompile Include="stdio.cpp" />
+    <ClCompile Include="string.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\bootinfo.h" />
@@ -105,12 +108,14 @@
     <ClInclude Include="..\Include\string.h" />
     <ClInclude Include="..\Include\va_list.h" />
     <ClInclude Include="..\Include\_null.h" />
+    <ClInclude Include="Collect.h" />
     <ClInclude Include="Common.h" />
     <ClInclude Include="Console.h" />
     <ClInclude Include="cpu.h" />
     <ClInclude Include="Exception.h" />
     <ClInclude Include="GDT.h" />
     <ClInclude Include="Hal.h" />
+    <ClInclude Include="HardDisk.h" />
     <ClInclude Include="Hardware.h" />
     <ClInclude Include="IDT.h" />
     <ClInclude Include="IOStream.h" />
