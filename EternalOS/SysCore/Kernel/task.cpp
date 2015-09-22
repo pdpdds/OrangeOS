@@ -198,8 +198,8 @@ int createProcess (char* appname) {
         ntHeaders = (IMAGE_NT_HEADERS*)(dosHeader->e_lfanew + (uint32_t)buf);
 
         /* get process virtual address space */
-        //addressSpace = vmmngr_createAddressSpace ();	
-		addressSpace = vmmngr_get_directory ();
+        addressSpace = vmmngr_createAddressSpace ();	
+		//addressSpace = vmmngr_get_directory ();
 		DebugPrintf("\npage directory address %x", addressSpace);
 		if (!addressSpace) {
                 volCloseFile (&file);
@@ -209,7 +209,7 @@ int createProcess (char* appname) {
 			map kernel space into process address space.
 			Only needed if creating new address space
 		*/
-		//mapKernelSpace (addressSpace);
+		mapKernelSpace (addressSpace);
 		
         /* create PCB */
         proc = getCurrentProcess();
@@ -291,6 +291,7 @@ int createProcess (char* appname) {
         mainThread->frame.ebp    = mainThread->frame.esp;
 
 //Create Heap
+		
 		void* pHeap =
 			(void*)(ntHeaders->OptionalHeader.ImageBase
 			+ ntHeaders->OptionalHeader.SizeOfImage + PAGE_SIZE + PAGE_SIZE);		
