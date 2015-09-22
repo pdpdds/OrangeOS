@@ -29,6 +29,10 @@
     <ClCompile Include="vmmngr_pte.cpp" />
     <ClCompile Include="fat12.cpp" />
     <ClCompile Include="flpydsk.cpp" />
+    <ClCompile Include="kheap.cpp" />
+    <ClCompile Include="ordered_array.cpp" />
+    <ClCompile Include="Plane.cpp" />
+    <ClCompile Include="ZetPlane.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DebugDisplay.h">
@@ -43,6 +47,11 @@
     <ClInclude Include="vmmngr_pde.h" />
     <ClInclude Include="vmmngr_pte.h" />
     <ClInclude Include="flpydsk.h" />
+    <ClInclude Include="kheap.h" />
+    <ClInclude Include="ordered_array.h" />
+    <ClInclude Include="common.h" />
+    <ClInclude Include="Plane.h" />
+    <ClInclude Include="ZetPlane.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />

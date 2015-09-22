@@ -72,7 +72,7 @@
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
     <Link>
-      <AdditionalOptions>/ALIGN:512 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/ALIGN:512 /safeseh:no %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>keyboard.lib</AdditionalDependencies>
       <OutputFile>KRNL32.EXE</OutputFile>
       <AdditionalLibraryDirectories>..\Lib\;..\debug\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -97,29 +97,38 @@
     <ClCompile Include="entry.cpp" />
     <ClCompile Include="fat12.cpp" />
     <ClCompile Include="flpydsk.cpp" />
+    <ClCompile Include="kheap.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="DebugDisplay.cpp" />
     <ClCompile Include="exception.cpp" />
     <ClCompile Include="fsys.cpp" />
     <ClCompile Include="mmngr_phys.cpp" />
     <ClCompile Include="mmngr_virtual.cpp" />
+    <ClCompile Include="ordered_array.cpp" />
     <ClCompile Include="panic.cpp" />
+    <ClCompile Include="Plane.cpp" />
     <ClCompile Include="sysapi.cpp" />
     <ClCompile Include="task.cpp" />
     <ClCompile Include="vmmngr_pde.cpp" />
     <ClCompile Include="vmmngr_pte.cpp" />
+    <ClCompile Include="ZetPlane.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="common.h" />
     <ClInclude Include="DebugDisplay.h" />
     <ClInclude Include="exception.h" />
     <ClInclude Include="flpydsk.h" />
     <ClInclude Include="image.h" />
+    <ClInclude Include="kheap.h" />
     <ClInclude Include="mmngr_phys.h" />
     <ClInclude Include="mmngr_virtual.h" />
+    <ClInclude Include="ordered_array.h" />
+    <ClInclude Include="Plane.h" />
     <ClInclude Include="sysapi.h" />
     <ClInclude Include="task.h" />
     <ClInclude Include="vmmngr_pde.h" />
     <ClInclude Include="vmmngr_pte.h" />
+    <ClInclude Include="ZetPlane.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />

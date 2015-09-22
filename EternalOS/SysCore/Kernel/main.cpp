@@ -39,6 +39,7 @@ Several chapters may need to be updated, please be patient. :-)
 #include "mmngr_phys.h"
 #include "mmngr_virtual.h"
 #include "task.h"
+#include "kheap.h"
 
 /**
 *	Memory region
@@ -93,6 +94,8 @@ extern void syscall_init ();
 
 //! 4k grandularity. default: none
 #define I86_GDT_GRAND_4K			0x80			//10000000
+
+void CreateKernelHeap(int kernelSize);
 
 /**
 *	Initialization
@@ -169,6 +172,29 @@ void init (multiboot_info* bootinfo) {
 
 	//! initialize TSS
 	install_tss (5,0x10,0x9000);
+
+	CreateKernelHeap(kernelSize);	
+}
+
+
+void CreateKernelHeap(int kernelSize)
+{
+	void* pHeap =
+		(void*)(0xC0000000 + kernelSize * 512 + 4096);
+
+	void* pHeapPhys = (void*)pmmngr_alloc_blocks(300);
+
+	DebugPrintf("\nExit command recieved; demo halted %d", pmmngr_get_block_count());
+
+	for (int i = 0; i < 300; i++)
+	{
+		vmmngr_mapPhysicalAddress(vmmngr_get_directory(),
+			(uint32_t)pHeap + i * 4096,
+			(uint32_t)pHeapPhys + i * 4096,
+			I86_PTE_PRESENT | I86_PTE_WRITABLE | I86_PTE_USER);
+	}
+
+	create_kernel_heap((u32int)pHeap, (uint32_t)pHeapPhys + 300 * 4096, 0xCFFFF000, 0, 0);
 }
 
 //! sleeps a little bit. This uses the HALs get_tick_count() which in turn uses the PIT
@@ -265,6 +291,44 @@ void get_cmd (char* buf, int n) {
 
 	//! null terminate the string
 	buf [i] = '\0';
+}
+
+void *operator new(size_t size)
+{
+	return (void *)kmalloc(size);
+}
+
+void *operator new[](size_t size)
+{
+	return (void *)kmalloc(size);
+}
+
+void operator delete(void *p)
+{
+	kfree(p);
+}
+
+int __cdecl _purecall()
+{
+	// Do nothing or print an error message.
+	return 0;
+}
+
+void operator delete[](void *p)
+{
+	kfree(p);
+}
+
+#include "ZetPlane.h"
+void cmd_alloc()
+{
+	ZetPlane* pPlane = new ZetPlane();
+	pPlane->SetX(9);
+	pPlane->SetY(20);
+
+	DebugPrintf("\n Plane X : %d, Plane Y : %d", pPlane->GetX(), pPlane->GetY());
+
+	delete pPlane;
 }
 
 //! read command
@@ -389,6 +453,9 @@ bool run_cmd (char* cmd_buf) {
 	//! read sector
 	else if (strcmp (cmd_buf, "read") == 0) {
 		cmd_read ();
+	}
+	else if (strcmp(cmd_buf, "alloc") == 0) {
+		cmd_alloc();
 	}
 
 	//! run process
