@@ -169,6 +169,8 @@ int validateImage (void* image) {
 * \param appname Application file name
 * \ret Status code
 */
+#include "kheap.h"
+
 int createProcess (char* appname) {
 
         IMAGE_DOS_HEADER* dosHeader = 0;
@@ -200,7 +202,7 @@ int createProcess (char* appname) {
         /* get process virtual address space */
         addressSpace = vmmngr_createAddressSpace ();	
 		//addressSpace = vmmngr_get_directory ();
-		DebugPrintf("\npage directory address %x", addressSpace);
+		
 		if (!addressSpace) {
                 volCloseFile (&file);
                 return 0;
@@ -235,11 +237,26 @@ int createProcess (char* appname) {
         mainThread->frame.flags  = 0x200;
 		
         /* copy our 512 block read above and rest of 4k block */
-        memory = (unsigned char*)pmmngr_alloc_block();
-		
-        memset (memory, 0, 4096);
-        memcpy (memory, buf, 512);
+		//(unsigned char*)kmalloc(mainThread->imageSize);
+		//(unsigned char*)kmalloc(4096);
+		memory = (unsigned char*)pmmngr_alloc_blocks((mainThread->imageSize/4096)+1);
+		DebugPrintf("\nimage size %d", mainThread->imageSize);
+		/* map page into address space */
 
+		for (int i = 0; i < (mainThread->imageSize / 4096)+1; i++)
+		{
+			vmmngr_mapPhysicalAddress(proc->pageDirectory,
+				ntHeaders->OptionalHeader.ImageBase + i * 4096,
+				(uint32_t)memory + i * 4096,
+				I86_PTE_PRESENT | I86_PTE_WRITABLE | I86_PTE_USER);
+		}
+		DebugPrintf("\npage directory address %x", addressSpace);
+		memset(memory, 0, mainThread->imageSize);
+        memcpy (memory, buf, 512);
+		for (int i = 1; i < 20; i++)
+			pmmngr_alloc_blocks(3);
+		
+		DebugPrintf("\npage directory address %x", addressSpace);
 		/* load image into memory */
 		for (i=1; i <= mainThread->imageSize/512; i++) {
                 if (file.eof == 1)
@@ -247,12 +264,7 @@ int createProcess (char* appname) {
                 volReadFile ( &file, memory+512*i, 512);
         }
 
-        /* map page into address space */
-        vmmngr_mapPhysicalAddress (proc->pageDirectory,
-                ntHeaders->OptionalHeader.ImageBase,
-                (uint32_t) memory,
-                I86_PTE_PRESENT|I86_PTE_WRITABLE|I86_PTE_USER);
-
+        
 		/* load and map rest of image */
         i = 1;
         while (file.eof != 1) {
@@ -291,7 +303,6 @@ int createProcess (char* appname) {
         mainThread->frame.ebp    = mainThread->frame.esp;
 
 //Create Heap
-		
 		void* pHeap =
 			(void*)(ntHeaders->OptionalHeader.ImageBase
 			+ ntHeaders->OptionalHeader.SizeOfImage + PAGE_SIZE + PAGE_SIZE);		

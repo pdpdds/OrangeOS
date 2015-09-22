@@ -173,7 +173,7 @@ void init (multiboot_info* bootinfo) {
 	//! initialize TSS
 	install_tss (5,0x10,0x9000);
 
-	CreateKernelHeap(kernelSize);	
+	CreateKernelHeap(kernelSize);
 }
 
 
@@ -322,13 +322,21 @@ void operator delete[](void *p)
 #include "ZetPlane.h"
 void cmd_alloc()
 {
-	ZetPlane* pPlane = new ZetPlane();
-	pPlane->SetX(9);
-	pPlane->SetY(20);
+	for (int i = 0;  i < 1000; i++)
+	{
+		ZetPlane* pPlane = new ZetPlane();
+		pPlane->SetX(i);
+		pPlane->SetY(i + 5);
 
-	DebugPrintf("\n Plane X : %d, Plane Y : %d", pPlane->GetX(), pPlane->GetY());
+		pPlane->IsRotate();
 
-	delete pPlane;
+		DebugPrintf("\n Plane X : %d, Plane Y : %d", pPlane->GetX(), pPlane->GetY());
+
+		delete pPlane;
+	}
+	
+
+	
 }
 
 //! read command
