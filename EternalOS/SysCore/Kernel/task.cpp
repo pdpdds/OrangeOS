@@ -240,7 +240,7 @@ int createProcess (char* appname) {
 		//(unsigned char*)kmalloc(mainThread->imageSize);
 		//(unsigned char*)kmalloc(4096);
 		memory = (unsigned char*)pmmngr_alloc_blocks((mainThread->imageSize/4096)+1);
-		DebugPrintf("\nimage size %d", mainThread->imageSize);
+		//DebugPrintf("\nimage size %d", mainThread->imageSize);
 		/* map page into address space */
 
 		for (int i = 0; i < (mainThread->imageSize / 4096)+1; i++)
@@ -249,14 +249,10 @@ int createProcess (char* appname) {
 				ntHeaders->OptionalHeader.ImageBase + i * 4096,
 				(uint32_t)memory + i * 4096,
 				I86_PTE_PRESENT | I86_PTE_WRITABLE | I86_PTE_USER);
-		}
-		DebugPrintf("\npage directory address %x", addressSpace);
+		}		
 		memset(memory, 0, mainThread->imageSize);
         memcpy (memory, buf, 512);
-		for (int i = 1; i < 20; i++)
-			pmmngr_alloc_blocks(3);
 		
-		DebugPrintf("\npage directory address %x", addressSpace);
 		/* load image into memory */
 		for (i=1; i <= mainThread->imageSize/512; i++) {
                 if (file.eof == 1)

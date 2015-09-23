@@ -173,18 +173,26 @@ void init (multiboot_info* bootinfo) {
 	//! initialize TSS
 	install_tss (5,0x10,0x9000);
 
-	CreateKernelHeap(kernelSize);
+	CreateKernelHeap(kernelSize);	
+
+	for (int i = 1; i < 9; i++)
+		pmmngr_alloc_blocks(3);
+
+	DebugPrintf("\nbugtest");
+
+	pmmngr_alloc_blocks(3);
 }
 
 
 void CreateKernelHeap(int kernelSize)
 {
 	void* pHeap =
-		(void*)(0xC0000000 + kernelSize * 512 + 4096);
-
+		(void*)(0xC0000000 + 1024*4096 + 4096);
+	
 	void* pHeapPhys = (void*)pmmngr_alloc_blocks(300);
 
-	DebugPrintf("\nExit command recieved; demo halted %d", pmmngr_get_block_count());
+	DebugPrintf("\nExit command recieved; demo halted %d", pHeapPhys);
+	
 
 	for (int i = 0; i < 300; i++)
 	{

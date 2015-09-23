@@ -97,7 +97,7 @@ inline bool mmap_test (int bit) {
 int mmap_first_free () {
 
 	//! find the first free bit
-	for (uint32_t i=0; i< pmmngr_get_block_count(); i++)
+	for (uint32_t i=0; i< pmmngr_get_block_count()/32; i++)
 		if (_mmngr_memory_map[i] != 0xffffffff)
 			for (int j=0; j<32; j++) {				//! test each bit in the dword
 
@@ -119,7 +119,7 @@ int mmap_first_free_s(size_t size)
 	if (size == 1)
 		return mmap_first_free();
 
-	for (uint32_t i = 0; i < pmmngr_get_block_count(); i++)
+	for (uint32_t i = 0; i < pmmngr_get_block_count()/32; i++)
 	if (_mmngr_memory_map[i] != 0xffffffff)
 	for (int j = 0; j < 32; j++)
 	{	//! test each bit in the dword
@@ -128,8 +128,10 @@ int mmap_first_free_s(size_t size)
 		int bit = 1 << j;
 		if (!(_mmngr_memory_map[i] & bit)) {
 
+			//int startingBit = i * 32;
+			//startingBit += bit;		//get the free bit in the dword at index i
 			int startingBit = i * 32;
-			startingBit += bit;		//get the free bit in the dword at index i
+			startingBit += j;
 
 			uint32_t free = 0; //loop through each bit to see if its enough space
 			for (uint32_t count = 0; count <= size; count++) 
@@ -158,10 +160,10 @@ void	pmmngr_init (size_t memSize, physical_addr bitmap) {
 	_mmngr_memory_size	=	memSize;
 	_mmngr_memory_map	=	(uint32_t*) bitmap;
 	_mmngr_max_blocks	=	(pmmngr_get_memory_size()*1024) / PMMNGR_BLOCK_SIZE;
-	_mmngr_used_blocks	=	pmmngr_get_block_count();
+	_mmngr_used_blocks	=	pmmngr_get_block_count();	
 
 	//! By default, all of memory is in use
-	memset (_mmngr_memory_map, 0xf, pmmngr_get_block_count() / PMMNGR_BLOCKS_PER_BYTE );
+	memset (_mmngr_memory_map, 0xff, pmmngr_get_block_count() / PMMNGR_BLOCKS_PER_BYTE );
 
 }
 
