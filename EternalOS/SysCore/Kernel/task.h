@@ -88,6 +88,8 @@ extern void executeProcess ();
 
 extern "C" void TerminateProcess ();
 
+void mapKernelSpace(pdirectory* addressSpace);
+
 //============================================================================
 //    INTERFACE OBJECT CLASS DEFINITIONS
 //============================================================================

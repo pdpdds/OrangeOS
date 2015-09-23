@@ -1,5 +1,6 @@
 #ifndef _PIT_H_INCLUDED
 # define _PIT_H_INCLUDED
+#include "windef.h"
 //****************************************************************************
 //**
 //**	pit.h
@@ -95,6 +96,8 @@ extern void _cdecl i86_pit_initialize ();
 
 //! Test if interface is initialized
 extern bool _cdecl i86_pit_is_initialized ();
+
+UINT GetTickCount();
 
 //============================================================================
 //    INTERFACE OBJECT CLASS DEFINITIONS

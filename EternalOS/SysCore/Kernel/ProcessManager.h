@@ -3,6 +3,7 @@
 #include "task.h"
 
 class Process;
+class Thread;
 
 class ProcessManager
 {
@@ -11,5 +12,6 @@ public:
 	virtual ~ProcessManager();
 
 	Process* CreateMemoryProcess(void(*lpStartAddress)());
+	Thread* CreateThread(Process* pProcess);
 };
 

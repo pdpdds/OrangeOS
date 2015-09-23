@@ -73,6 +73,22 @@ size_t strlen ( const char* str ) {
 	return len;
 }
 
+char *strncpy(char *string1, const char *string2, size_t count)
+{
+	char *p = string1;
+	while (count)
+	{
+		*p = *string2;
+		if (*string2)
+		{
+			string2++;
+		}
+		p++;
+		count--;
+	}
+	return(string1);
+}
+
 //! copies count bytes from src to dest
 void *memcpy(void *dest, const void *src, size_t count)
 {
@@ -83,7 +99,7 @@ void *memcpy(void *dest, const void *src, size_t count)
 }
 
 //! sets count bytes of dest to val
-void *memset(void *dest, char val, size_t count)
+void* memset(void *dest, char val, size_t count)
 {
     unsigned char *temp = (unsigned char *)dest;
 	for( ; count != 0; count--, temp[count] = val);

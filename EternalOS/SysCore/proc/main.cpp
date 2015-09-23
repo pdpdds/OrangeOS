@@ -11,7 +11,7 @@
 */
 void processEntry () {
 
-	char* str="\n\rHello world!";
+	char* str="\n\rHello world2!";
 
 	__asm {
 

@@ -13,6 +13,9 @@
 #include "pit.h"
 #include "pic.h"
 #include <hal.h>
+#include "windef.h"
+
+extern void SwitchTask(int tick);
 
 //============================================================================
 //    IMPLEMENTATION PRIVATE DEFINITIONS / ENUMERATIONS / SIMPLE TYPEDEFS
@@ -59,7 +62,10 @@ void _cdecl i86_pit_irq ();
 //============================================================================
 //    IMPLEMENTATION PRIVATE FUNCTIONS
 //============================================================================
-
+UINT GetTickCount()
+{
+	return _pit_ticks;
+}
 //!	pit timer interrupt handler
 void _cdecl i86_pit_irq () {
 
@@ -68,6 +74,8 @@ void _cdecl i86_pit_irq () {
 
 	//! increment tick count
 	_pit_ticks++;
+
+	SwitchTask(_pit_ticks);
 
 	//! tell hal we are done
 	interruptdone(0);
