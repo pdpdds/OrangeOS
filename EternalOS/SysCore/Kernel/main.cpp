@@ -40,6 +40,7 @@ Several chapters may need to be updated, please be patient. :-)
 #include "mmngr_virtual.h"
 #include "task.h"
 #include "kheap.h"
+#include "HardDisk.h"
 
 /**
 *	Memory region
@@ -419,6 +420,8 @@ void go_user () {
 	while(1);
 }
 
+void run();
+
 // proc (process) command
 void cmd_proc () {
 
@@ -429,11 +432,13 @@ void cmd_proc () {
 	get_cmd (name,32);
 
 	ret = createProcess (name);
-	if (ret==0)
-		DebugPrintf ("\n\rError creating process");
-
-	DebugPrintf("\nProcess Execute");
-	executeProcess ();
+	if (ret == 0)
+	{
+		DebugPrintf("\n\rError creating process");
+		run();
+	}
+	else		
+		executeProcess ();
 }
 
 //! our simple command parser
@@ -516,6 +521,12 @@ int _cdecl kmain (multiboot_info* bootinfo) {
 	DebugPuts ("OSDev Series Process Management Demo");
 	DebugPuts ("\nType \"exit\" to quit, \"help\" for a list of commands\n");
 	DebugPuts ("+-------------------------------------------------------+\n");
+
+	HardDiskHandler hardHandler;
+	hardHandler.Initialize();
+	char num = hardHandler.GetTotalDevices();
+
+	DebugPrintf("\nHardDisk Count %d", (int)num);
 
 	run ();
 

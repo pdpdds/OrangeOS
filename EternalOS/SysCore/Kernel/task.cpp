@@ -214,7 +214,11 @@ int createProcess (char* appname) {
 		mapKernelSpace (addressSpace);
 		
         /* create PCB */
-        proc = getCurrentProcess();
+        //proc = getCurrentProcess();
+
+					
+		proc = (process*)kmalloc(sizeof(process));
+
         proc->id            = 1;
         proc->pageDirectory = addressSpace;
         proc->priority      = 1;
@@ -297,24 +301,6 @@ int createProcess (char* appname) {
 		mainThread->initialStack = stack;
         mainThread->frame.esp    = (uint32_t)mainThread->initialStack;
         mainThread->frame.ebp    = mainThread->frame.esp;
-
-//Create Heap
-		void* pHeap =
-			(void*)(ntHeaders->OptionalHeader.ImageBase
-			+ ntHeaders->OptionalHeader.SizeOfImage + PAGE_SIZE + PAGE_SIZE);		
-			
-		void* pHeapPhys = (void*)pmmngr_alloc_blocks(300);
-
-		DebugPrintf("\nExit command recieved; demo halted %d", pmmngr_get_block_count());
-
-		for (int i = 0; i < 300; i++)
-		{
-			vmmngr_mapPhysicalAddress(addressSpace,
-				(uint32_t)pHeap + i*4096,
-				(uint32_t)pHeapPhys + i * 4096,
-				I86_PTE_PRESENT | I86_PTE_WRITABLE | I86_PTE_USER);
-
-		}
 		
 		/* close file and return process ID */
 		volCloseFile(&file);
