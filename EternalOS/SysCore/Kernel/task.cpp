@@ -14,6 +14,8 @@
 #include "mmngr_virtual.h"
 #include "task.h"
 #include "DebugDisplay.h"
+#include "Process.h"
+#include "Thread.h"
 
 //============================================================================
 //    IMPLEMENTATION PRIVATE DEFINITIONS / ENUMERATIONS / SIMPLE TYPEDEFS
@@ -64,6 +66,8 @@ process* getCurrentProcess() {
 * Map kernel space into address space
 * \param addressSpace Page directory
 */
+extern void* pHeapPhys;
+
 void mapKernelSpace (pdirectory* addressSpace) {
 	uint32_t virtualAddr;
 	uint32_t physAddr;
@@ -101,6 +105,25 @@ void mapKernelSpace (pdirectory* addressSpace) {
 		vmmngr_mapPhysicalAddress (addressSpace,
 			virtualAddr+(i*PAGE_SIZE),
 			physAddr+(i*PAGE_SIZE),
+			flags);
+	}
+
+	void* pHeap = (void*)(0xC0000000 + 1024 * 4096 + 4096);
+	
+	DebugPrintf("\ndsfgergrfg, %d", pHeapPhys);
+	for (int i = 0; i < 300; i++)
+	{
+		vmmngr_mapPhysicalAddress(addressSpace,
+			(uint32_t)pHeap + i * PAGE_SIZE,
+			(uint32_t)pHeapPhys + i * PAGE_SIZE,
+			flags);
+	}
+
+	for (int i = 0; i < 300; i++)
+	{
+		vmmngr_mapPhysicalAddress(addressSpace,
+			(uint32_t)pHeapPhys + i * PAGE_SIZE,
+			(uint32_t)pHeapPhys + i * PAGE_SIZE,
 			flags);
 	}
 
@@ -170,14 +193,14 @@ int validateImage (void* image) {
 * \ret Status code
 */
 #include "kheap.h"
-
+process* proc = 0;
 int createProcess (char* appname) {
 
         IMAGE_DOS_HEADER* dosHeader = 0;
         IMAGE_NT_HEADERS* ntHeaders = 0;
         FILE file;
         pdirectory* addressSpace = 0;
-        process* proc = 0;
+        
         thread* mainThread = 0;
         unsigned char* memory = 0;
         unsigned char buf[512];
@@ -218,6 +241,7 @@ int createProcess (char* appname) {
 
 					
 		proc = (process*)kmalloc(sizeof(process));
+
 
         proc->id            = 1;
         proc->pageDirectory = addressSpace;
@@ -312,12 +336,12 @@ int createProcess (char* appname) {
 * Execute process
 */
 void executeProcess () {
-        process* proc = 0;
+       // process* proc = 0;
         int entryPoint = 0;
         unsigned int procStack = 0;
 
         /* get running process */
-        proc = getCurrentProcess();
+      //  proc = getCurrentProcess();
 		if (proc->id==PROC_INVALID_ID)
 			return;
         if (!proc->pageDirectory)
@@ -358,9 +382,15 @@ extern void run ();
 */
 extern "C" {
 void TerminateProcess () {
-	process* cur = &_proc;
-	if (cur->id==PROC_INVALID_ID)
+	//process* cur = &_proc;
+	
+	process* cur = proc;
+	
+	if (cur->id == PROC_INVALID_ID)
+	{
+		DebugPrintf("\nsdffdsdsfsd");
 		return;
+	}
 
 	/* release threads */
 	int i=0;
@@ -370,9 +400,10 @@ void TerminateProcess () {
 	void* stackFrame = vmmngr_getPhysicalAddress (cur->pageDirectory,
 		(uint32_t) pThread->initialStack); 
 
+
 	/* unmap and release stack memory */
 	vmmngr_unmapPhysicalAddress (cur->pageDirectory, (uint32_t) pThread->initialStack);
-	pmmngr_free_block (stackFrame);
+	pmmngr_free_block (stackFrame);	
 
 	/* unmap and release image memory */
 	for (uint32_t page = 0; page < pThread->imageSize/PAGE_SIZE; page++) {
@@ -411,6 +442,7 @@ void TerminateProcess () {
 }
 } // extern "C"
 
+#include "ProcessManager.h"
 //============================================================================
 //    INTERFACE CLASS BODIES
 //============================================================================
@@ -419,3 +451,64 @@ void TerminateProcess () {
 //**    END[task.cpp]
 //**
 //****************************************************************************
+extern "C" {
+	void TerminateMemoryProcess() {
+		
+		Process* pProcess = (Process*)List_GetData(ProcessManager::GetInstance()->pProcessQueue, "", 0);					
+
+		if (pProcess->TaskID == PROC_INVALID_ID)
+		{
+			DebugPrintf("\nsdffdsdsfsd");
+			return;
+		}
+
+		/* release threads */
+		int i = 0;
+
+		Thread* pThread = (Thread*)List_GetData(pProcess->pThreadQueue, "", 0);		
+		
+		/* get physical address of stack */
+		void* stackFrame = vmmngr_getPhysicalAddress(pProcess->pPageDirectory,
+			(uint32_t)pThread->initialStack);
+
+		DebugPrintf("\n Plane X : %d, Plane Y : %d", 1, 1);
+		/* unmap and release stack memory */
+		vmmngr_unmapPhysicalAddress(pProcess->pPageDirectory, (uint32_t)pThread->initialStack);
+		pmmngr_free_block(stackFrame);
+
+		/* unmap and release image memory */
+		for (uint32_t page = 0; page < pThread->imageSize / PAGE_SIZE; page++) {
+			uint32_t phys = 0;
+			uint32_t virt = 0;
+
+			/* get virtual address of page */
+			virt = pThread->imageBase + (page * PAGE_SIZE);
+
+			/* get physical address of page */
+			phys = (uint32_t)vmmngr_getPhysicalAddress(pProcess->pPageDirectory, virt);
+
+			/* unmap and release page */
+			vmmngr_unmapPhysicalAddress(pProcess->pPageDirectory, virt);
+			pmmngr_free_block((void*)phys);
+		}		
+
+		/* restore kernel selectors */
+		__asm {
+			cli
+				mov eax, 0x10
+				mov ds, ax
+				mov es, ax
+				mov fs, ax
+				mov gs, ax
+				sti
+		}
+
+		pmmngr_load_PDBR((physical_addr)vmmngr_get_directory());
+
+		/* return to kernel command shell */
+		run();
+
+		DebugPrintf("\nExit command recieved; demo halted");
+		for (;;);
+	}
+} // extern "C"

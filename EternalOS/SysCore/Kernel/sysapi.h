@@ -9,7 +9,8 @@
 static void* _syscalls[] = {
 
 	DebugPrintf,
-	TerminateProcess
+	TerminateProcess,
+	TerminateMemoryProcess
 };
 
 _declspec(naked)

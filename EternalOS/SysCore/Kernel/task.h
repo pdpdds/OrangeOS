@@ -12,7 +12,7 @@
 //============================================================================
 
 #include <stdint.h>
-
+#include "mmngr_virtual.h"
 //============================================================================
 //    INTERFACE DEFINITIONS / ENUMERATIONS / SIMPLE TYPEDEFS
 //============================================================================
@@ -87,6 +87,8 @@ extern int createProcess   (char* appname);
 extern void executeProcess ();
 
 extern "C" void TerminateProcess ();
+
+extern "C" void TerminateMemoryProcess();
 
 void mapKernelSpace(pdirectory* addressSpace);
 

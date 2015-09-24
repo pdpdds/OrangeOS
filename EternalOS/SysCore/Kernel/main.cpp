@@ -184,13 +184,14 @@ void init (multiboot_info* bootinfo) {
 	pmmngr_alloc_blocks(3);
 }
 
+void* pHeapPhys = 0;
 
 void CreateKernelHeap(int kernelSize)
 {
 	void* pHeap =
 		(void*)(0xC0000000 + 1024*4096 + 4096);
 	
-	void* pHeapPhys = (void*)pmmngr_alloc_blocks(300);
+	pHeapPhys = (void*)pmmngr_alloc_blocks(300);
 
 	DebugPrintf("\nExit command recieved; demo halted %d", pHeapPhys);
 	
@@ -200,10 +201,18 @@ void CreateKernelHeap(int kernelSize)
 		vmmngr_mapPhysicalAddress(vmmngr_get_directory(),
 			(uint32_t)pHeap + i * 4096,
 			(uint32_t)pHeapPhys + i * 4096,
-			I86_PTE_PRESENT | I86_PTE_WRITABLE | I86_PTE_USER);
+			I86_PTE_PRESENT | I86_PTE_WRITABLE);
 	}
 
-	create_kernel_heap((u32int)pHeap, (uint32_t)pHeapPhys + 300 * 4096, 0xCFFFF000, 0, 0);
+	for (int i = 0; i < 300; i++)
+	{
+		vmmngr_mapPhysicalAddress(vmmngr_get_directory(),
+			(uint32_t)pHeapPhys + i * 4096,
+			(uint32_t)pHeapPhys + i * 4096,
+			I86_PTE_PRESENT | I86_PTE_WRITABLE);
+	}
+
+	create_kernel_heap((u32int)pHeap, (uint32_t)pHeap + 300 * 4096, 0xCFFFF000, 0, 0);
 }
 
 //! sleeps a little bit. This uses the HALs get_tick_count() which in turn uses the PIT
@@ -342,9 +351,29 @@ void cmd_alloc()
 		DebugPrintf("\n Plane X : %d, Plane Y : %d", pPlane->GetX(), pPlane->GetY());
 
 		delete pPlane;
-	}
-	
+	}	
+}
 
+#include "ProcessManager.h"
+#include "List.h"
+
+
+
+void SampleLoop()
+{
+	char* str = "\n\rHello world2!";
+
+	//Process* pProcess = (Process*)List_GetData(manager.pProcessQueue, "", 0);
+
+	TerminateMemoryProcess();
+
+	for (;;);
+}
+
+void cmd_memtask()
+{
+	
+	ProcessManager::GetInstance()->CreateMemoryProcess(SampleLoop);
 	
 }
 
@@ -478,6 +507,9 @@ bool run_cmd (char* cmd_buf) {
 	else if (strcmp(cmd_buf, "alloc") == 0) {
 		cmd_alloc();
 	}
+	else if (strcmp(cmd_buf, "memtask") == 0) {
+		cmd_memtask();
+	}
 
 	//! run process
 	else if (strcmp (cmd_buf, "proc") == 0) {
@@ -522,12 +554,12 @@ int _cdecl kmain (multiboot_info* bootinfo) {
 	DebugPuts ("\nType \"exit\" to quit, \"help\" for a list of commands\n");
 	DebugPuts ("+-------------------------------------------------------+\n");
 
-	HardDiskHandler hardHandler;
+	/*HardDiskHandler hardHandler;
 	hardHandler.Initialize();
 	char num = hardHandler.GetTotalDevices();
 
 	DebugPrintf("\nHardDisk Count %d", (int)num);
-
+	*/
 	run ();
 
 	DebugPrintf ("\nExit command recieved; demo halted");

@@ -1,5 +1,6 @@
 #pragma once
 #include "windef.h"
+#include "task.h"
 
 #define TASK_RUNNING            1
 #define TASK_RUNNABLE           2
@@ -46,6 +47,8 @@ struct ThreadStackInfo
 #pragma pack (pop, 1)
 #endif
 
+class Process;
+
 class Thread
 {
 public:
@@ -61,5 +64,16 @@ public:
 	UINT32 dwPriority;
 	UINT32 dwWaitingTime;
 	ThreadStackInfo StackInfo;
+
+	Process* pParent;
+
+	void*     initialStack; /* virtual address */
+	void*     stackLimit;
+	void*     kernelStack;
+	uint32_t  priority;
+	int       state;
+	trapFrame frame;
+	uint32_t  imageBase;
+	uint32_t  imageSize;
 };
 
