@@ -16,6 +16,7 @@
 #include "DebugDisplay.h"
 #include "Process.h"
 #include "Thread.h"
+#include "fsys.h"
 
 //============================================================================
 //    IMPLEMENTATION PRIVATE DEFINITIONS / ENUMERATIONS / SIMPLE TYPEDEFS
@@ -109,8 +110,7 @@ void mapKernelSpace (pdirectory* addressSpace) {
 	}
 
 	void* pHeap = (void*)(0xC0000000 + 1024 * 4096 + 4096);
-	
-	DebugPrintf("\ndsfgergrfg, %d", pHeapPhys);
+		
 	for (int i = 0; i < 300; i++)
 	{
 		vmmngr_mapPhysicalAddress(addressSpace,
@@ -512,3 +512,91 @@ extern "C" {
 		for (;;);
 	}
 } // extern "C"
+
+
+static Process* g_pProcess = 0;
+
+Process* CreateProcess2(char* appname)
+{
+
+	FILE file;
+	
+	/* open file */
+	file = volOpenFile(appname);
+	if (file.flags == FS_INVALID)
+		return 0;
+	if ((file.flags & FS_DIRECTORY) == FS_DIRECTORY)
+		return 0;	
+		
+	pdirectory* addressSpace = 0;
+	
+	addressSpace = vmmngr_createAddressSpace();	
+
+	if (!addressSpace) {	
+		volCloseFile(&file);
+		return 0;
+	}
+	
+	mapKernelSpace(addressSpace);	
+
+	Process* pProcess = new Process();
+
+	pProcess->TaskID = ProcessManager::GetInstance()->GetNextProcessId();
+	pProcess->pPageDirectory = addressSpace;
+	pProcess->dwPriority = 1;
+	pProcess->dwRunState = PROCESS_STATE_ACTIVE;
+
+	Thread* pThread = ProcessManager::GetInstance()->CreateThread(pProcess, &file);
+	List_Add(&pProcess->pThreadQueue, "", pThread);	
+	List_Add(&ProcessManager::GetInstance()->pProcessQueue, "", pProcess);
+
+	g_pProcess = pProcess;
+
+	return pProcess;
+}
+
+void ExecuteProcess2() {
+	
+	int entryPoint = 0;
+	unsigned int procStack = 0;
+
+	//Process* pProcess = (Process*)List_GetData(ProcessManager::GetInstance()->pProcessQueue, "", 0);	
+	Process* pProcess = g_pProcess;
+
+	
+	if (pProcess->TaskID == PROC_INVALID_ID)
+		return;
+	
+	if (!pProcess->pPageDirectory)
+		return;	
+
+	//while (1);
+
+	Thread* pThread = (Thread*)List_GetData(pProcess->pThreadQueue, "", 0);
+	
+	/* get esp and eip of main thread */
+	entryPoint = pThread->frame.eip;
+	procStack = pThread->frame.esp;
+
+	/* switch to process address space */
+	__asm cli
+	pmmngr_load_PDBR((physical_addr)pProcess->pPageDirectory);
+
+	/* execute process in user mode */
+	__asm {
+		mov     ax, 0x23; user mode data selector is 0x20 (GDT entry 3).Also sets RPL to 3
+			mov     ds, ax
+			mov     es, ax
+			mov     fs, ax
+			mov     gs, ax
+			;
+		; create stack frame
+			;
+		push   0x23; SS, notice it uses same selector as above
+			push[procStack]; stack
+			push    0x200; EFLAGS
+			push    0x1b; CS, user mode code selector is 0x18.With RPL 3 this is 0x1b
+			push[entryPoint]; EIP
+			iretd
+	}
+}

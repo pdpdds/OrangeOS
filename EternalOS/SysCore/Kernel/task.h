@@ -83,14 +83,18 @@ typedef struct _process {
 extern int createThread    (int (*entry) (void), uint32_t stackBase);
 extern int terminateThread (thread* handle);
 
+class Process;
 extern int createProcess   (char* appname);
+Process* CreateProcess2(char* appname);
 extern void executeProcess ();
+void ExecuteProcess2();
 
 extern "C" void TerminateProcess ();
 
 extern "C" void TerminateMemoryProcess();
 
 void mapKernelSpace(pdirectory* addressSpace);
+int validateImage(void* image);
 
 //============================================================================
 //    INTERFACE OBJECT CLASS DEFINITIONS

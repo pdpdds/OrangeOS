@@ -460,14 +460,14 @@ void cmd_proc () {
 	DebugPrintf ("\n\rProgram file: ");
 	get_cmd (name,32);
 
-	ret = createProcess (name);
-	if (ret == 0)
+	Process* pProcess = CreateProcess2(name);
+	if (pProcess == 0)
 	{
 		DebugPrintf("\n\rError creating process");
 		run();
 	}
 	else		
-		executeProcess ();
+		ExecuteProcess2 ();
 }
 
 //! our simple command parser
