@@ -515,6 +515,7 @@ extern "C" {
 
 
 static Process* g_pProcess = 0;
+static Thread* g_pThread = 0;
 
 Process* CreateProcess2(char* appname)
 {
@@ -547,10 +548,15 @@ Process* CreateProcess2(char* appname)
 	pProcess->dwRunState = PROCESS_STATE_ACTIVE;
 
 	Thread* pThread = ProcessManager::GetInstance()->CreateThread(pProcess, &file);
+
+	if (pThread == 0)
+		while (1);
+
 	List_Add(&pProcess->pThreadQueue, "", pThread);	
 	List_Add(&ProcessManager::GetInstance()->pProcessQueue, "", pProcess);
 
 	g_pProcess = pProcess;
+	g_pThread = pThread;
 
 	return pProcess;
 }
@@ -569,10 +575,18 @@ void ExecuteProcess2() {
 	
 	if (!pProcess->pPageDirectory)
 		return;	
+	
+
+	//Thread* pThread = (Thread*)List_GetData(pProcess->pThreadQueue, "", 0);
+	Thread* pThread = g_pThread;
+
+	if (pThread == 0)
+	{
+		DebugPrintf("\nwqeqrvsds");
+	}
 
 	//while (1);
-
-	Thread* pThread = (Thread*)List_GetData(pProcess->pThreadQueue, "", 0);
+	DebugPrintf("\nwqeqrvsds");
 	
 	/* get esp and eip of main thread */
 	entryPoint = pThread->frame.eip;
