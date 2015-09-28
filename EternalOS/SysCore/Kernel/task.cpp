@@ -14,6 +14,7 @@
 #include "mmngr_virtual.h"
 #include "task.h"
 #include "DebugDisplay.h"
+#include "ProcessManager.h"
 #include "Process.h"
 #include "Thread.h"
 #include "fsys.h"
@@ -39,29 +40,6 @@
 //    IMPLEMENTATION PRIVATE DATA
 //============================================================================
 
-#define PROC_INVALID_ID -1
-static process _proc = {
-	PROC_INVALID_ID,0,0,0,0
-};
-
-//============================================================================
-//    INTERFACE DATA
-//============================================================================
-//============================================================================
-//    IMPLEMENTATION PRIVATE FUNCTION PROTOTYPES
-//============================================================================
-
-//============================================================================
-//    IMPLEMENTATION PRIVATE FUNCTIONS
-//============================================================================
-
-/**
-* Return current process
-* \ret Process
-*/
-process* getCurrentProcess() {
-	return &_proc;
-}
 
 /**
 * Map kernel space into address space
@@ -69,7 +47,8 @@ process* getCurrentProcess() {
 */
 extern void* pHeapPhys;
 
-void mapKernelSpace (pdirectory* addressSpace) {
+void mapKernelSpace (pdirectory* addressSpace) 
+{
 	uint32_t virtualAddr;
 	uint32_t physAddr;
 	/*
@@ -109,22 +88,14 @@ void mapKernelSpace (pdirectory* addressSpace) {
 			flags);
 	}
 
-	void* pHeap = (void*)(0xC0000000 + 1024 * 4096 + 4096);
+	void* pHeap = (void*)(0xC0000000 + 409600 + 1024 * 4096);
 		
-	for (int i = 0; i < 300; i++)
+	for (int i = 0; i < 1000; i++)
 	{
 		vmmngr_mapPhysicalAddress(addressSpace,
 			(uint32_t)pHeap + i * PAGE_SIZE,
 			(uint32_t)pHeapPhys + i * PAGE_SIZE,
-			flags);
-	}
-
-	for (int i = 0; i < 300; i++)
-	{
-		vmmngr_mapPhysicalAddress(addressSpace,
-			(uint32_t)pHeapPhys + i * PAGE_SIZE,
-			(uint32_t)pHeapPhys + i * PAGE_SIZE,
-			flags);
+			I86_PTE_PRESENT | I86_PTE_WRITABLE | I86_PTE_USER);
 	}
 
 	/* map page directory itself into its address space */
@@ -183,197 +154,6 @@ int validateImage (void* image) {
 	return 1;
 }
 
-//============================================================================
-//    INTERFACE FUNCTIONS
-//============================================================================
-
-/**
-* Create process
-* \param appname Application file name
-* \ret Status code
-*/
-#include "kheap.h"
-process* proc = 0;
-int createProcess (char* appname) {
-
-        IMAGE_DOS_HEADER* dosHeader = 0;
-        IMAGE_NT_HEADERS* ntHeaders = 0;
-        FILE file;
-        pdirectory* addressSpace = 0;
-        
-        thread* mainThread = 0;
-        unsigned char* memory = 0;
-        unsigned char buf[512];
-        uint32_t i = 0;
-
-        /* open file */
-        file = volOpenFile (appname);
-        if (file.flags == FS_INVALID)
-                return 0;
-        if (( file.flags & FS_DIRECTORY ) == FS_DIRECTORY)
-                return 0;
-
-        /* read 512 bytes into buffer */
-        volReadFile ( &file, buf, 512);
-		if (! validateImage (buf)) {
-			volCloseFile ( &file );
-			return 0;
-		}
-        dosHeader = (IMAGE_DOS_HEADER*)buf;
-        ntHeaders = (IMAGE_NT_HEADERS*)(dosHeader->e_lfanew + (uint32_t)buf);
-
-        /* get process virtual address space */
-        addressSpace = vmmngr_createAddressSpace ();	
-		//addressSpace = vmmngr_get_directory ();
-		
-		if (!addressSpace) {
-                volCloseFile (&file);
-                return 0;
-        }
-		/*
-			map kernel space into process address space.
-			Only needed if creating new address space
-		*/
-		mapKernelSpace (addressSpace);
-		
-        /* create PCB */
-        //proc = getCurrentProcess();
-
-					
-		proc = (process*)kmalloc(sizeof(process));
-
-
-        proc->id            = 1;
-        proc->pageDirectory = addressSpace;
-        proc->priority      = 1;
-        proc->state         = PROCESS_STATE_ACTIVE;
-        proc->threadCount   = 1;
-
-		/* create thread descriptor */
-        mainThread               = &proc->threads[0];
-        mainThread->kernelStack  = 0;
-        mainThread->parent       = proc;
-        mainThread->priority     = 1;
-        mainThread->state        = PROCESS_STATE_ACTIVE;
-        mainThread->initialStack = 0;
-        mainThread->stackLimit   = (void*) ((uint32_t) mainThread->initialStack + 4096);
-		mainThread->imageBase    = ntHeaders->OptionalHeader.ImageBase;
-		mainThread->imageSize    = ntHeaders->OptionalHeader.SizeOfImage;
-        memset (&mainThread->frame, 0, sizeof (trapFrame));
-        mainThread->frame.eip    = ntHeaders->OptionalHeader.AddressOfEntryPoint
-                + ntHeaders->OptionalHeader.ImageBase;
-        mainThread->frame.flags  = 0x200;
-		
-        /* copy our 512 block read above and rest of 4k block */
-		//(unsigned char*)kmalloc(mainThread->imageSize);
-		//(unsigned char*)kmalloc(4096);
-		memory = (unsigned char*)pmmngr_alloc_blocks((mainThread->imageSize/4096)+1);
-		//DebugPrintf("\nimage size %d", mainThread->imageSize);
-		/* map page into address space */
-
-		for (int i = 0; i < (mainThread->imageSize / 4096)+1; i++)
-		{
-			vmmngr_mapPhysicalAddress(proc->pageDirectory,
-				ntHeaders->OptionalHeader.ImageBase + i * 4096,
-				(uint32_t)memory + i * 4096,
-				I86_PTE_PRESENT | I86_PTE_WRITABLE | I86_PTE_USER);
-		}		
-		memset(memory, 0, mainThread->imageSize);
-        memcpy (memory, buf, 512);
-		
-		/* load image into memory */
-		for (i=1; i <= mainThread->imageSize/512; i++) {
-                if (file.eof == 1)
-                        break;
-                volReadFile ( &file, memory+512*i, 512);
-        }
-
-        
-		/* load and map rest of image */
-        i = 1;
-        while (file.eof != 1) {
-                /* allocate new frame */
-                unsigned char* cur = (unsigned char*)pmmngr_alloc_block();
-                /* read block */
-                int curBlock = 0;
-                for (curBlock = 0; curBlock < 8; curBlock++) {
-                        if (file.eof == 1)
-                                break;
-                        volReadFile ( &file, cur+512*curBlock, 512);
-                }
-                /* map page into process address space */
-                vmmngr_mapPhysicalAddress (proc->pageDirectory,
-                        ntHeaders->OptionalHeader.ImageBase + i*4096,
-                        (uint32_t) cur,
-                        I86_PTE_PRESENT|I86_PTE_WRITABLE|I86_PTE_USER);
-                i++;
-        }
-
-		/* Create userspace stack (process esp=0x100000) */
-		void* stack =
-			(void*) (ntHeaders->OptionalHeader.ImageBase
-				+ ntHeaders->OptionalHeader.SizeOfImage + PAGE_SIZE);
-		void* stackPhys = (void*) pmmngr_alloc_block ();
-
-		/* map user process stack space */
-		vmmngr_mapPhysicalAddress (addressSpace,
-				(uint32_t) stack,
-				(uint32_t) stackPhys,
-				I86_PTE_PRESENT|I86_PTE_WRITABLE|I86_PTE_USER);
-
-		/* final initialization */
-		mainThread->initialStack = stack;
-        mainThread->frame.esp    = (uint32_t)mainThread->initialStack;
-        mainThread->frame.ebp    = mainThread->frame.esp;
-		
-		/* close file and return process ID */
-		volCloseFile(&file);
-
-        return proc->id;
-}
-
-/**
-* Execute process
-*/
-void executeProcess () {
-       // process* proc = 0;
-        int entryPoint = 0;
-        unsigned int procStack = 0;
-
-        /* get running process */
-      //  proc = getCurrentProcess();
-		if (proc->id==PROC_INVALID_ID)
-			return;
-        if (!proc->pageDirectory)
-			return;
-
-        /* get esp and eip of main thread */
-        entryPoint = proc->threads[0].frame.eip;
-        procStack  = proc->threads[0].frame.esp;
-
-        /* switch to process address space */
-        __asm cli
-        pmmngr_load_PDBR ((physical_addr)proc->pageDirectory);
-
-        /* execute process in user mode */
-        __asm {
-                mov     ax, 0x23        ; user mode data selector is 0x20 (GDT entry 3). Also sets RPL to 3
-                mov     ds, ax
-                mov     es, ax
-                mov     fs, ax
-                mov     gs, ax
-				;
-				; create stack frame
-				;
-				push   0x23				; SS, notice it uses same selector as above
-				push   [procStack]		; stack
-				push    0x200			; EFLAGS
-				push    0x1b			; CS, user mode code selector is 0x18. With RPL 3 this is 0x1b
-				push    [entryPoint]	; EIP
-				iretd
-        }
-}
-
 /* kernel command shell */
 extern void run ();
 
@@ -382,11 +162,10 @@ extern void run ();
 */
 extern "C" {
 void TerminateProcess () {
-	//process* cur = &_proc;
 	
-	process* cur = proc;
+	Process* cur = ProcessManager::GetInstance()->g_pCurProcess;
 	
-	if (cur->id == PROC_INVALID_ID)
+	if (cur->TaskID == PROC_INVALID_ID)
 	{
 		DebugPrintf("\nsdffdsdsfsd");
 		return;
@@ -394,19 +173,29 @@ void TerminateProcess () {
 
 	/* release threads */
 	int i=0;
-	thread* pThread = &cur->threads[i];
+	//Thread* pThread = ProcessManager::GetInstance()->g_pThread;
+	Thread* pThread = (Thread*)List_GetData(cur->pThreadQueue, "", 0);
+	List_Delete(&cur->pThreadQueue, "", 0);
 
-	/* get physical address of stack */
-	void* stackFrame = vmmngr_getPhysicalAddress (cur->pageDirectory,
-		(uint32_t) pThread->initialStack); 
+	u32int heapAddess = pThread->imageBase + pThread->imageSize + PAGE_SIZE + PAGE_SIZE * 2;
+	heapAddess = heapAddess - (heapAddess % PAGE_SIZE);
+	for (int i = 0; i < 300; i++)
+	{
+		uint32_t phys = 0;
+		uint32_t virt = 0;
 
+		/* get virtual address of page */
+		virt = heapAddess + (i * PAGE_SIZE);
 
-	/* unmap and release stack memory */
-	vmmngr_unmapPhysicalAddress (cur->pageDirectory, (uint32_t) pThread->initialStack);
-	pmmngr_free_block (stackFrame);	
+		/* get physical address of page */
+		phys = (uint32_t)vmmngr_getPhysicalAddress(cur->pPageDirectory, virt);
+
+		/* unmap and release page */
+		vmmngr_unmapPhysicalAddress(cur->pPageDirectory, virt);
+	}
 
 	/* unmap and release image memory */
-	for (uint32_t page = 0; page < pThread->imageSize/PAGE_SIZE; page++) {
+	for (uint32_t page = 0; page < cur->dwPageCount; page++) {
 		uint32_t phys = 0;
 		uint32_t virt = 0;
 
@@ -414,12 +203,25 @@ void TerminateProcess () {
 		virt = pThread->imageBase + (page * PAGE_SIZE);
 
 		/* get physical address of page */
-		phys = (uint32_t) vmmngr_getPhysicalAddress (cur->pageDirectory, virt);
+		phys = (uint32_t)vmmngr_getPhysicalAddress(cur->pPageDirectory, virt);
 
 		/* unmap and release page */
-		vmmngr_unmapPhysicalAddress (cur->pageDirectory, virt);
-		pmmngr_free_block ((void*)phys);
+		vmmngr_unmapPhysicalAddress(cur->pPageDirectory, virt);
+		//pmmngr_free_block ((void*)phys);
 	}
+
+	/* get physical address of stack */
+	void* stackFrame = vmmngr_getPhysicalAddress(cur->pPageDirectory,
+		(uint32_t)pThread->initialStack);
+
+	/* unmap and release stack memory */
+	vmmngr_unmapPhysicalAddress(cur->pPageDirectory, (uint32_t)pThread->initialStack);
+	//pmmngr_free_block(stackFrame);
+
+	pmmngr_free_block(cur->pPageDirectory);
+
+	delete pThread;
+	delete cur;
 
 	/* restore kernel selectors */
 	__asm {
@@ -474,7 +276,7 @@ extern "C" {
 		DebugPrintf("\n Plane X : %d, Plane Y : %d", 1, 1);
 		/* unmap and release stack memory */
 		vmmngr_unmapPhysicalAddress(pProcess->pPageDirectory, (uint32_t)pThread->initialStack);
-		pmmngr_free_block(stackFrame);
+		//pmmngr_free_block(stackFrame);
 
 		/* unmap and release image memory */
 		for (uint32_t page = 0; page < pThread->imageSize / PAGE_SIZE; page++) {
@@ -489,7 +291,7 @@ extern "C" {
 
 			/* unmap and release page */
 			vmmngr_unmapPhysicalAddress(pProcess->pPageDirectory, virt);
-			pmmngr_free_block((void*)phys);
+			//pmmngr_free_block((void*)phys);
 		}		
 
 		/* restore kernel selectors */
@@ -513,104 +315,60 @@ extern "C" {
 	}
 } // extern "C"
 
-
-static Process* g_pProcess = 0;
-static Thread* g_pThread = 0;
-
-Process* CreateProcess2(char* appname)
-{
-
-	FILE file;
-	
-	/* open file */
-	file = volOpenFile(appname);
-	if (file.flags == FS_INVALID)
-		return 0;
-	if ((file.flags & FS_DIRECTORY) == FS_DIRECTORY)
-		return 0;	
+extern "C" {
+	uint32_t MemoryAlloc(size_t size) {
+		Process* pProcess = ProcessManager::GetInstance()->g_pCurProcess;
+		Thread* pThread = (Thread*)List_GetData(pProcess->pThreadQueue, "", 0);
+		DebugPrintf("\n process heap alloc, %d %x", size, pThread->lpHeap);
+		void *addr = alloc(size, (u8int)0, (heap_t*)pThread->lpHeap);
+		DebugPrintf("\n process heap alloc, %d %x", size, pThread->lpHeap);
 		
-	pdirectory* addressSpace = 0;
-	
-	addressSpace = vmmngr_createAddressSpace();	
-
-	if (!addressSpace) {	
-		volCloseFile(&file);
-		return 0;
+		return (u32int)addr;
 	}
-	
-	mapKernelSpace(addressSpace);	
+} // extern "C"
 
-	Process* pProcess = new Process();
 
-	pProcess->TaskID = ProcessManager::GetInstance()->GetNextProcessId();
-	pProcess->pPageDirectory = addressSpace;
-	pProcess->dwPriority = 1;
-	pProcess->dwRunState = PROCESS_STATE_ACTIVE;
-
-	Thread* pThread = ProcessManager::GetInstance()->CreateThread(pProcess, &file);
-
-	if (pThread == 0)
-		while (1);
-
-	List_Add(&pProcess->pThreadQueue, "", pThread);	
-	List_Add(&ProcessManager::GetInstance()->pProcessQueue, "", pProcess);
-
-	g_pProcess = pProcess;
-	g_pThread = pThread;
-
-	return pProcess;
-}
-
-void ExecuteProcess2() {
-	
-	int entryPoint = 0;
-	unsigned int procStack = 0;
-
-	//Process* pProcess = (Process*)List_GetData(ProcessManager::GetInstance()->pProcessQueue, "", 0);	
-	Process* pProcess = g_pProcess;
-
-	
-	if (pProcess->TaskID == PROC_INVALID_ID)
-		return;
-	
-	if (!pProcess->pPageDirectory)
-		return;	
-	
-
-	//Thread* pThread = (Thread*)List_GetData(pProcess->pThreadQueue, "", 0);
-	Thread* pThread = g_pThread;
-
-	if (pThread == 0)
-	{
-		DebugPrintf("\nwqeqrvsds");
+extern "C" {
+	void MemoryFree(void* p) {
+		Process* pProcess = ProcessManager::GetInstance()->g_pCurProcess;
+		Thread* pThread = (Thread*)List_GetData(pProcess->pThreadQueue, "", 0);
+		free(p, (heap_t*)pThread->lpHeap);
 	}
-
-	//while (1);
-	DebugPrintf("\nwqeqrvsds");
-	
-	/* get esp and eip of main thread */
-	entryPoint = pThread->frame.eip;
-	procStack = pThread->frame.esp;
-
-	/* switch to process address space */
-	__asm cli
-	pmmngr_load_PDBR((physical_addr)pProcess->pPageDirectory);
-
-	/* execute process in user mode */
-	__asm {
-		mov     ax, 0x23; user mode data selector is 0x20 (GDT entry 3).Also sets RPL to 3
-			mov     ds, ax
-			mov     es, ax
-			mov     fs, ax
-			mov     gs, ax
-			;
-		; create stack frame
-			;
-		push   0x23; SS, notice it uses same selector as above
-			push[procStack]; stack
-			push    0x200; EFLAGS
-			push    0x1b; CS, user mode code selector is 0x18.With RPL 3 this is 0x1b
-			push[entryPoint]; EIP
-			iretd
+} // extern "C"
+#include "../hal/pit.h"
+extern "C" {
+	uint32_t GetSysytemTickCount() {
+		return GetTickCount();
 	}
-}
+} // extern "C"
+
+
+extern "C" {
+	void CreateDefaultHeap() {
+		
+		Process* pProcess = ProcessManager::GetInstance()->g_pCurProcess;
+		Thread* pThread = (Thread*)List_GetData(pProcess->pThreadQueue, "", 0);
+		//Thread* pThread = ProcessManager::GetInstance()->g_pThread;
+		void* pHeapaaPhys = (void*)pmmngr_alloc_blocks(300);
+		
+		u32int heapAddess = pThread->imageBase + pThread->imageSize + PAGE_SIZE + PAGE_SIZE * 2;
+		heapAddess = heapAddess - (heapAddess % PAGE_SIZE);
+		//u32int heapAddess = 0xB0000000;
+		DebugPrintf("\nheap adress %x", heapAddess);
+		
+		for (int i = 0; i < 300; i++)
+		{
+			vmmngr_mapPhysicalAddress(pProcess->pPageDirectory,
+				(uint32_t)heapAddess + i * PAGE_SIZE,
+				(uint32_t)pHeapaaPhys + i * PAGE_SIZE,
+				I86_PTE_PRESENT | I86_PTE_WRITABLE | I86_PTE_USER);
+		}
+		//pmmngr_load_PDBR((physical_addr)pProcezss->pPageDirectory);
+		memset((void*)heapAddess, 0, 300 * PAGE_SIZE);
+		DebugPrintf("\nimageSize %x", pThread->imageSize);
+		pThread->lpHeap = create_heap((u32int)heapAddess, (uint32_t)heapAddess + 300 * 4096, (uint32_t)heapAddess + 300 * 4096, 0, 0);
+		//DebugPrintf("\nThread Creation Success %x", pThread->lpHeap);
+		//DebugPrintf("\ndfsdfds %x", pHeapPhys);
+		//DebugPrintf("\nkkkkk");
+	}
+} // extern "C"

@@ -155,19 +155,14 @@ void vmmngr_initialize () {
 
 	//taken from chapter 21
 
-	   //! allocate default page table
-   ptable* table = (ptable*) pmmngr_alloc_block ();
-   if (!table)
-      return;
+	  
 
    //! allocates 3gb page table
    ptable* table2 = (ptable*) pmmngr_alloc_block ();
    if (!table2)
       return;
 
-   //! clear page table
-   memset (table, 0, sizeof (ptable));
-
+  
    //! 1st 4mb are idenitity mapped
    for (int i=0, frame=0x0, virt=0x00000000; i<1024; i++, frame+=4096, virt+=4096) {
 
@@ -180,19 +175,7 @@ void vmmngr_initialize () {
       table2->m_entries [PAGE_TABLE_INDEX (virt) ] = page;
    }
 
-   //! map 1mb to 3gb (where we are at)
-   for (int i=0, frame=0x100000, virt=0xc0000000; i<1024; i++, frame+=4096, virt+=4096) {
-
-      //! create a new page
-      pt_entry page=0;
-      pt_entry_add_attrib (&page, I86_PTE_PRESENT);
-      pt_entry_set_frame (&page, frame);
-
-      //! ...and add it to the page table
-      table->m_entries [PAGE_TABLE_INDEX (virt) ] = page;
-   }
-
-   //! create default directory table
+     //! create default directory table
    pdirectory*   dir = (pdirectory*) pmmngr_alloc_blocks (3);
    if (!dir)
       return;
@@ -200,11 +183,38 @@ void vmmngr_initialize () {
   //! clear directory table and set it as current
   memset (dir, 0, sizeof (pdirectory));
 
-   //! get first entry in dir table and set it up to point to our table
-   pd_entry* entry = &dir->m_entries [PAGE_DIRECTORY_INDEX (0xc0000000) ];
-   pd_entry_add_attrib (entry, I86_PDE_PRESENT);
-   pd_entry_add_attrib (entry, I86_PDE_WRITABLE);
-   pd_entry_set_frame (entry, (physical_addr)table);
+   //! map 1mb to 3gb (where we are at)
+  for (int y = 0; y < 1; y++)
+  {
+	  //! allocate default page table
+	  ptable* table = (ptable*)pmmngr_alloc_block();
+	  if (!table)
+		  return;
+
+	  //! clear page table
+	  memset(table, 0, sizeof(ptable));
+
+	  for (int i = 0, frame = 0x100000, virt = 0xc0000000 + y * 1024 * 4096; i < 1024; i++, frame += 4096, virt += 4096) {
+
+		  //! create a new page
+		  pt_entry page = 0;
+		  pt_entry_add_attrib(&page, I86_PTE_PRESENT);
+		  pt_entry_set_frame(&page, frame);
+
+		  //! ...and add it to the page table
+		  table->m_entries[PAGE_TABLE_INDEX(virt)] = page;
+	  }
+
+	  //! get first entry in dir table and set it up to point to our table
+	  pd_entry* entry = &dir->m_entries[PAGE_DIRECTORY_INDEX((0xc0000000 + y * 1024 * 4096))];
+	  pd_entry_add_attrib(entry, I86_PDE_PRESENT);
+	  pd_entry_add_attrib(entry, I86_PDE_WRITABLE);
+	  pd_entry_set_frame(entry, (physical_addr)table);
+  }
+
+ 
+
+   
 
    pd_entry* entry2 = &dir->m_entries [PAGE_DIRECTORY_INDEX (0x00000000) ];
    pd_entry_add_attrib (entry2, I86_PDE_PRESENT);

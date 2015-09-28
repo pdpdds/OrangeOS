@@ -58,6 +58,7 @@ public:
 	BYTE * IOBASE;
 
 	UINT32 * lpStack;
+	void* lpHeap;
 
 	UINT32 dwRunState;
 

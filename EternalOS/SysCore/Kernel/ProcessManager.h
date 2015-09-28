@@ -8,6 +8,8 @@
 class Process;
 class Thread;
 
+#define PROC_INVALID_ID -1
+
 class ProcessManager
 {
 public:
@@ -17,12 +19,18 @@ public:
 	int GetNextProcessId(){ return m_nextProcessId++; }
 
 	Process* CreateMemoryProcess(void(*lpStartAddress)());
+	Process* CreateProcess(char* appname);
 
 	Thread* CreateThread(Process* pProcess, FILE* pFile);
 	Thread* CreateMemoryThread(Process* pProcess, void(*lpStartAddress)());
 
+	bool ExecuteProcess(Process* pProces);
+
 	LPLISTNODE pProcessQueue;
 	int m_nextProcessId;
+
+	Process* g_pCurProcess;
+	//Thread* g_pThread;
 
 	static ProcessManager* GetInstance()
 	{

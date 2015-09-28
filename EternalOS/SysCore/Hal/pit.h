@@ -97,7 +97,7 @@ extern void _cdecl i86_pit_initialize ();
 //! Test if interface is initialized
 extern bool _cdecl i86_pit_is_initialized ();
 
-UINT GetTickCount();
+extern UINT GetTickCount();
 
 //============================================================================
 //    INTERFACE OBJECT CLASS DEFINITIONS

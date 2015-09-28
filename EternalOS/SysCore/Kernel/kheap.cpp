@@ -198,7 +198,7 @@ heap_t *create_kernel_heap(u32int start, u32int end_addr, u32int max, u8int supe
 
 	return heap;
 }
-
+#include "DebugDisplay.h"
 heap_t *create_heap(u32int start, u32int end_addr, u32int max, u8int supervisor, u8int readonly)
 {
     heap_t *heap = (heap_t*)kmalloc(sizeof(heap_t));
@@ -206,9 +206,11 @@ heap_t *create_heap(u32int start, u32int end_addr, u32int max, u8int supervisor,
     // All our assumptions are made on startAddress and endAddress being page-aligned.
     ASSERT(start%0x1000 == 0);
     ASSERT(end_addr%0x1000 == 0);
-    
+	
     // Initialise the index.
     heap->index = place_ordered_array( (void*)start, HEAP_INDEX_SIZE, &header_t_less_than);
+
+	
     
     // Shift the start address forward to resemble where we can start putting data.
     start += sizeof(type_t)*HEAP_INDEX_SIZE;
@@ -232,7 +234,7 @@ heap_t *create_heap(u32int start, u32int end_addr, u32int max, u8int supervisor,
     hole->magic = HEAP_MAGIC;
     hole->is_hole = 1;
     insert_ordered_array((void*)hole, &heap->index);     
-
+	
     return heap;
 }
 

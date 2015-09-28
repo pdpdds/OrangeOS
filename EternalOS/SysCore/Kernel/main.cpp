@@ -147,7 +147,7 @@ void init (multiboot_info* bootinfo) {
 
 		pmmngr_init_region (region[i].startLo, region[i].sizeLo);
 	}
-	pmmngr_deinit_region (0x100000, kernelSize*512);
+	pmmngr_deinit_region (0x100000, kernelSize*512 + 4096*1024);
 	/*
 		kernel stack location
 	*/
@@ -176,12 +176,13 @@ void init (multiboot_info* bootinfo) {
 
 	CreateKernelHeap(kernelSize);	
 
-	for (int i = 1; i < 9; i++)
-		pmmngr_alloc_blocks(3);
-
-	DebugPrintf("\nbugtest");
+	//for (int i = 1; i < 9; i++)
+		//pmmngr_alloc_blocks(3);
 
 	pmmngr_alloc_blocks(3);
+	pmmngr_alloc_blocks(3);
+	pmmngr_alloc_blocks(3);
+	
 }
 
 void* pHeapPhys = 0;
@@ -189,14 +190,11 @@ void* pHeapPhys = 0;
 void CreateKernelHeap(int kernelSize)
 {
 	void* pHeap =
-		(void*)(0xC0000000 + 1024*4096 + 4096);
+		(void*)(0xC0000000 + 409600 + 1024 * 4096);
 	
-	pHeapPhys = (void*)pmmngr_alloc_blocks(300);
+	pHeapPhys = (void*)pmmngr_alloc_blocks(1000);
 
-	DebugPrintf("\nExit command recieved; demo halted %d", pHeapPhys);
-	
-
-	for (int i = 0; i < 300; i++)
+	for (int i = 0; i < 1000; i++)
 	{
 		vmmngr_mapPhysicalAddress(vmmngr_get_directory(),
 			(uint32_t)pHeap + i * 4096,
@@ -204,15 +202,7 @@ void CreateKernelHeap(int kernelSize)
 			I86_PTE_PRESENT | I86_PTE_WRITABLE);
 	}
 
-	for (int i = 0; i < 300; i++)
-	{
-		vmmngr_mapPhysicalAddress(vmmngr_get_directory(),
-			(uint32_t)pHeapPhys + i * 4096,
-			(uint32_t)pHeapPhys + i * 4096,
-			I86_PTE_PRESENT | I86_PTE_WRITABLE);
-	}
-
-	create_kernel_heap((u32int)pHeap, (uint32_t)pHeap + 300 * 4096, 0xCFFFF000, 0, 0);
+	create_kernel_heap((u32int)pHeap, (uint32_t)pHeap + 1000 * 4096, (uint32_t)pHeap + 1000 * 4096, 0, 0);
 }
 
 //! sleeps a little bit. This uses the HALs get_tick_count() which in turn uses the PIT
@@ -377,6 +367,16 @@ void cmd_memtask()
 	
 }
 
+void cmd_memstate() {
+	DebugPrintf("\nfree block count %d", pmmngr_get_free_block_count());
+	DebugPrintf("\ntotal block count %d", pmmngr_get_block_count());
+	DebugPrintf("\n");
+	DebugPrintf("\n");
+	DebugPrintf("\n");
+	DebugPrintf("\n");
+}
+
+
 //! read command
 void cmd_read () {
 
@@ -460,14 +460,14 @@ void cmd_proc () {
 	DebugPrintf ("\n\rProgram file: ");
 	get_cmd (name,32);
 
-	Process* pProcess = CreateProcess2(name);
+	Process* pProcess = ProcessManager::GetInstance()->CreateProcess(name);
 	if (pProcess == 0)
 	{
 		DebugPrintf("\n\rError creating process");
 		run();
 	}
 	else		
-		ExecuteProcess2 ();
+		ProcessManager::GetInstance()->ExecuteProcess(pProcess);
 }
 
 //! our simple command parser
@@ -503,6 +503,9 @@ bool run_cmd (char* cmd_buf) {
 	//! read sector
 	else if (strcmp (cmd_buf, "read") == 0) {
 		cmd_read ();
+	}
+	else if (strcmp(cmd_buf, "memstate") == 0) {
+		cmd_memstate();
 	}
 	else if (strcmp(cmd_buf, "alloc") == 0) {
 		cmd_alloc();

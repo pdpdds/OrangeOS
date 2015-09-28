@@ -84,14 +84,18 @@ extern int createThread    (int (*entry) (void), uint32_t stackBase);
 extern int terminateThread (thread* handle);
 
 class Process;
-extern int createProcess   (char* appname);
-Process* CreateProcess2(char* appname);
-extern void executeProcess ();
-void ExecuteProcess2();
 
 extern "C" void TerminateProcess ();
 
+extern "C" uint32_t MemoryAlloc(size_t size);
+extern "C" void MemoryFree(void* p);
+
+extern "C" void CreateDefaultHeap();
+
 extern "C" void TerminateMemoryProcess();
+
+extern "C" uint32_t GetSysytemTickCount();
+
 
 void mapKernelSpace(pdirectory* addressSpace);
 int validateImage(void* image);

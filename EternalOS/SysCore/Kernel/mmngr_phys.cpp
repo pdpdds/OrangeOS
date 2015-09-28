@@ -134,14 +134,14 @@ int mmap_first_free_s(size_t size)
 			startingBit += j;
 
 			uint32_t free = 0; //loop through each bit to see if its enough space
-			for (uint32_t count = 0; count <= size; count++) 
+			for (uint32_t count = 0; count < size; count++) 
 			{
 				
 				if (!mmap_test(startingBit + count))
 					free++;	// this bit is clear (free frame)
 
 				if (free == size)
-					return i * 4 * 8 + j; //free count==size needed; return index
+					return startingBit; //free count==size needed; return index
 			}
 		}
 	}
@@ -163,7 +163,7 @@ void	pmmngr_init (size_t memSize, physical_addr bitmap) {
 	_mmngr_used_blocks	=	pmmngr_get_block_count();	
 
 	//! By default, all of memory is in use
-	memset (_mmngr_memory_map, 0xff, pmmngr_get_block_count() / PMMNGR_BLOCKS_PER_BYTE );
+	memset ((char*)_mmngr_memory_map, 0xff, pmmngr_get_block_count() / PMMNGR_BLOCKS_PER_BYTE );
 
 }
 
@@ -224,19 +224,24 @@ void	pmmngr_free_block (void* p) {
 void*	pmmngr_alloc_blocks (size_t size) {
 
 	if (pmmngr_get_free_block_count() <= size)
+	{
+		DebugPrintf("\naaa");
 		return 0;	//not enough space
-
+	}
 	int frame = mmap_first_free_s (size);
 	
 	if (frame == -1)
+	{
+		DebugPrintf("\naaa");
 		return 0;	//not enough space
-
+	}
 	for (uint32_t i=0; i<size; i++)
 		mmap_set (frame+i);
 
 	physical_addr addr = frame * PMMNGR_BLOCK_SIZE;
 	_mmngr_used_blocks+=size;
 
+	//DebugPrintf("\nAllocated Physical Block %d", addr);
 	return (void*)addr;
 }
 
@@ -244,6 +249,8 @@ void	pmmngr_free_blocks (void* p, size_t size) {
 
 	physical_addr addr = (physical_addr)p;
 	int frame = addr / PMMNGR_BLOCK_SIZE;
+
+	DebugPrintf("\nFree Physical Block %d", addr);
 
 	for (uint32_t i=0; i<size; i++)
 		mmap_unset (frame+i);

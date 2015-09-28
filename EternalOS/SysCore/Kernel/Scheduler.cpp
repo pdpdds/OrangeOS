@@ -21,7 +21,7 @@ Scheduler::~Scheduler()
 bool  Scheduler::DoSchedule(int tick)
 {
 
-	DebugPrintf("\nScheduler");
+	//DebugPrintf("\nScheduler");
 	
 	return true;
 }

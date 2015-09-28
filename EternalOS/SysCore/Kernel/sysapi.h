@@ -4,13 +4,16 @@
 #include "mmngr_virtual.h"
 #include "task.h"
 
-#define MAX_SYSCALL 2
+#define MAX_SYSCALL 6
 
 static void* _syscalls[] = {
 
 	DebugPrintf,
 	TerminateProcess,
-	TerminateMemoryProcess
+	MemoryAlloc,
+	MemoryFree,
+	CreateDefaultHeap,
+	GetSysytemTickCount
 };
 
 _declspec(naked)

@@ -16,6 +16,7 @@ public:
 	UINT32 dwRunState;
 	UINT32 dwPriority;
 	UINT32 dwWaitingTime;
+	UINT32 dwPageCount;
 
 	pdirectory* pPageDirectory;
 	TaskStateSegment* pTSS;

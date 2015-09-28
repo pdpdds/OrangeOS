@@ -56,6 +56,7 @@ int List_Add(LPLISTNODE * Root, LPCTSTR szKey, void * ptrData)
     }
     //NEW NODE CREATION AND ASSIGNING VALUES
     //ALLOC_AND_CHECK(NewNode, LPLISTNODE, sizeof(LISTNODE), 2)
+	NewNode = new LISTNODE();
     NewNode->Next=NULL;
     NewNode->ptrData=ptrData;
    // DEBUG_PRINT_OBJECT1("New node created at %X", NewNode );
