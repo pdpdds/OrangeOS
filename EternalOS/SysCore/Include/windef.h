@@ -69,7 +69,7 @@
   typedef long               ISIZE;
   typedef unsigned long      LSIZE;
   typedef unsigned long      USIZE;
-
+  typedef bool BOOL;
 
   /* 32 bit data types*/
   typedef long INT32;
@@ -110,4 +110,6 @@
 
   typedef void(_cdecl *I86_IRQ_HANDLER)(void);
 
+#define ENTER_CRITICAL_SECTION()	__asm	PUSHFD	__asm CLI
+#define EXIT_CRITICAL_SECTION()		__asm	POPFD
 #endif /* COMMONVAR_H_ */

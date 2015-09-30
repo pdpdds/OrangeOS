@@ -3,6 +3,7 @@
 
 Process::Process()
 {
+	TaskID = -1;
 }
 
 

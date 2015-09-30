@@ -10,6 +10,8 @@ class Thread;
 
 #define PROC_INVALID_ID -1
 
+extern bool HalSetupTSS(TSS_32	*pTss32, bool IsKernelTSS, int	EntryPoint, int	*pStackBase, DWORD StackSize);
+
 class ProcessManager
 {
 public:
@@ -18,11 +20,14 @@ public:
 
 	int GetNextProcessId(){ return m_nextProcessId++; }
 
+	bool CreateSystemProcess();
+
 	Process* CreateMemoryProcess(void(*lpStartAddress)());
 	Process* CreateProcess(char* appname);
 
 	Thread* CreateThread(Process* pProcess, FILE* pFile);
 	Thread* CreateMemoryThread(Process* pProcess, void(*lpStartAddress)());
+	Process* SelectProcess();
 
 	bool ExecuteProcess(Process* pProces);
 
@@ -30,7 +35,6 @@ public:
 	int m_nextProcessId;
 
 	Process* g_pCurProcess;
-	//Thread* g_pThread;
 
 	static ProcessManager* GetInstance()
 	{

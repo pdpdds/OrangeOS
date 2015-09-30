@@ -113,7 +113,7 @@ idt_descriptor* i86_get_ir (uint32_t i) {
 
 	return &_idt[i];
 }
-
+#include "../Kernel/DebugDisplay.h"
 
 //! installs a new interrupt handler
 int i86_install_ir (uint32_t i, uint16_t flags, uint16_t sel, I86_IRQ_HANDLER irq) {
@@ -127,12 +127,22 @@ int i86_install_ir (uint32_t i, uint16_t flags, uint16_t sel, I86_IRQ_HANDLER ir
 	//! get base address of interrupt handler
 	uint64_t		uiBase = (uint64_t)&(*irq);
 
-	//! store base address into idt
-	_idt[i].baseLo		=	uint16_t(uiBase & 0xffff);
-	_idt[i].baseHi		=	uint16_t((uiBase >> 16) & 0xffff);
-	_idt[i].reserved	=	0;
-	_idt[i].flags		=	uint8_t(flags);
-	_idt[i].sel			=	sel;
+	//memset((void*)&_idt[i], 0, sizeof(idt_descriptor));
+
+	if ((flags & 0x0500) == 0x0500) {
+		_idt[i].sel = sel;
+		_idt[i].flags = uint8_t(flags);
+		DebugPrintf("\nbbbb");
+	}
+	else
+	{
+		//! store base address into idt
+		_idt[i].baseLo = uint16_t(uiBase & 0xffff);
+		_idt[i].baseHi = uint16_t((uiBase >> 16) & 0xffff);
+		_idt[i].reserved = 0;
+		_idt[i].flags = uint8_t(flags);
+		_idt[i].sel = sel;
+	}
 
 	return	0;
 }

@@ -14,7 +14,8 @@
 
 #include "gdt.h"
 #include <string.h>
-
+#include "windef.h"
+#include "../kernel/task.h"
 //============================================================================
 //    IMPLEMENTATION PRIVATE DEFINITIONS / ENUMERATIONS / SIMPLE TYPEDEFS
 //============================================================================
@@ -82,6 +83,42 @@ static void gdt_install () {
 //    INTERFACE FUNCTIONS
 //============================================================================
 
+VOID HalChangeTssBusyBit(WORD TssSeg, BOOL SetBit)
+{
+	ENTER_CRITICAL_SECTION();
+	if (SetBit) {
+		_gdt[TssSeg >> 3].flags |= 0x02;
+	}
+	else {
+		_gdt[TssSeg >> 3].flags &= 0xfd;
+	}
+	EXIT_CRITICAL_SECTION();
+}
+BOOL HalSetupTaskLink(TSS_32 *pTss32, WORD TaskLink)
+{
+	ENTER_CRITICAL_SECTION();
+	pTss32->eflags |= 0x4000;
+	pTss32->prev_task_link = TaskLink;
+	EXIT_CRITICAL_SECTION();
+
+	return TRUE;
+}
+
+BOOL HalWriteTssIntoGdt(TSS_32 *pTss32, DWORD TssSize, DWORD TssNumber, BOOL SetBusy)
+{
+	/* todo : support TssSize parameter */
+	ENTER_CRITICAL_SECTION();
+	memset((void*)&_gdt[TssNumber >> 3], 0, sizeof(gdt_descriptor));
+	_gdt[TssNumber >> 3].limit = (BYTE)(TssSize & 0x0000ffff);
+	_gdt[TssNumber >> 3].grand = (BYTE)((TssSize & 0x000f0000) >> 16);
+	_gdt[TssNumber >> 3].baseLo = (BYTE)(((int)pTss32) & 0x0000ffff);
+	_gdt[TssNumber >> 3].baseMid = (BYTE)((((int)pTss32) & 0x00ff0000) >> 16);
+	_gdt[TssNumber >> 3].baseHi = (BYTE)((((int)pTss32) & 0xff000000) >> 24);
+	_gdt[TssNumber >> 3].flags = (SetBusy ? 0x8b : 0x89);
+	EXIT_CRITICAL_SECTION();
+
+	return TRUE;
+}
 
 //! Setup a descriptor in the Global Descriptor Table
 void gdt_set_descriptor(uint32_t i, uint64_t base, uint64_t limit, uint8_t access, uint8_t grand)

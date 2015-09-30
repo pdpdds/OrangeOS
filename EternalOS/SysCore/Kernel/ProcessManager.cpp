@@ -10,13 +10,12 @@ ProcessManager* ProcessManager::m_pProcessManager = 0;
 ProcessManager::ProcessManager()
 {
 	m_nextProcessId = 1;
+	g_pCurProcess = 0;
 }
-
 
 ProcessManager::~ProcessManager()
 {
 }
-
 
 Process* ProcessManager::CreateMemoryProcess(void(*lpStartAddress)())
 {
@@ -25,48 +24,16 @@ Process* ProcessManager::CreateMemoryProcess(void(*lpStartAddress)())
 	pProcess->pPageDirectory = vmmngr_createAddressSpace();
 	mapKernelSpace(pProcess->pPageDirectory);
 
-	//pProcess->pPageDirectory = vmmngr_get_directory();
-
 	pProcess->dwPriority = 1;
 	pProcess->dwRunState = PROCESS_STATE_ACTIVE;
 	
 	Thread* pThread = CreateMemoryThread(pProcess, lpStartAddress);
-	//List_Add(&pProcess->pThreadQueue, "", pThread);
-	
+	List_Add(&pProcess->pThreadQueue, "", pThread);
 	//List_Add(&pProcessQueue, "", pProcess);
 
 	DebugPrintf("\nCreate Success Memory Task");
-	
-	int entryPoint = 0;
-	unsigned int procStack = 0;
 
-	/* get esp and eip of main thread */
-	entryPoint = pThread->frame.eip;
-	procStack = pThread->frame.esp;
-
-	/* switch to process address space */
-	__asm cli
-	pmmngr_load_PDBR((physical_addr)pProcess->pPageDirectory);
-
-	/* execute process in user mode */
-	__asm {
-		mov     ax, 0x10; user mode data selector is 0x20 (GDT entry 3).Also sets RPL to 3
-			mov     ds, ax
-			mov     es, ax
-			mov     fs, ax
-			mov     gs, ax
-			;
-		; create stack frame
-			;
-		push   0x10; SS, notice it uses same selector as above
-			push[procStack]; stack
-			push    0x200; EFLAGS
-			push    0x08; CS, user mode code selector is 0x18.With RPL 3 this is 0x1b
-			push[entryPoint]; EIP
-			iretd
-	}
-
-	return 0;
+	return pProcess;
 }
 
 #include "task.h"
@@ -236,6 +203,15 @@ Process* ProcessManager::CreateProcess(char* appname)
 	return pProcess;
 }
 
+Process* ProcessManager::SelectProcess()
+{
+
+	//if(g_pCurProcess)
+		//DebugPrintf("\naaaaaa");
+
+	return 0;
+}
+
 bool ProcessManager::ExecuteProcess(Process* pProcess)
 {
 	if (pProcess == 0)
@@ -260,29 +236,87 @@ bool ProcessManager::ExecuteProcess(Process* pProcess)
 	DebugPrintf("\neip : %x", pThread->frame.eip);
 	DebugPrintf("\npage directory : %x", pProcess->pPageDirectory);
 
-	List_Add(&ProcessManager::GetInstance()->pProcessQueue, "", pProcess);
-
+	//__asm cli
+	//List_Add(&ProcessManager::GetInstance()->pProcessQueue, "aaaaa", pProcess);
 	ProcessManager::GetInstance()->g_pCurProcess = pProcess;
+	//pmmngr_load_PDBR((physical_addr)pProcess->pPageDirectory);
+	//__asm sti
 
-	/* switch to process address space */
-	__asm cli
-	pmmngr_load_PDBR((physical_addr)pProcess->pPageDirectory);
+	return true;
+}
+#include "../Include/Hal.h"
+void StartRoutine()
+{
+	while (1) {
+		_asm cli
 
-	/* execute process in user mode */
-	__asm {
-		mov     ax, 0x23; user mode data selector is 0x20 (GDT entry 3).Also sets RPL to 3
-			mov     ds, ax
-			mov     es, ax
-			mov     fs, ax
-			mov     gs, ax
-			;
-		; create stack frame
-			;
-		push   0x23; SS, notice it uses same selector as above
-			push[procStack]; stack
-			push    0x200; EFLAGS
-			push    0x1b; CS, user mode code selector is 0x18.With RPL 3 this is 0x1b
-			push[entryPoint]; EIP
-			iretd
+		char* str = "\n\rHello world2!";
+
+		DebugPrintf("\n%s", str);
+		//PspSetupTaskSWEnv(); /* task-switching */
+		outportb(0x20, 0x20); /* send EOI */
+
+		_asm iretd
 	}
+	
+
+	for (;;);
+}
+
+void Idle()
+{
+	
+
+
+	for (;;);
+}
+
+void Idle2()
+{
+
+
+
+	for (;;);
+}
+
+extern BOOL HalWriteTssIntoGdt(TSS_32 *pTss32, DWORD TssSize, DWORD TssNumber, BOOL SetBusy);
+extern BOOL HalSetupTaskLink(TSS_32 *pTss32, WORD TaskLink);
+extern void install_tss(int startRoutine, uint32_t idx, uint16_t kernelSS, uint16_t kernelESP);
+bool ProcessManager::CreateSystemProcess()
+{
+	Process* pProcess = new Process();
+	pProcess->TaskID = 1;
+	pProcess->pPageDirectory = vmmngr_createAddressSpace();
+	mapKernelSpace(pProcess->pPageDirectory);
+
+	pProcess->dwPriority = 1;
+	pProcess->dwRunState = PROCESS_STATE_ACTIVE;
+
+	Thread* pThread = CreateMemoryThread(pProcess, StartRoutine);
+
+	//install_tss((int)StartRoutine, 5, 0x10, 0x9000);
+	TSS_32* pTSSa = (TSS_32*)pmmngr_alloc_block();
+	memset(pTSSa, 0, sizeof(TSS_32));
+	HalSetupTSS(pTSSa, TRUE, (int)Idle2, (int*)pThread->frame.esp, (DWORD)pThread->stackLimit);
+	HalSetupTaskLink(pTSSa, 0x28);
+	HalWriteTssIntoGdt(pTSSa, sizeof(TSS_32), 0x30, FALSE);
+	_asm {
+		push	ax
+			mov		ax, 0x30
+			ltr		ax
+			pop		ax
+	}
+
+	TSS_32* pTSS = (TSS_32*)pmmngr_alloc_block();
+	memset(pTSS, 0, sizeof(TSS_32));
+	HalSetupTSS(pTSS, TRUE, (int)Idle, (int*)pThread->frame.esp, (DWORD)pThread->stackLimit);
+	HalWriteTssIntoGdt(pTSS, sizeof(TSS_32), 0x28, TRUE);
+	
+
+	List_Add(&pProcess->pThreadQueue, "", pThread);
+	//List_Add(&pProcessQueue, "", pProcess);
+
+	DebugPrintf("\nCreate Success System Process");
+
+	return pProcess;
 }

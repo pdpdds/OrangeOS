@@ -41,7 +41,9 @@ Several chapters may need to be updated, please be patient. :-)
 #include "task.h"
 #include "kheap.h"
 #include "HardDisk.h"
-
+#include "Thread.h"
+#include "Process.h"
+#include "ProcessManager.h"
 /**
 *	Memory region
 */
@@ -98,6 +100,78 @@ extern void syscall_init ();
 
 void CreateKernelHeap(int kernelSize);
 
+
+extern VOID HalChangeTssBusyBit(WORD TssSeg, BOOL SetBit);
+
+BOOL HalSetupTaskSwitchingEnv(TSS_32 *pTss32)
+{
+	int stack;
+
+	ENTER_CRITICAL_SECTION();
+	stack = pTss32->esp;
+	stack -= sizeof(int);
+	*((int *)stack) = pTss32->eflags;
+	stack -= sizeof(int);
+	*((int *)stack) = pTss32->cs;
+	stack -= sizeof(int);
+	*((int *)stack) = pTss32->eip;
+	pTss32->esp = stack;
+	EXIT_CRITICAL_SECTION();
+
+	HalChangeTssBusyBit(TASK_SW_SEG, TRUE);
+
+	return TRUE;
+}
+
+bool HalSetupTSS(TSS_32	*pTss32, bool IsKernelTSS, int	EntryPoint, int	*pStackBase, DWORD StackSize)
+{
+	DWORD dwEFLAGS = 0;
+	int stack = (int)pStackBase + StackSize - 1;
+
+	memset(pTss32, NULL, sizeof(TSS_32));
+
+	_asm {
+		push		eax
+
+			pushfd
+			pop			eax
+			or			ah, 02h; IF
+			mov			dwEFLAGS, eax
+
+			pop			eax
+
+	}
+	
+	
+	if (IsKernelTSS) {
+		pTss32->cs = 0x08;
+		pTss32->ds = 0x10;
+		pTss32->ss = 0x10;
+	}
+	else {
+		pTss32->cs = USER_CS;
+		pTss32->ds = USER_DS;
+		pTss32->ss = USER_SS;
+	}
+	pTss32->es = pTss32->ds;
+	pTss32->fs = pTss32->ds;
+	pTss32->gs = pTss32->ds;
+
+	pTss32->eflags = dwEFLAGS;
+	pTss32->eip = EntryPoint;
+	pTss32->esp = (DWORD)pStackBase;
+
+	pTss32->ss0 = KERNEL_SS;
+	pTss32->esp0 = ((DWORD)(0x9000));
+
+	HalSetupTaskSwitchingEnv(pTss32);
+
+	return TRUE;
+}
+#define SYSTEM_TMR_INT_NUMBER	0x20
+#define SOFT_TASK_SW_INT_NUMBER	0x30
+extern int i86_install_ir(uint32_t i, uint16_t flags, uint16_t sel, I86_IRQ_HANDLER irq);
+#include "../hal/idt.h"
 /**
 *	Initialization
 */
@@ -133,8 +207,12 @@ void init (multiboot_info* bootinfo) {
 	setvect (18,(void (__cdecl &)(void))machine_check_abort);
 	setvect (19,(void (__cdecl &)(void))simd_fpu_fault);
 
-	pmmngr_init ((size_t) bootinfo->m_memorySize, 0xC0000000 + kernelSize*512);
 
+	//i86_install_ir(SYSTEM_TMR_INT_NUMBER, I86_IDT_DESC_PRESENT | I86_IDT_DESC_BIT32 | 0x0500, 0x8, (I86_IRQ_HANDLER)TMR_TSS_SEG);
+	i86_install_ir(SOFT_TASK_SW_INT_NUMBER, I86_IDT_DESC_PRESENT | I86_IDT_DESC_BIT32 | 0x0500, SOFT_TS_TSS_SEG, (I86_IRQ_HANDLER)SOFT_TS_TSS_SEG);
+
+	pmmngr_init ((size_t) bootinfo->m_memorySize, 0xC0000000 + kernelSize*512);
+	
 	memory_region*	region = (memory_region*)0x1000;
 
 	for (int i=0; i<10; ++i) {
@@ -172,8 +250,8 @@ void init (multiboot_info* bootinfo) {
 	syscall_init ();
 
 	//! initialize TSS
-	install_tss (5,0x10,0x9000);
-
+	//install_tss (5,0x10,0x9000);
+	
 	CreateKernelHeap(kernelSize);	
 
 	//for (int i = 1; i < 9; i++)
@@ -347,15 +425,76 @@ void cmd_alloc()
 #include "ProcessManager.h"
 #include "List.h"
 
-
-
+void SampleLoop2();
+int kkk = 0;
 void SampleLoop()
 {
 	char* str = "\n\rHello world2!";
 
+	int first = GetSysytemTickCount();
+	while (1)
+	{
+		static int count = 0;
+		int second = GetSysytemTickCount();
+		if (second - first > 100)
+		{
+			DebugPrintf("%s", str);
+
+			first = GetSysytemTickCount();
+			count++;
+		}
+		
+		if (count > 5)
+		{
+			kkk = 1;
+			/*int entryPoint = (int)SampleLoop2;
+			unsigned int procStack = 0;
+
+			__asm {
+				mov     ax, 0x10; user mode data selector is 0x20 (GDT entry 3).Also sets RPL to 3
+					mov     ds, ax
+					mov     es, ax
+					mov     fs, ax
+					mov     gs, ax
+					;
+				; create stack frame
+					;
+				push   0x10; SS, notice it uses same selector as above
+					push[procStack]; stack
+					push    0x200; EFLAGS
+					push    0x08; CS, user mode code selector is 0x18.With RPL 3 this is 0x1b
+					push[entryPoint]; EIP
+					iretd
+			}*/
+		}
+
+	}
+
 	//Process* pProcess = (Process*)List_GetData(manager.pProcessQueue, "", 0);
 
-	TerminateMemoryProcess();
+	//TerminateMemoryProcess();
+
+	for (;;);
+}
+
+void SampleLoop2()
+{
+	char* str = "\n\rHello world3!";
+
+	int first = GetSysytemTickCount();
+	while (1)
+	{
+
+		int second = GetSysytemTickCount();
+		if (second - first > 100)
+		{
+			DebugPrintf("%s", str);
+
+			first = GetSysytemTickCount();
+		}
+		
+
+	}
 
 	for (;;);
 }
@@ -363,7 +502,44 @@ void SampleLoop()
 void cmd_memtask()
 {
 	
-	ProcessManager::GetInstance()->CreateMemoryProcess(SampleLoop);
+
+	Process* pProcess = ProcessManager::GetInstance()->CreateMemoryProcess(SampleLoop);
+
+	if (pProcess)
+	{
+
+		int entryPoint = 0;
+		unsigned int procStack = 0;
+		Thread* pThread = (Thread*)List_GetData(pProcess->pThreadQueue, "", 0);
+
+		/* get esp and eip of main thread */
+		entryPoint = pThread->frame.eip;
+		procStack = pThread->frame.esp;
+
+		/* switch to process address space */
+		__asm cli
+		pmmngr_load_PDBR((physical_addr)pProcess->pPageDirectory);
+
+		/* execute process in user mode */
+		__asm {
+			mov     ax, 0x10; user mode data selector is 0x20 (GDT entry 3).Also sets RPL to 3
+				mov     ds, ax
+				mov     es, ax
+				mov     fs, ax
+				mov     gs, ax
+				;
+			; create stack frame
+				;
+			push   0x10; SS, notice it uses same selector as above
+				push[procStack]; stack
+				push    0x200; EFLAGS
+				push    0x08; CS, user mode code selector is 0x18.With RPL 3 this is 0x1b
+				push[entryPoint]; EIP
+				iretd
+		}
+	}
+
+	ProcessManager::GetInstance()->CreateMemoryProcess(SampleLoop2);
 	
 }
 
@@ -563,6 +739,23 @@ int _cdecl kmain (multiboot_info* bootinfo) {
 
 	DebugPrintf("\nHardDisk Count %d", (int)num);
 	*/
+
+	ProcessManager::GetInstance()->CreateSystemProcess();
+
+	_asm {
+		push	eax
+
+		pushfd
+		pop		eax
+		or		ah, 40h ; nested
+		push	eax
+		popfd
+
+		pop		eax
+		iretd
+	}
+
+
 	run ();
 
 	DebugPrintf ("\nExit command recieved; demo halted");

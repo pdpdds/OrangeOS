@@ -68,7 +68,7 @@ void tss_set_stack (uint16_t kernelSS, uint16_t kernelESP) {
 	TSS.esp0 = kernelESP;
 }
 
-void install_tss (uint32_t idx, uint16_t kernelSS, uint16_t kernelESP) {
+void install_tss (int startRoutine, uint32_t idx, uint16_t kernelSS, uint16_t kernelESP) {
 
 	//! install TSS descriptor
 	uint32_t base = (uint32_t) &TSS;
@@ -90,6 +90,7 @@ void install_tss (uint32_t idx, uint16_t kernelSS, uint16_t kernelESP) {
 	TSS.ds = 0x13;
 	TSS.fs = 0x13;
 	TSS.gs = 0x13;
+	TSS.eip = startRoutine;
 
 	//! flush tss
 	flush_tss (idx * sizeof (gdt_descriptor));
