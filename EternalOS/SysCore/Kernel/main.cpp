@@ -209,7 +209,7 @@ void init (multiboot_info* bootinfo) {
 
 
 	//i86_install_ir(SYSTEM_TMR_INT_NUMBER, I86_IDT_DESC_PRESENT | I86_IDT_DESC_BIT32 | 0x0500, 0x8, (I86_IRQ_HANDLER)TMR_TSS_SEG);
-	i86_install_ir(SOFT_TASK_SW_INT_NUMBER, I86_IDT_DESC_PRESENT | I86_IDT_DESC_BIT32 | 0x0500, SOFT_TS_TSS_SEG, (I86_IRQ_HANDLER)SOFT_TS_TSS_SEG);
+	//i86_install_ir(SOFT_TASK_SW_INT_NUMBER, I86_IDT_DESC_PRESENT | I86_IDT_DESC_BIT32 | 0x0500, SOFT_TS_TSS_SEG, (I86_IRQ_HANDLER)SOFT_TS_TSS_SEG);
 
 	pmmngr_init ((size_t) bootinfo->m_memorySize, 0xC0000000 + kernelSize*512);
 	
@@ -225,7 +225,7 @@ void init (multiboot_info* bootinfo) {
 
 		pmmngr_init_region (region[i].startLo, region[i].sizeLo);
 	}
-	pmmngr_deinit_region (0x100000, kernelSize*512 + 4096*1024);
+	pmmngr_deinit_region(0x100000, kernelSize * 512 + 4096 * 1024 + 4096 * 1024);
 	/*
 		kernel stack location
 	*/
@@ -250,7 +250,7 @@ void init (multiboot_info* bootinfo) {
 	syscall_init ();
 
 	//! initialize TSS
-	//install_tss (5,0x10,0x9000);
+	install_tss (5,0x10,0x9000);
 	
 	CreateKernelHeap(kernelSize);	
 
@@ -740,21 +740,7 @@ int _cdecl kmain (multiboot_info* bootinfo) {
 	DebugPrintf("\nHardDisk Count %d", (int)num);
 	*/
 
-	ProcessManager::GetInstance()->CreateSystemProcess();
-
-	_asm {
-		push	eax
-
-		pushfd
-		pop		eax
-		or		ah, 40h ; nested
-		push	eax
-		popfd
-
-		pop		eax
-		iretd
-	}
-
+	//ProcessManager::GetInstance()->CreateSystemProcess();
 
 	run ();
 

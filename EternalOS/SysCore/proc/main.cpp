@@ -100,7 +100,7 @@ void processEntry () {
 	char* a = new char[100];
 	strcpy(a, "\nProcess2 Reply.");
 
-	int first = GetSysytemTickCount();
+	/*int first = GetSysytemTickCount();
 	while (1)
 	{
 		
@@ -117,7 +117,7 @@ void processEntry () {
 			first = GetSysytemTickCount();
 		}
 
-	}
+	}*/
 
 	__asm {
 

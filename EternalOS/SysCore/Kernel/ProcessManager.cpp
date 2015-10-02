@@ -239,8 +239,26 @@ bool ProcessManager::ExecuteProcess(Process* pProcess)
 	//__asm cli
 	//List_Add(&ProcessManager::GetInstance()->pProcessQueue, "aaaaa", pProcess);
 	ProcessManager::GetInstance()->g_pCurProcess = pProcess;
-	//pmmngr_load_PDBR((physical_addr)pProcess->pPageDirectory);
-	//__asm sti
+	__asm cli
+	pmmngr_load_PDBR((physical_addr)pProcess->pPageDirectory);
+
+	/* execute process in user mode */
+	__asm {
+		mov     ax, 0x23; user mode data selector is 0x20 (GDT entry 3).Also sets RPL to 3
+			mov     ds, ax
+			mov     es, ax
+			mov     fs, ax
+			mov     gs, ax
+			;
+		; create stack frame
+			;
+		push   0x23; SS, notice it uses same selector as above
+			push[procStack]; stack
+			push    0x200; EFLAGS
+			push    0x1b; CS, user mode code selector is 0x18.With RPL 3 this is 0x1b
+			push[entryPoint]; EIP
+			iretd
+	}
 
 	return true;
 }

@@ -12,6 +12,8 @@ public:
 	Process();
 	virtual ~Process();
 
+	void SetPDBR();
+
 	UINT32 TaskID;
 	UINT32 dwRunState;
 	UINT32 dwPriority;
