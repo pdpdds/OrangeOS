@@ -208,7 +208,7 @@ void init (multiboot_info* bootinfo) {
 	setvect (19,(void (__cdecl &)(void))simd_fpu_fault);
 
 
-	//i86_install_ir(SYSTEM_TMR_INT_NUMBER, I86_IDT_DESC_PRESENT | I86_IDT_DESC_BIT32 | 0x0500, 0x8, (I86_IRQ_HANDLER)TMR_TSS_SEG);
+	i86_install_ir(SYSTEM_TMR_INT_NUMBER, I86_IDT_DESC_PRESENT | I86_IDT_DESC_BIT32 | 0x0500, 0x8, (I86_IRQ_HANDLER)TMR_TSS_SEG);
 	//i86_install_ir(SOFT_TASK_SW_INT_NUMBER, I86_IDT_DESC_PRESENT | I86_IDT_DESC_BIT32 | 0x0500, SOFT_TS_TSS_SEG, (I86_IRQ_HANDLER)SOFT_TS_TSS_SEG);
 
 	pmmngr_init ((size_t) bootinfo->m_memorySize, 0xC0000000 + kernelSize*512);
@@ -636,11 +636,10 @@ void cmd_proc () {
 	DebugPrintf ("\n\rProgram file: ");
 	get_cmd (name,32);
 
-	Process* pProcess = ProcessManager::GetInstance()->CreateProcess(name);
+	Process* pProcess = ProcessManager::GetInstance()->CreateProcess(name, PROCESS_USER);
 	if (pProcess == 0)
 	{
-		DebugPrintf("\n\rError creating process");
-		run();
+		DebugPrintf("\n\rError creating process");		
 	}
 	else		
 		ProcessManager::GetInstance()->ExecuteProcess(pProcess);
@@ -721,7 +720,7 @@ void run () {
 			break;
 	}
 }
-
+int systemOn = 0;
 int _cdecl kmain (multiboot_info* bootinfo) {
 
 	_asm	mov	word ptr [kernelSize], dx
@@ -740,9 +739,30 @@ int _cdecl kmain (multiboot_info* bootinfo) {
 	DebugPrintf("\nHardDisk Count %d", (int)num);
 	*/
 
-	//ProcessManager::GetInstance()->CreateSystemProcess();
+	Process* pProcess = ProcessManager::GetInstance()->CreateSystemProcess();	
+	ProcessManager::GetInstance()->g_pCurProcess = pProcess;
+	systemOn = 1;
 
-	run ();
+	Thread* pThread = (Thread*)List_GetData(pProcess->pThreadQueue, "", 0);
+	int entryPoint = (int)pThread->frame.eip;
+	unsigned int procStack =  pThread->frame.esp;
+
+	__asm {
+		mov     ax, 0x10;
+			mov     ds, ax
+			mov     es, ax
+			mov     fs, ax
+			mov     gs, ax
+			;
+		; create stack frame
+			;
+		push   0x10;
+			push[procStack]; stack
+			push    0x200; EFLAGS
+			push    0x08;
+			push[entryPoint]; EIP
+			iretd
+	}
 
 	DebugPrintf ("\nExit command recieved; demo halted");
 	_asm mov eax, 0xa0b0c0d0

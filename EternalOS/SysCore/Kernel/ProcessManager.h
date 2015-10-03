@@ -19,15 +19,14 @@ public:
 	virtual ~ProcessManager();
 
 	int GetNextProcessId(){ return m_nextProcessId++; }
-
-	bool CreateSystemProcess();
+	Process* CreateSystemProcess();
+	Process* CreateProcess(char* appname, UINT32 processType);		
 
 	Process* CreateMemoryProcess(void(*lpStartAddress)());
-	Process* CreateProcess(char* appname);
+	
 
 	Thread* CreateThread(Process* pProcess, FILE* pFile);
-	Thread* CreateMemoryThread(Process* pProcess, void(*lpStartAddress)());
-	Process* SelectProcess();
+	Thread* CreateMemoryThread(Process* pProcess, void(*lpStartAddress)());	
 
 	bool ExecuteProcess(Process* pProces);
 

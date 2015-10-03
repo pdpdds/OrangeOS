@@ -1,14 +1,3 @@
-/******************************************************************************
-   main.cpp
-		-Process
-
-   modified\ Oct 10 2010
-   arthor\ Mike
-******************************************************************************/
-
-/**
-* Process entry point
-*/
 typedef int uint32_t;
 uint32_t GetSysytemTickCount()
 {
@@ -100,7 +89,15 @@ void processEntry () {
 	char* a = new char[100];
 	strcpy(a, "\nProcess2 Reply.");
 
-	/*int first = GetSysytemTickCount();
+	__asm {
+
+		/* display message through kernel terminal */
+		mov ebx, a
+			mov eax, 0
+			int 0x80
+	}
+
+	int first = GetSysytemTickCount();
 	while (1)
 	{
 		
@@ -117,15 +114,9 @@ void processEntry () {
 			first = GetSysytemTickCount();
 		}
 
-	}*/
-
-	__asm {
-
-		/* display message through kernel terminal */
-		mov ebx, a
-			mov eax, 0
-			int 0x80
 	}
+
+	
 
 	delete a;
 

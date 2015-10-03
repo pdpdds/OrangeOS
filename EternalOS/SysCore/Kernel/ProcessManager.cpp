@@ -165,7 +165,7 @@ Thread* ProcessManager::CreateMemoryThread(Process* pProcess, void(*lpStartAddre
 	
 }
 
-Process* ProcessManager::CreateProcess(char* appname)
+Process* ProcessManager::CreateProcess(char* appname, UINT32 processType)
 {
 	FILE file;
 
@@ -193,29 +193,21 @@ Process* ProcessManager::CreateProcess(char* appname)
 	pProcess->dwPriority = 1;
 	pProcess->dwRunState = PROCESS_STATE_ACTIVE;
 
-	Thread* pThread = CreateThread(pProcess, &file);
-
-	List_Add(&pProcess->pThreadQueue, "", pThread);	
-
-	//ProcessManager::GetInstance()->g_pProcess = pProcess;
-	//ProcessManager::GetInstance()->g_pThread = pThread;
-
+	Thread* pThread = CreateThread(pProcess, &file);	
+	List_Add(&pProcess->pThreadQueue, "", pThread);
+	
 	return pProcess;
 }
 
-Process* ProcessManager::SelectProcess()
-{
-
-	//if(g_pCurProcess)
-		//DebugPrintf("\naaaaaa");
-
-	return 0;
-}
-
+#include "Process.h"
+Process* pTest = 0;
 bool ProcessManager::ExecuteProcess(Process* pProcess)
 {
+	//pTest = ProcessManager::CreateProcess("proc.exe");
+
+
 	if (pProcess == 0)
-		return false;
+		return false;	
 
 	int entryPoint = 0;
 	unsigned int procStack = 0;
@@ -227,22 +219,20 @@ bool ProcessManager::ExecuteProcess(Process* pProcess)
 		return false;
 
 	Thread* pThread = (Thread*)List_GetData(pProcess->pThreadQueue, "", 0);
-	//Thread* pThread = ProcessManager::GetInstance()->g_pThread;
-
+	
 	/* get esp and eip of main thread */
 	entryPoint = pThread->frame.eip;
 	procStack = pThread->frame.esp;
 
 	DebugPrintf("\neip : %x", pThread->frame.eip);
 	DebugPrintf("\npage directory : %x", pProcess->pPageDirectory);
-
-	//__asm cli
-	//List_Add(&ProcessManager::GetInstance()->pProcessQueue, "aaaaa", pProcess);
-	ProcessManager::GetInstance()->g_pCurProcess = pProcess;
+	
 	__asm cli
-	pmmngr_load_PDBR((physical_addr)pProcess->pPageDirectory);
-
-	/* execute process in user mode */
+	ProcessManager::GetInstance()->g_pCurProcess = pProcess;
+	List_Add(&pProcessQueue, "", pProcess);
+	__asm sti
+	pmmngr_load_PDBR((physical_addr)pProcess->pPageDirectory);	
+	
 	__asm {
 		mov     ax, 0x23; user mode data selector is 0x20 (GDT entry 3).Also sets RPL to 3
 			mov     ds, ax
@@ -263,76 +253,32 @@ bool ProcessManager::ExecuteProcess(Process* pProcess)
 	return true;
 }
 #include "../Include/Hal.h"
+extern void run();
 void StartRoutine()
 {
 	while (1) {
-		_asm cli
-
-		char* str = "\n\rHello world2!";
-
-		DebugPrintf("\n%s", str);
-		//PspSetupTaskSWEnv(); /* task-switching */
-		outportb(0x20, 0x20); /* send EOI */
-
-		_asm iretd
+		run();
 	}
 	
 
 	for (;;);
 }
 
-void Idle()
-{
-	
-
-
-	for (;;);
-}
-
-void Idle2()
-{
-
-
-
-	for (;;);
-}
-
-extern BOOL HalWriteTssIntoGdt(TSS_32 *pTss32, DWORD TssSize, DWORD TssNumber, BOOL SetBusy);
-extern BOOL HalSetupTaskLink(TSS_32 *pTss32, WORD TaskLink);
-extern void install_tss(int startRoutine, uint32_t idx, uint16_t kernelSS, uint16_t kernelESP);
-bool ProcessManager::CreateSystemProcess()
+Process* ProcessManager::CreateSystemProcess()
 {
 	Process* pProcess = new Process();
-	pProcess->TaskID = 1;
-	pProcess->pPageDirectory = vmmngr_createAddressSpace();
+	pProcess->TaskID = ProcessManager::GetInstance()->GetNextProcessId();
+	pProcess->pPageDirectory = vmmngr_get_directory();
+	pProcess->dwProcessType = PROCESS_KERNEL;
 	mapKernelSpace(pProcess->pPageDirectory);
 
 	pProcess->dwPriority = 1;
 	pProcess->dwRunState = PROCESS_STATE_ACTIVE;
 
 	Thread* pThread = CreateMemoryThread(pProcess, StartRoutine);
-
-	//install_tss((int)StartRoutine, 5, 0x10, 0x9000);
-	TSS_32* pTSSa = (TSS_32*)pmmngr_alloc_block();
-	memset(pTSSa, 0, sizeof(TSS_32));
-	HalSetupTSS(pTSSa, TRUE, (int)Idle2, (int*)pThread->frame.esp, (DWORD)pThread->stackLimit);
-	HalSetupTaskLink(pTSSa, 0x28);
-	HalWriteTssIntoGdt(pTSSa, sizeof(TSS_32), 0x30, FALSE);
-	_asm {
-		push	ax
-			mov		ax, 0x30
-			ltr		ax
-			pop		ax
-	}
-
-	TSS_32* pTSS = (TSS_32*)pmmngr_alloc_block();
-	memset(pTSS, 0, sizeof(TSS_32));
-	HalSetupTSS(pTSS, TRUE, (int)Idle, (int*)pThread->frame.esp, (DWORD)pThread->stackLimit);
-	HalWriteTssIntoGdt(pTSS, sizeof(TSS_32), 0x28, TRUE);
 	
-
 	List_Add(&pProcess->pThreadQueue, "", pThread);
-	//List_Add(&pProcessQueue, "", pProcess);
+	List_Add(&pProcessQueue, "", pProcess);
 
 	DebugPrintf("\nCreate Success System Process");
 

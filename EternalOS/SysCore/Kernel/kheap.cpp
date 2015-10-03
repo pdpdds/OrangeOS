@@ -24,6 +24,9 @@ u32int kmalloc_int(u32int sz, int align, u32int *phys)
         {
 			phys = (u32int*)vmmngr_getPhysicalAddress(_cur_directory, (uint32_t)addr);
         }
+
+
+
         return (u32int)addr;
    
 

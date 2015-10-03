@@ -5,6 +5,8 @@
 #include "kheap.h"
 #include "List.h"
 
+#define PROCESS_USER 0
+#define PROCESS_KERNEL 1
 
 class Process
 {
@@ -19,6 +21,8 @@ public:
 	UINT32 dwPriority;
 	UINT32 dwWaitingTime;
 	UINT32 dwPageCount;
+	UINT32 dwProcessType;
+	UINT32 dwTickCount;
 
 	pdirectory* pPageDirectory;
 	TaskStateSegment* pTSS;

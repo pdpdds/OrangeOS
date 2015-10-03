@@ -76,5 +76,15 @@ public:
 	trapFrame frame;
 	uint32_t  imageBase;
 	uint32_t  imageSize;
+
+	uint16_t curgs;
+	uint16_t curfs;
+	uint16_t curEs;
+	uint16_t curds;
+
+	uint32_t curEip;
+	uint32_t curCS;
+	uint32_t curFlags;
+	uint32_t curESP;
 };
 

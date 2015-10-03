@@ -15,7 +15,7 @@
 #include <hal.h>
 #include "windef.h"
 
-extern void SwitchTask(int tick);
+extern void SwitchTask(int tick, uint32_t registers);
 
 //============================================================================
 //    IMPLEMENTATION PRIVATE DEFINITIONS / ENUMERATIONS / SIMPLE TYPEDEFS
@@ -66,21 +66,26 @@ UINT GetTickCount()
 {
 	return _pit_ticks;
 }
+uint32_t registersa = 0;
 //!	pit timer interrupt handler
 void _cdecl i86_pit_irq () {
 
+	
+	//_asm mov registersa, esp
 	_asm add esp, 12
-	_asm pushad
-
+	//_asm pushfd
+	_asm pushad		
+	
 	//! increment tick count
 	_pit_ticks++;
 
-	SwitchTask(_pit_ticks);
+	SwitchTask(_pit_ticks, 0x9000);
 
 	//! tell hal we are done
 	interruptdone(0);
 
 	_asm popad
+	//_asm popfd	
 	_asm iretd
 }
 

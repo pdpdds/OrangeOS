@@ -1,6 +1,6 @@
 #pragma once
 #include "kheap.h"
-
+#include "stdint.h"
 class Scheduler
 {
 public:
@@ -12,7 +12,7 @@ public:
 		return m_pScheduler;
 	}
 
-	bool  DoSchedule(int tick);
+	bool  DoSchedule(int tick, uint32_t registers);
 
 private:
 	Scheduler();
