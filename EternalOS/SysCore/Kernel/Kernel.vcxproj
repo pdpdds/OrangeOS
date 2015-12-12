@@ -112,7 +112,6 @@
     <ClCompile Include="Process.cpp" />
     <ClCompile Include="ProcessManager.cpp" />
     <ClCompile Include="Scheduler.cpp" />
-    <ClCompile Include="sprintf.cpp" />
     <ClCompile Include="sysapi.cpp" />
     <ClCompile Include="task.cpp" />
     <ClCompile Include="Thread.cpp" />
@@ -143,9 +142,6 @@
     <ClInclude Include="vmmngr_pde.h" />
     <ClInclude Include="vmmngr_pte.h" />
     <ClInclude Include="ZetPlane.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="Resource.rc" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Hal\Hal.vcxproj">

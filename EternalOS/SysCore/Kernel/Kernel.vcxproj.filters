@@ -1,73 +1,180 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Init">
-      <UniqueIdentifier>{133342e2-89aa-43a0-bcb7-a8de80cb8046}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Debug">
       <UniqueIdentifier>{25e2a9be-e494-4dec-aee3-b7a6702feb14}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Disk">
+      <UniqueIdentifier>{7d6bbdcc-c8b4-40ec-a4b6-4268cb4f7ba2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Entry">
+      <UniqueIdentifier>{133342e2-89aa-43a0-bcb7-a8de80cb8046}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Memory">
+      <UniqueIdentifier>{5828146c-99f7-4f02-ae01-5ad07fb2f2fc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Process">
+      <UniqueIdentifier>{c7d12197-c56a-49ca-8ecd-14b4b8954a29}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DataStructure">
+      <UniqueIdentifier>{afa471a4-8079-45a2-8a89-461ca7b1b72a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Exception">
+      <UniqueIdentifier>{93d68fff-da36-42a3-99e9-4347c3870655}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="API">
+      <UniqueIdentifier>{5ac48f9a-efdf-441e-b5b3-f8c6b89e8e21}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Schedule">
+      <UniqueIdentifier>{3d4b430d-7adb-4436-bce7-7fbfb83ea52e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common">
+      <UniqueIdentifier>{b0860281-d2fc-450b-b440-a847ce86f47d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sample">
+      <UniqueIdentifier>{d4848986-69ed-4f04-b3e5-3b93f780cf52}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="entry.cpp">
-      <Filter>Init</Filter>
+      <Filter>Entry</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">
-      <Filter>Init</Filter>
+      <Filter>Entry</Filter>
     </ClCompile>
     <ClCompile Include="DebugDisplay.cpp">
       <Filter>Debug</Filter>
     </ClCompile>
-    <ClCompile Include="exception.cpp" />
-    <ClCompile Include="fsys.cpp" />
-    <ClCompile Include="mmngr_phys.cpp" />
-    <ClCompile Include="mmngr_virtual.cpp" />
-    <ClCompile Include="panic.cpp" />
-    <ClCompile Include="sysapi.cpp" />
-    <ClCompile Include="task.cpp" />
-    <ClCompile Include="vmmngr_pde.cpp" />
-    <ClCompile Include="vmmngr_pte.cpp" />
-    <ClCompile Include="fat12.cpp" />
-    <ClCompile Include="flpydsk.cpp" />
-    <ClCompile Include="kheap.cpp" />
-    <ClCompile Include="ordered_array.cpp" />
-    <ClCompile Include="Plane.cpp" />
-    <ClCompile Include="ZetPlane.cpp" />
-    <ClCompile Include="ProcessManager.cpp" />
-    <ClCompile Include="List.cpp" />
-    <ClCompile Include="sprintf.cpp" />
-    <ClCompile Include="Scheduler.cpp" />
-    <ClCompile Include="Process.cpp" />
-    <ClCompile Include="Thread.cpp" />
-    <ClCompile Include="Harddisk.cpp" />
+    <ClCompile Include="Harddisk.cpp">
+      <Filter>Disk</Filter>
+    </ClCompile>
+    <ClCompile Include="flpydsk.cpp">
+      <Filter>Disk</Filter>
+    </ClCompile>
+    <ClCompile Include="fat12.cpp">
+      <Filter>Disk</Filter>
+    </ClCompile>
+    <ClCompile Include="mmngr_virtual.cpp">
+      <Filter>Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="mmngr_phys.cpp">
+      <Filter>Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="vmmngr_pde.cpp">
+      <Filter>Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="vmmngr_pte.cpp">
+      <Filter>Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="ProcessManager.cpp">
+      <Filter>Process</Filter>
+    </ClCompile>
+    <ClCompile Include="Process.cpp">
+      <Filter>Process</Filter>
+    </ClCompile>
+    <ClCompile Include="Thread.cpp">
+      <Filter>Process</Filter>
+    </ClCompile>
+    <ClCompile Include="kheap.cpp">
+      <Filter>DataStructure</Filter>
+    </ClCompile>
+    <ClCompile Include="ordered_array.cpp">
+      <Filter>DataStructure</Filter>
+    </ClCompile>
+    <ClCompile Include="List.cpp">
+      <Filter>DataStructure</Filter>
+    </ClCompile>
+    <ClCompile Include="fsys.cpp">
+      <Filter>Disk</Filter>
+    </ClCompile>
+    <ClCompile Include="task.cpp">
+      <Filter>Process</Filter>
+    </ClCompile>
+    <ClCompile Include="exception.cpp">
+      <Filter>Exception</Filter>
+    </ClCompile>
+    <ClCompile Include="panic.cpp">
+      <Filter>Exception</Filter>
+    </ClCompile>
+    <ClCompile Include="sysapi.cpp">
+      <Filter>API</Filter>
+    </ClCompile>
+    <ClCompile Include="Scheduler.cpp">
+      <Filter>Schedule</Filter>
+    </ClCompile>
+    <ClCompile Include="Plane.cpp">
+      <Filter>Sample</Filter>
+    </ClCompile>
+    <ClCompile Include="ZetPlane.cpp">
+      <Filter>Sample</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DebugDisplay.h">
       <Filter>Debug</Filter>
     </ClInclude>
-    <ClInclude Include="exception.h" />
-    <ClInclude Include="image.h" />
-    <ClInclude Include="mmngr_phys.h" />
-    <ClInclude Include="mmngr_virtual.h" />
-    <ClInclude Include="sysapi.h" />
-    <ClInclude Include="task.h" />
-    <ClInclude Include="vmmngr_pde.h" />
-    <ClInclude Include="vmmngr_pte.h" />
-    <ClInclude Include="flpydsk.h" />
-    <ClInclude Include="kheap.h" />
-    <ClInclude Include="ordered_array.h" />
-    <ClInclude Include="common.h" />
-    <ClInclude Include="Plane.h" />
-    <ClInclude Include="ZetPlane.h" />
-    <ClInclude Include="ProcessManager.h" />
-    <ClInclude Include="List.h" />
-    <ClInclude Include="Scheduler.h" />
-    <ClInclude Include="TaskStateSegment.h" />
-    <ClInclude Include="Process.h" />
-    <ClInclude Include="Thread.h" />
-    <ClInclude Include="HardDisk.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="Resource.rc" />
+    <ClInclude Include="HardDisk.h">
+      <Filter>Disk</Filter>
+    </ClInclude>
+    <ClInclude Include="flpydsk.h">
+      <Filter>Disk</Filter>
+    </ClInclude>
+    <ClInclude Include="mmngr_virtual.h">
+      <Filter>Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="mmngr_phys.h">
+      <Filter>Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="vmmngr_pte.h">
+      <Filter>Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="vmmngr_pde.h">
+      <Filter>Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="ProcessManager.h">
+      <Filter>Process</Filter>
+    </ClInclude>
+    <ClInclude Include="Process.h">
+      <Filter>Process</Filter>
+    </ClInclude>
+    <ClInclude Include="Thread.h">
+      <Filter>Process</Filter>
+    </ClInclude>
+    <ClInclude Include="kheap.h">
+      <Filter>DataStructure</Filter>
+    </ClInclude>
+    <ClInclude Include="ordered_array.h">
+      <Filter>DataStructure</Filter>
+    </ClInclude>
+    <ClInclude Include="List.h">
+      <Filter>DataStructure</Filter>
+    </ClInclude>
+    <ClInclude Include="task.h">
+      <Filter>Process</Filter>
+    </ClInclude>
+    <ClInclude Include="exception.h">
+      <Filter>Exception</Filter>
+    </ClInclude>
+    <ClInclude Include="sysapi.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="Scheduler.h">
+      <Filter>Schedule</Filter>
+    </ClInclude>
+    <ClInclude Include="image.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="common.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Plane.h">
+      <Filter>Sample</Filter>
+    </ClInclude>
+    <ClInclude Include="ZetPlane.h">
+      <Filter>Sample</Filter>
+    </ClInclude>
+    <ClInclude Include="TaskStateSegment.h">
+      <Filter>Common</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

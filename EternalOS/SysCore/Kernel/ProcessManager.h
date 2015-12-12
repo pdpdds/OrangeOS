@@ -22,8 +22,7 @@ public:
 	Process* CreateSystemProcess();
 	Process* CreateProcess(char* appname, UINT32 processType);		
 
-	Process* CreateMemoryProcess(void(*lpStartAddress)());
-	
+	Process* CreateMemoryProcess(void(*lpStartAddress)());	
 
 	Thread* CreateThread(Process* pProcess, FILE* pFile);
 	Thread* CreateMemoryThread(Process* pProcess, void(*lpStartAddress)());	
@@ -45,4 +44,3 @@ public:
 
 	static ProcessManager* m_pProcessManager;
 };
-
