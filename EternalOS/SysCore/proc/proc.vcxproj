@@ -52,9 +52,10 @@
       <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
       <StructMemberAlignment>1Byte</StructMemberAlignment>
       <IgnoreStandardIncludePath>true</IgnoreStandardIncludePath>
+      <AdditionalIncludeDirectories>../userlib</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies />
+      <AdditionalDependencies>userlib.lib</AdditionalDependencies>
       <OutputFile>$(ProjectName).exe</OutputFile>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <GenerateDebugInformation>false</GenerateDebugInformation>
@@ -63,10 +64,11 @@
       <SubSystem>Native</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <EntryPointSymbol>processEntry</EntryPointSymbol>
+      <EntryPointSymbol>EntryPoint</EntryPointSymbol>
       <BaseAddress>0x00400000</BaseAddress>
       <FixedBaseAddress>false</FixedBaseAddress>
       <AdditionalOptions>/ALIGN:512 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalLibraryDirectories>../debug</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

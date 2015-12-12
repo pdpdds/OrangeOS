@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Lib", "Lib\Lib.vcxproj", "{520F8072-F995-4C60-9F50-BD300F913D7F}"
 EndProject
@@ -12,6 +12,11 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Keyboard", "Keyboard\Keyboard.vcxproj", "{8AB6CBCB-06D9-4C7A-9609-F77A5157AD07}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "proc", "proc\proc.vcxproj", "{2D420451-E2B4-451F-8FC4-C1315513D48E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{7C8789FA-5DAE-4F62-966D-DB73CBCA4271} = {7C8789FA-5DAE-4F62-966D-DB73CBCA4271}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UserLib", "UserLib\UserLib.vcxproj", "{7C8789FA-5DAE-4F62-966D-DB73CBCA4271}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +44,10 @@ Global
 		{2D420451-E2B4-451F-8FC4-C1315513D48E}.Debug|Win32.Build.0 = Debug|Win32
 		{2D420451-E2B4-451F-8FC4-C1315513D48E}.Release|Win32.ActiveCfg = Release|Win32
 		{2D420451-E2B4-451F-8FC4-C1315513D48E}.Release|Win32.Build.0 = Release|Win32
+		{7C8789FA-5DAE-4F62-966D-DB73CBCA4271}.Debug|Win32.ActiveCfg = Debug|Win32
+		{7C8789FA-5DAE-4F62-966D-DB73CBCA4271}.Debug|Win32.Build.0 = Debug|Win32
+		{7C8789FA-5DAE-4F62-966D-DB73CBCA4271}.Release|Win32.ActiveCfg = Release|Win32
+		{7C8789FA-5DAE-4F62-966D-DB73CBCA4271}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
