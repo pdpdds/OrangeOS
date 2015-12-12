@@ -252,7 +252,7 @@ bool ProcessManager::ExecuteProcess(Process* pProcess)
 
 	return true;
 }
-#include "../Hal/Hal.h"
+#include "Hal.h"
 extern void run();
 void StartRoutine()
 {

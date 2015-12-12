@@ -4,8 +4,8 @@
 #include "ProcessManager.h"
 #include "Process.h"
 #include "Thread.h"
-#include "../Hal/Hal.h"
-#include "../hal/tss.h"
+#include "Hal.h"
+#include "tss.h"
 
 Scheduler* Scheduler::m_pScheduler = 0;
 extern int kkk;

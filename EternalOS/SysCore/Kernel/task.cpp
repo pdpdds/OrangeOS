@@ -335,7 +335,7 @@ extern "C" {
 		free(p, (heap_t*)pThread->lpHeap);
 	}
 } // extern "C"
-#include "../hal/pit.h"
+#include "pit.h"
 extern "C" {
 	uint32_t GetSysytemTickCount() {
 		return GetTickCount();

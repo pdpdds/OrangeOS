@@ -171,7 +171,7 @@ bool HalSetupTSS(TSS_32	*pTss32, bool IsKernelTSS, int	EntryPoint, int	*pStackBa
 #define SYSTEM_TMR_INT_NUMBER	0x20
 #define SOFT_TASK_SW_INT_NUMBER	0x30
 extern int i86_install_ir(uint32_t i, uint16_t flags, uint16_t sel, I86_IRQ_HANDLER irq);
-#include "../hal/idt.h"
+#include "idt.h"
 /**
 *	Initialization
 */

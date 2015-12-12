@@ -55,7 +55,7 @@
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
-      <AdditionalIncludeDirectories>./;../hal;..\Include\;..\Keyboard;..\FloppyDisk;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../commonlib;./;../hal;..\Include\;..\Keyboard;..\FloppyDisk;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>ARCH_X86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <IgnoreStandardIncludePath>true</IgnoreStandardIncludePath>
       <StringPooling>false</StringPooling>
@@ -73,7 +73,7 @@
     </ProjectReference>
     <Link>
       <AdditionalOptions>/ALIGN:512 /safeseh:no %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>keyboard.lib</AdditionalDependencies>
+      <AdditionalDependencies>keyboard.lib;hal.lib;commonlib.lib</AdditionalDependencies>
       <OutputFile>KRNL32.EXE</OutputFile>
       <AdditionalLibraryDirectories>..\Lib\;..\debug\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
@@ -142,16 +142,6 @@
     <ClInclude Include="vmmngr_pde.h" />
     <ClInclude Include="vmmngr_pte.h" />
     <ClInclude Include="ZetPlane.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Hal\Hal.vcxproj">
-      <Project>{f9978721-33f3-494b-9af6-7b88f8606d23}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
-    <ProjectReference Include="..\Lib\Lib.vcxproj">
-      <Project>{520f8072-f995-4c60-9f50-bd300f913d7f}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

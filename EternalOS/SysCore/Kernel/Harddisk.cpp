@@ -211,7 +211,7 @@ BYTE ReadErrorRegister(BYTE DeviceController)
    Returns 'True' if the device is ready else 'False'
    -----------------------------------------------------------
    */
-#include "../hal/pit.h"
+#include "pit.h"
 BOOLEAN IsDeviceDataReady(int DeviceController, BYTE WaitUpToms = 0, BOOLEAN CheckDataRequest = TRUE)
 {
 	UINT32 Time1, Time2;
@@ -246,7 +246,7 @@ BOOLEAN IsDeviceDataReady(int DeviceController, BYTE WaitUpToms = 0, BOOLEAN Che
   Returns 'True' if the device is busy else 'False'
   -----------------------------------------------------------
   */
-#include "../hal/pit.h"
+#include "pit.h"
 BOOLEAN IsDeviceControllerBusy(int DeviceController, BYTE WaitUpToms = 0)
 {
 	UINT32 Time1, Time2;
