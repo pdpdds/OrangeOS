@@ -1,8 +1,5 @@
 #pragma once
 
-  #define CODE_SELECTOR 0x8
-  #define DATA_SELECTOR 0x10
-
   #define DLLEXPORT __declspec(dllexport)
   #define DLLIMPORT __declspec(dllimport)
 
@@ -99,8 +96,3 @@
 
   #define FALSE 0
   #define TRUE  1
-
-  typedef void(_cdecl *I86_IRQ_HANDLER)(void);
-
-#define ENTER_CRITICAL_SECTION()	__asm	PUSHFD	__asm CLI
-#define EXIT_CRITICAL_SECTION()		__asm	POPFD
