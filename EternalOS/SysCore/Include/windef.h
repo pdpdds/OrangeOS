@@ -1,12 +1,4 @@
-/*
- * CommonVar.h
- *
- *  Created on: 2012. 2. 24.
- *      Author: darkx
- */
-
-#ifndef COMMONVAR_H_
-#define COMMONVAR_H_
+#pragma once
 
   #define CODE_SELECTOR 0x8
   #define DATA_SELECTOR 0x10
@@ -112,4 +104,3 @@
 
 #define ENTER_CRITICAL_SECTION()	__asm	PUSHFD	__asm CLI
 #define EXIT_CRITICAL_SECTION()		__asm	POPFD
-#endif /* COMMONVAR_H_ */

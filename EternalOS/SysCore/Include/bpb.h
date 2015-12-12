@@ -5,9 +5,7 @@
 //**
 //****************************************************************************
 
-#ifndef BPB_H
-#define BPB_H
-
+#pragma once
 #include <stdint.h>
 
 #ifdef _MSC_VER
@@ -64,6 +62,4 @@ typedef struct _BOOT_SECTOR {
 
 #ifdef _MSC_VER
 #pragma pack (pop)
-#endif
-
 #endif
