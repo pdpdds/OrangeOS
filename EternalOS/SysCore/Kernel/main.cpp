@@ -1,31 +1,5 @@
-/******************************************************************************
-   main.cpp
-		-Kernel main program
 
-   modified\ Oct 10 2010
-   arthor\ Mike
-******************************************************************************/
-
-/**
-Chapter 23
-----------
-
-KNOWN BUGS:
-
--There is a bug found in get_cmd(). It seems to add 1 extra character to the buffer
- when the entered text is all caps. Works fine if its in lowercase
-
--In volOpenFile(), fsys.cpp: if input contains ':', an additional character, 0x2, is added
- before ':' on input of function. For example, a:main.cpp becomes:
-
- 'a' '' ':' 'm' 'a' 'i' 'n' '.' 'c' 'p' 'p' ''
-
--. and .. in pathnames also dont seem to work. Need to look into
-
-Currently a workaround is provided in the routine.
-Several chapters may need to be updated, please be patient. :-)
-**/
-
+#include "defines.h"
 #include <bootinfo.h>
 #include <hal.h>
 #include <kybrd.h>

@@ -52,10 +52,10 @@
       <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
       <StructMemberAlignment>1Byte</StructMemberAlignment>
       <IgnoreStandardIncludePath>true</IgnoreStandardIncludePath>
-      <AdditionalIncludeDirectories>../userlib</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../userlib;../commonlib;../include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>userlib.lib</AdditionalDependencies>
+      <AdditionalDependencies>userlib.lib;commonlib.lib</AdditionalDependencies>
       <OutputFile>$(ProjectName).exe</OutputFile>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <GenerateDebugInformation>false</GenerateDebugInformation>

@@ -1,4 +1,5 @@
 #include "sysapi.h"
+#include "string.h"
 
 void EntryPoint() {
 

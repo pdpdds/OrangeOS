@@ -16,6 +16,8 @@
 #include <string.h>
 #include "windef.h"
 #include "../kernel/task.h"
+#include "defines.h"
+
 //============================================================================
 //    IMPLEMENTATION PRIVATE DEFINITIONS / ENUMERATIONS / SIMPLE TYPEDEFS
 //============================================================================

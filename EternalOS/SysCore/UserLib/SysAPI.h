@@ -11,4 +11,3 @@ void *operator new[](size_t size);
 void operator delete(void *p);
 int __cdecl _purecall();
 void operator delete[](void *p);
-char *strcpy(char *s1, const char *s2);
