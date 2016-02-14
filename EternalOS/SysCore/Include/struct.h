@@ -68,3 +68,16 @@ typedef struct _process {
    int threadCount;
    struct _thread  threads[MAX_THREAD];
 }process;
+
+/**
+*	Memory region
+*/
+struct memory_region {
+
+	uint32_t	startLo;	//base address
+	uint32_t	startHi;
+	uint32_t	sizeLo;		//length (in bytes)
+	uint32_t	sizeHi;
+	uint32_t	type;
+	uint32_t	acpi_3_0;
+};

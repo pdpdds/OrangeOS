@@ -3,6 +3,8 @@
 #include "Common.h"
 #include "string.h"
 #include "kheap.h"
+#include "DebugDisplay.h"
+#include "sysapi.h"
 //#include <Processor.h>
 
 typedef unsigned char UCHAR;
@@ -212,7 +214,7 @@ BYTE ReadErrorRegister(BYTE DeviceController)
    -----------------------------------------------------------
    */
 #include "pit.h"
-BOOLEAN IsDeviceDataReady(int DeviceController, BYTE WaitUpToms = 0, BOOLEAN CheckDataRequest = TRUE)
+BOOLEAN IsDeviceDataReady(int DeviceController, DWORD WaitUpToms = 0, BOOLEAN CheckDataRequest = TRUE)
 {
 	UINT32 Time1, Time2;
 	Time1 = GetTickCount();
@@ -226,10 +228,14 @@ BOOLEAN IsDeviceDataReady(int DeviceController, BYTE WaitUpToms = 0, BOOLEAN Che
 				if (CheckDataRequest) // if DataRequest is also needed
 				{
 					if (Status & 0x8) // DRQ bit set
+					{						
 						return TRUE;
+					}
 				}
 				else
+				{					
 					return TRUE;
+				}
 		}
 		Time2 = GetTickCount();
 	} while ((Time2 - Time1) < WaitUpToms);
@@ -335,14 +341,18 @@ void HardDiskHandler::Initialize()
 	{
 		DoSoftwareReset(DeviceController);
 		if (IsDeviceControllerBusy(DeviceController)) //if device controller is busy then skipping
-		{//Printf("\n\r Controller Busy");
+		{			
+			DebugPrintf("\nController Busy");
 			continue;
 		}
 		OutPortByte(IDE_Con_IOBases[DeviceController][0] + IDE_CB_COMMAND, IDE_COM_EXECUTE_DEVICE_DIAGNOSTIC);
 		if (IsDeviceControllerBusy(DeviceController, 6))
-		{//Printf("\n\r Controller busy after EXE");
+		{			
+			DebugPrintf("\nController busy after EXE");
 			continue;
 		}
+
+		
 		BYTE Result = InPortByte(IDE_Con_IOBases[DeviceController][0] + IDE_CB_ERROR);
 		for (BYTE Device = 0; Device < 2; Device++)         // loop for master and slave disks
 		{
@@ -355,12 +365,14 @@ void HardDiskHandler::Initialize()
 				OutPortByte(IDE_Con_IOBases[DeviceController][0] + IDE_CB_DEVICE_HEAD, 0x10); //Setting 4th bit(count 5) to set device as 1
 			else
 				OutPortByte(IDE_Con_IOBases[DeviceController][0] + IDE_CB_DEVICE_HEAD, 0x0);
-			//20150920
-			//MDelay(50);
+			
+			sleep(50);
 			OutPortByte(IDE_Con_IOBases[DeviceController][0] + IDE_CB_COMMAND, IDE_COM_IDENTIFY_DEVICE);
-			if (!IsDeviceDataReady(DeviceController, 6 * 60, TRUE))
+			if (!IsDeviceDataReady(DeviceController, 600, TRUE))
+			{
+				DebugPrintf("\nData not ready %d", DeviceController);
 				continue;
-
+			}							
 			/*Reading 512 bytes of information from the Device*/
 			for (j = 0; j < 256; j++)
 				DeviceID_Data[j] = InPortWord(IDE_Con_IOBases[DeviceController][0] + IDE_CB_DATA);
@@ -369,7 +381,8 @@ void HardDiskHandler::Initialize()
 			//struct __HDDInfo * newHDD;
 			__HDDInfo * newHDD=(__HDDInfo *)kmalloc(sizeof(__HDDInfo));
 			if (newHDD == NULL)
-			{//Printf("\n\r HDD Initialize :: Allocation failed");
+			{
+				DebugPrintf("\nHDD Initialize :: Allocation failed");
 				return;
 			}
 			newHDD->IORegisterIdx = DeviceController;

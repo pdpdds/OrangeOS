@@ -74,7 +74,7 @@
     <Link>
       <AdditionalOptions>/ALIGN:512 /safeseh:no %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>keyboard.lib;hal.lib;commonlib.lib</AdditionalDependencies>
-      <OutputFile>KRNL32.EXE</OutputFile>
+      <OutputFile>$(OutDir)KRNL32$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>..\Lib\;..\debug\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <GenerateMapFile>false</GenerateMapFile>

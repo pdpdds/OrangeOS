@@ -1,268 +1,143 @@
 
-#include "defines.h"
-#include <bootinfo.h>
+#include "header.h"
 #include <hal.h>
 #include <kybrd.h>
 #include <string.h>
 #include <flpydsk.h>
 #include <fat12.h>
 #include <stdio.h>
-
 #include "DebugDisplay.h"
 #include "exception.h"
 #include "mmngr_phys.h"
 #include "mmngr_virtual.h"
 #include "task.h"
-#include "kheap.h"
 #include "HardDisk.h"
 #include "Thread.h"
 #include "Process.h"
 #include "ProcessManager.h"
-/**
-*	Memory region
-*/
-struct memory_region {
-
-	uint32_t	startLo;	//base address
-	uint32_t	startHi;
-	uint32_t	sizeLo;		//length (in bytes)
-	uint32_t	sizeHi;
-	uint32_t	type;
-	uint32_t	acpi_3_0;
-};
-
-uint32_t kernelSize=0;
+#include "idt.h"
+#include "sysapi.h"
 
 extern void enter_usermode ();
 extern void install_tss (uint32_t idx, uint16_t kernelSS, uint16_t kernelESP);
-extern void syscall_init ();
-
-//! set access bit
-#define I86_GDT_DESC_ACCESS			0x0001			//00000001
-
-//! descriptor is readable and writable. default: read only
-#define I86_GDT_DESC_READWRITE			0x0002			//00000010
-
-//! set expansion direction bit
-#define I86_GDT_DESC_EXPANSION			0x0004			//00000100
-
-//! executable code segment. Default: data segment
-#define I86_GDT_DESC_EXEC_CODE			0x0008			//00001000
-
-//! set code or data descriptor. defult: system defined descriptor
-#define I86_GDT_DESC_CODEDATA			0x0010			//00010000
-
-//! set dpl bits
-#define I86_GDT_DESC_DPL			0x0060			//01100000
-
-//! set "in memory" bit
-#define I86_GDT_DESC_MEMORY			0x0080			//10000000
-
-/**	gdt descriptor grandularity bit flags	***/
-
-//! masks out limitHi (High 4 bits of limit)
-#define I86_GDT_GRAND_LIMITHI_MASK		0x0f			//00001111
-
-//! set os defined bit
-#define I86_GDT_GRAND_OS			0x10			//00010000
-
-//! set if 32bit. default: 16 bit
-#define I86_GDT_GRAND_32BIT			0x40			//01000000
-
-//! 4k grandularity. default: none
-#define I86_GDT_GRAND_4K			0x80			//10000000
-
-void CreateKernelHeap(int kernelSize);
-
-
-extern VOID HalChangeTssBusyBit(WORD TssSeg, BOOL SetBit);
-
-BOOL HalSetupTaskSwitchingEnv(TSS_32 *pTss32)
-{
-	int stack;
-
-	ENTER_CRITICAL_SECTION();
-	stack = pTss32->esp;
-	stack -= sizeof(int);
-	*((int *)stack) = pTss32->eflags;
-	stack -= sizeof(int);
-	*((int *)stack) = pTss32->cs;
-	stack -= sizeof(int);
-	*((int *)stack) = pTss32->eip;
-	pTss32->esp = stack;
-	EXIT_CRITICAL_SECTION();
-
-	HalChangeTssBusyBit(TASK_SW_SEG, TRUE);
-
-	return TRUE;
-}
-
-bool HalSetupTSS(TSS_32	*pTss32, bool IsKernelTSS, int	EntryPoint, int	*pStackBase, DWORD StackSize)
-{
-	DWORD dwEFLAGS = 0;
-	int stack = (int)pStackBase + StackSize - 1;
-
-	memset(pTss32, NULL, sizeof(TSS_32));
-
-	_asm {
-		push		eax
-
-			pushfd
-			pop			eax
-			or			ah, 02h; IF
-			mov			dwEFLAGS, eax
-
-			pop			eax
-
-	}
-	
-	
-	if (IsKernelTSS) {
-		pTss32->cs = 0x08;
-		pTss32->ds = 0x10;
-		pTss32->ss = 0x10;
-	}
-	else {
-		pTss32->cs = USER_CS;
-		pTss32->ds = USER_DS;
-		pTss32->ss = USER_SS;
-	}
-	pTss32->es = pTss32->ds;
-	pTss32->fs = pTss32->ds;
-	pTss32->gs = pTss32->ds;
-
-	pTss32->eflags = dwEFLAGS;
-	pTss32->eip = EntryPoint;
-	pTss32->esp = (DWORD)pStackBase;
-
-	pTss32->ss0 = KERNEL_SS;
-	pTss32->esp0 = ((DWORD)(0x9000));
-
-	HalSetupTaskSwitchingEnv(pTss32);
-
-	return TRUE;
-}
-#define SYSTEM_TMR_INT_NUMBER	0x20
-#define SOFT_TASK_SW_INT_NUMBER	0x30
 extern int i86_install_ir(uint32_t i, uint16_t flags, uint16_t sel, I86_IRQ_HANDLER irq);
-#include "idt.h"
-/**
-*	Initialization
-*/
-void init (multiboot_info* bootinfo) {
 
-	//! initialize our vmm
-//	vmmngr_initialize ();
+void ScreenInit()
+{
+	DebugClrScr(0x13);
+	DebugGotoXY(0, 0);
+	DebugSetColor(0x17);
+}
 
-	//! clear and init display
-	DebugClrScr (0x13);
-	DebugGotoXY (0,0);
-	DebugSetColor (0x17);
-
-	hal_initialize ();
-
-	enable ();
-	setvect (0,(void (__cdecl &)(void))divide_by_zero_fault);
-	setvect (1,(void (__cdecl &)(void))single_step_trap);
-	setvect (2,(void (__cdecl &)(void))nmi_trap);
-	setvect (3,(void (__cdecl &)(void))breakpoint_trap);
-	setvect (4,(void (__cdecl &)(void))overflow_trap);
-	setvect (5,(void (__cdecl &)(void))bounds_check_fault);
-	setvect (6,(void (__cdecl &)(void))invalid_opcode_fault);
-	setvect (7,(void (__cdecl &)(void))no_device_fault);
-	setvect (8,(void (__cdecl &)(void))double_fault_abort);
-	setvect (10,(void (__cdecl &)(void))invalid_tss_fault);
-	setvect (11,(void (__cdecl &)(void))no_segment_fault);
-	setvect (12,(void (__cdecl &)(void))stack_fault);
-	setvect (13,(void (__cdecl &)(void))general_protection_fault);
-	setvect (14,(void (__cdecl &)(void))page_fault);
-	setvect (16,(void (__cdecl &)(void))fpu_fault);
-	setvect (17,(void (__cdecl &)(void))alignment_check_fault);
-	setvect (18,(void (__cdecl &)(void))machine_check_abort);
-	setvect (19,(void (__cdecl &)(void))simd_fpu_fault);
-
+void SetInterruptVector()
+{
+	enable();
+	setvect(0, (void(__cdecl &)(void))divide_by_zero_fault);
+	setvect(1, (void(__cdecl &)(void))single_step_trap);
+	setvect(2, (void(__cdecl &)(void))nmi_trap);
+	setvect(3, (void(__cdecl &)(void))breakpoint_trap);
+	setvect(4, (void(__cdecl &)(void))overflow_trap);
+	setvect(5, (void(__cdecl &)(void))bounds_check_fault);
+	setvect(6, (void(__cdecl &)(void))invalid_opcode_fault);
+	setvect(7, (void(__cdecl &)(void))no_device_fault);
+	setvect(8, (void(__cdecl &)(void))double_fault_abort);
+	setvect(10, (void(__cdecl &)(void))invalid_tss_fault);
+	setvect(11, (void(__cdecl &)(void))no_segment_fault);
+	setvect(12, (void(__cdecl &)(void))stack_fault);
+	setvect(13, (void(__cdecl &)(void))general_protection_fault);
+	setvect(14, (void(__cdecl &)(void))page_fault);
+	setvect(16, (void(__cdecl &)(void))fpu_fault);
+	setvect(17, (void(__cdecl &)(void))alignment_check_fault);
+	setvect(18, (void(__cdecl &)(void))machine_check_abort);
+	setvect(19, (void(__cdecl &)(void))simd_fpu_fault);
 
 	i86_install_ir(SYSTEM_TMR_INT_NUMBER, I86_IDT_DESC_PRESENT | I86_IDT_DESC_BIT32 | 0x0500, 0x8, (I86_IRQ_HANDLER)TMR_TSS_SEG);
 	//i86_install_ir(SOFT_TASK_SW_INT_NUMBER, I86_IDT_DESC_PRESENT | I86_IDT_DESC_BIT32 | 0x0500, SOFT_TS_TSS_SEG, (I86_IRQ_HANDLER)SOFT_TS_TSS_SEG);
+}
 
-	pmmngr_init ((size_t) bootinfo->m_memorySize, 0xC0000000 + kernelSize*512);
+void InitializeFloppyDrive()
+{
+	//! set drive 0 as current drive
+	flpydsk_set_working_drive(0);
+
+	//! install floppy disk to IR 38, uses IRQ 6
+	flpydsk_install(38);
+
+	//! initialize FAT12 filesystem
+	fsysFatInitialize();
+}
+
+/**
+*	Initialization
+*/
+void init (multiboot_info* bootinfo, uint32_t kernelSize) 
+{
+	ScreenInit();	
+	hal_initialize();
+	SetInterruptVector();
 	
-	memory_region*	region = (memory_region*)0x1000;
-
-	for (int i=0; i<10; ++i) {
-
-		if (region[i].type>4)
-			break;
-
-		if (i>0 && region[i].startLo==0)
-			break;
-
-		pmmngr_init_region (region[i].startLo, region[i].sizeLo);
-	}
-	pmmngr_deinit_region(0x100000, kernelSize * 512 + 4096 * 1024 + 4096 * 1024);
-	/*
-		kernel stack location
-	*/
-	pmmngr_deinit_region (0x0, 0x10000);
-
-	//! initialize our vmm
-	vmmngr_initialize ();
+	InitializeMemorySystem(bootinfo, kernelSize);
 
 	//! install the keyboard to IR 33, uses IRQ 1
 	kkybrd_install (33);
 
-	//! set drive 0 as current drive
-	flpydsk_set_working_drive (0);
+	InitializeFloppyDrive();
 
-	//! install floppy disk to IR 38, uses IRQ 6
-	flpydsk_install (38);
+	HardDiskHandler hardHandler;
+	hardHandler.Initialize();
+	char num = hardHandler.GetTotalDevices();
 
-	//! initialize FAT12 filesystem
-	fsysFatInitialize ();
+	DebugPrintf("\nHardDisk Count %d", (int)num);
 
 	//! initialize system calls
-	syscall_init ();
+	InitializeSysCall();
 
 	//! initialize TSS
-	install_tss (5,0x10,0x9000);
-	
-	CreateKernelHeap(kernelSize);	
-
-	//for (int i = 1; i < 9; i++)
-		//pmmngr_alloc_blocks(3);
-
-	pmmngr_alloc_blocks(3);
-	pmmngr_alloc_blocks(3);
-	pmmngr_alloc_blocks(3);
-	
+	install_tss (5,0x10,0x9000);	
 }
 
-void* pHeapPhys = 0;
+int systemOn = 0;
+int _cdecl kmain(multiboot_info* bootinfo) {
 
-void CreateKernelHeap(int kernelSize)
-{
-	void* pHeap =
-		(void*)(0xC0000000 + 409600 + 1024 * 4096);
-	
-	pHeapPhys = (void*)pmmngr_alloc_blocks(1000);
+	uint32_t kernelSize = 0;
+	_asm	mov	word ptr[kernelSize], dx
 
-	for (int i = 0; i < 1000; i++)
-	{
-		vmmngr_mapPhysicalAddress(vmmngr_get_directory(),
-			(uint32_t)pHeap + i * 4096,
-			(uint32_t)pHeapPhys + i * 4096,
-			I86_PTE_PRESENT | I86_PTE_WRITABLE);
+	init(bootinfo, kernelSize);
+
+	/*DebugGotoXY(0, 0);
+	DebugPuts("OrangeOS Console");
+	DebugPuts("\nType \"exit\" to quit, \"help\" for a list of commands\n");
+	DebugPuts("+-------------------------------------------------------+\n");	*/
+
+	Process* pProcess = ProcessManager::GetInstance()->CreateSystemProcess();
+	ProcessManager::GetInstance()->g_pCurProcess = pProcess;
+	systemOn = 1;
+
+	Thread* pThread = (Thread*)List_GetData(pProcess->pThreadQueue, "", 0);
+	int entryPoint = (int)pThread->frame.eip;
+	unsigned int procStack = pThread->frame.esp;
+
+	__asm {
+		mov     ax, 0x10;
+		mov     ds, ax
+			mov     es, ax
+			mov     fs, ax
+			mov     gs, ax
+			;
+		; create stack frame
+			;
+		push   0x10;
+		push[procStack]; stack
+			push    0x200; EFLAGS
+			push    0x08;
+		push[entryPoint]; EIP
+			iretd
 	}
 
-	create_kernel_heap((u32int)pHeap, (uint32_t)pHeap + 1000 * 4096, (uint32_t)pHeap + 1000 * 4096, 0, 0);
-}
-
-//! sleeps a little bit. This uses the HALs get_tick_count() which in turn uses the PIT
-void sleep (int ms) {
-
-	static int ticks = ms + get_tick_count ();
-	while (ticks > get_tick_count ())
-		;
+	DebugPrintf("\nExit command recieved; demo halted");
+	_asm mov eax, 0xa0b0c0d0
+	for (;;);
+	return 0;
 }
 
 //! wait for key stroke
@@ -353,31 +228,7 @@ void get_cmd (char* buf, int n) {
 	buf [i] = '\0';
 }
 
-void *operator new(size_t size)
-{
-	return (void *)kmalloc(size);
-}
 
-void *operator new[](size_t size)
-{
-	return (void *)kmalloc(size);
-}
-
-void operator delete(void *p)
-{
-	kfree(p);
-}
-
-int __cdecl _purecall()
-{
-	// Do nothing or print an error message.
-	return 0;
-}
-
-void operator delete[](void *p)
-{
-	kfree(p);
-}
 
 #include "ZetPlane.h"
 void cmd_alloc()
@@ -693,53 +544,4 @@ void run () {
 		if (run_cmd (cmd_buf) == true)
 			break;
 	}
-}
-int systemOn = 0;
-int _cdecl kmain (multiboot_info* bootinfo) {
-
-	_asm	mov	word ptr [kernelSize], dx
-
-	init (bootinfo);
-
-	DebugGotoXY (0,0);
-	DebugPuts ("OSDev Series Process Management Demo");
-	DebugPuts ("\nType \"exit\" to quit, \"help\" for a list of commands\n");
-	DebugPuts ("+-------------------------------------------------------+\n");
-
-	/*HardDiskHandler hardHandler;
-	hardHandler.Initialize();
-	char num = hardHandler.GetTotalDevices();
-
-	DebugPrintf("\nHardDisk Count %d", (int)num);
-	*/
-
-	Process* pProcess = ProcessManager::GetInstance()->CreateSystemProcess();	
-	ProcessManager::GetInstance()->g_pCurProcess = pProcess;
-	systemOn = 1;
-
-	Thread* pThread = (Thread*)List_GetData(pProcess->pThreadQueue, "", 0);
-	int entryPoint = (int)pThread->frame.eip;
-	unsigned int procStack =  pThread->frame.esp;
-
-	__asm {
-		mov     ax, 0x10;
-			mov     ds, ax
-			mov     es, ax
-			mov     fs, ax
-			mov     gs, ax
-			;
-		; create stack frame
-			;
-		push   0x10;
-			push[procStack]; stack
-			push    0x200; EFLAGS
-			push    0x08;
-			push[entryPoint]; EIP
-			iretd
-	}
-
-	DebugPrintf ("\nExit command recieved; demo halted");
-	_asm mov eax, 0xa0b0c0d0
-	for (;;);
-	return 0;
 }

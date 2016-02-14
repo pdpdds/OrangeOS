@@ -56,7 +56,7 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies>userlib.lib;commonlib.lib</AdditionalDependencies>
-      <OutputFile>$(ProjectName).exe</OutputFile>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <GenerateMapFile>false</GenerateMapFile>

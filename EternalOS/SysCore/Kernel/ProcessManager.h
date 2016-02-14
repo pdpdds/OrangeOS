@@ -10,8 +10,6 @@ class Thread;
 
 #define PROC_INVALID_ID -1
 
-extern bool HalSetupTSS(TSS_32	*pTss32, bool IsKernelTSS, int	EntryPoint, int	*pStackBase, DWORD StackSize);
-
 class ProcessManager
 {
 public:
