@@ -1,0 +1,12 @@
+d:\dev\orangeos\trunk\tutorial\03_gdt\kernel\debug\main.obj
+d:\dev\orangeos\trunk\tutorial\03_gdt\kernel\debug\hal.obj
+d:\dev\orangeos\trunk\tutorial\03_gdt\kernel\debug\entry.obj
+d:\dev\orangeos\trunk\tutorial\03_gdt\kernel\debug\debugdisplay.obj
+d:\dev\orangeos\trunk\tutorial\03_gdt\kernel\debug\console.obj
+d:\dev\orangeos\trunk\tutorial\03_gdt\kernel\debug\pic.obj
+d:\dev\orangeos\trunk\tutorial\03_gdt\kernel\debug\pit.obj
+d:\dev\orangeos\trunk\tutorial\03_gdt\kernel\debug\idt.obj
+d:\dev\orangeos\trunk\tutorial\03_gdt\kernel\debug\rtc.obj
+d:\dev\orangeos\trunk\tutorial\03_gdt\kernel\debug\gdt.obj
+d:\dev\orangeos\trunk\tutorial\03_gdt\debug\krnl32.exe
+d:\dev\orangeos\trunk\tutorial\03_gdt\debug\krnl32.pdb

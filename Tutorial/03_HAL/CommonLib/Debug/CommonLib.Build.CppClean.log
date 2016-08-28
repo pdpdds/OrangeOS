@@ -1,0 +1,5 @@
+d:\dev\orangeos\trunk\tutorial\03_gdt\commonlib\debug\string.obj
+d:\dev\orangeos\trunk\tutorial\03_gdt\commonlib\debug\stdio.obj
+d:\dev\orangeos\trunk\tutorial\03_gdt\commonlib\debug\cstd.obj
+d:\dev\orangeos\trunk\tutorial\03_gdt\commonlib\debug\sprintf.obj
+d:\dev\orangeos\trunk\tutorial\03_gdt\debug\commonlib.lib

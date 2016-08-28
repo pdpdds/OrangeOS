@@ -1,0 +1,6 @@
+﻿  RTC.cpp
+  main.cpp
+  코드를 생성하고 있습니다...
+CommonLib.lib(cstd.obj) : warning LNK4254: '.CRT'(40000040) 섹션이 다른 특성을 사용하여 '.data'(C0000040)에 병합되었습니다.
+  Kernel.vcxproj -> D:\Dev\OrangeOS\trunk\Tutorial\03_GDT\Debug\KRNL32.exe
+  Kernel.vcxproj -> D:\Dev\OrangeOS\trunk\Tutorial\03_GDT\Debug\KRNL32.pdb (Full PDB)
