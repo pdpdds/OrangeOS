@@ -14,6 +14,7 @@
 extern void __cdecl  InitializeConstructors ();
 extern void __cdecl  Exit ();
 extern Console console;
+uint32_t g_kernelSize = 0;
 
 //! main
 extern int _cdecl kmain (multiboot_info* bootinfo);
@@ -34,6 +35,9 @@ void __cdecl  kernel_entry (multiboot_info* bootinfo) {
 	}
 #endif //ARCH_X86
 
+	//dx 레지스터에는 커널의 크기가 담겨 있다.
+	//다른값으로 씌워지기 전에 값을 얻어낸다.
+	_asm	mov	word ptr[g_kernelSize], dx
 	InitializeConstructors();
 	kmain (bootinfo);
 	Exit ();
