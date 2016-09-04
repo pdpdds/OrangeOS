@@ -132,7 +132,6 @@ int i86_install_ir (uint32_t i, uint16_t flags, uint16_t sel, I86_IRQ_HANDLER ir
 	if ((flags & 0x0500) == 0x0500) {
 		_idt[i].sel = sel;
 		_idt[i].flags = uint8_t(flags);
-		DebugPrintf("\nbbbb");
 	}
 	else
 	{

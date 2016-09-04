@@ -16,6 +16,7 @@
 #include "Console.h"
 #include "ProcessManager.h"
 #include "fsys.h"
+#include "defines.h"
 
 //============================================================================
 //    IMPLEMENTATION PRIVATE DEFINITIONS / ENUMERATIONS / SIMPLE TYPEDEFS
@@ -163,6 +164,11 @@ extern void run ();
 extern "C" {
 void TerminateProcess () {
 	
+	_asm
+	{
+		cli
+	}
+
 	Process* cur = ProcessManager::GetInstance()->g_pCurProcess;
 	
 	if (cur->TaskID == PROC_INVALID_ID)
@@ -218,13 +224,24 @@ void TerminateProcess () {
 	vmmngr_unmapPhysicalAddress(cur->pPageDirectory, (uint32_t)pThread->initialStack);
 	//pmmngr_free_block(stackFrame);
 
-	pmmngr_free_block(cur->pPageDirectory);
+	pmmngr_free_block(cur->pPageDirectory);	
 
+	LISTNODE *pProcessList = ProcessManager::GetInstance()->pProcessQueue;
+	
+	List_Delete(&pProcessList, cur->processName, -1);
+	console.Print("terminate %s\n", cur->processName);
+	
 	delete pThread;
 	delete cur;
 
+	Process* pProcess = (Process*)List_GetData(pProcessList, "", 0);
+	ProcessManager::GetInstance()->g_pCurProcess = pProcess;
+	pProcess->dwRunState = PROCESS_STATE_SLEEP;
+
+	console.Print("next processs %x\n", pProcess);
+
 	/* restore kernel selectors */
-	__asm {
+	/*__asm {
 		cli
 		mov eax, 0x10
 		mov ds, ax
@@ -232,14 +249,14 @@ void TerminateProcess () {
 		mov fs, ax
 		mov gs, ax
 		sti
-	}
+	}*/
 
-	pmmngr_load_PDBR((physical_addr)vmmngr_get_directory());
+	for (;;);
 
-	/* return to kernel command shell */
-	run ();
+	//pmmngr_load_PDBR((physical_addr)vmmngr_get_directory());	
 
-	console.Print("Exit command recieved; demo halted\n");
+	//run ();
+	
 	for (;;);
 }
 } // extern "C"
@@ -318,9 +335,9 @@ extern "C" {
 	uint32_t MemoryAlloc(size_t size) {
 		Process* pProcess = ProcessManager::GetInstance()->g_pCurProcess;
 		Thread* pThread = (Thread*)List_GetData(pProcess->pThreadQueue, "", 0);
-		console.Print(" process heap alloc, %d %x\n", size, pThread->lpHeap);
+		console.Print("process heap alloc, %d %x\n", size, pThread->lpHeap);
 		void *addr = alloc(size, (u8int)0, (heap_t*)pThread->lpHeap);
-		console.Print("process heap alloc, %d %x\n ", size, pThread->lpHeap);
+		console.Print("process heap alloc, %d %x\n", size, pThread->lpHeap);
 		
 		return (u32int)addr;
 	}
@@ -366,8 +383,6 @@ extern "C" {
 		memset((void*)heapAddess, 0, 300 * PAGE_SIZE);
 		console.Print("imageSize %x\n", pThread->imageSize);
 		pThread->lpHeap = create_heap((u32int)heapAddess, (uint32_t)heapAddess + 300 * 4096, (uint32_t)heapAddess + 300 * 4096, 0, 0);
-		//DebugPrintf("\nThread Creation Success %x", pThread->lpHeap);
-		//DebugPrintf("\ndfsdfds %x", pHeapPhys);
-		//DebugPrintf("\nkkkkk");
+		//DebugPrintf("\nThread Creation Success %x", pThread->lpHeap);		
 	}
 } // extern "C"

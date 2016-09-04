@@ -1,7 +1,10 @@
 #include "PIT.h"
 #include "Hal.h"
+#include "tss.h"
 
 unsigned int PIT::ticks;
+extern void SwitchTask(int tick, uint32_t registers);
+extern void SwitchTask(int tick, registers_t regs);
 
 #define		I86_PIT_REG_COUNTER0		0x40
 #define		I86_PIT_REG_COUNTER1		0x41
@@ -41,17 +44,91 @@ void PIT::Disable()
 
 static volatile uint32_t			_pit_ticks = 0;
 
+void isr_handler(registers_t regs)
+{
+	registers_t a = regs;
+	SwitchTask(_pit_ticks, a);
+}
+
 //!	pit timer interrupt handler
 __declspec(naked) void _cdecl i86_pit_irq() {
-	_asm {
+	/*_asm {
+		cli
 		pushad
 	}
+	
 	_pit_ticks++;
+	SwitchTask(_pit_ticks, 0x9000);
 	_asm {
 		mov al, 0x20
 			out 0x20, al
 			popad
 			iretd
+	}*/
+
+	/*_asm {
+
+		cli
+		pushad
+
+		push ds
+		push es
+		push fs
+		push gs
+	}
+		_pit_ticks++;
+		_asm 
+		{
+		mov ax, 0x10
+        mov ds, ax
+		mov es, ax
+		mov fs, ax
+		mov gs, ax
+					
+		pop gs
+		pop fs
+		pop es
+		pop ds
+		
+		mov al, 0x20
+		out 0x20, al
+		popad
+		iretd
+	}*/
+
+	_asm
+	{
+		cli
+		pushad;
+
+		mov ax, ds;
+		push eax;
+
+		mov ax, 0x10; load the kernel data segment descriptor
+			mov ds, ax
+			mov es, ax
+			mov fs, ax
+			mov gs, ax
+	}
+	_pit_ticks++;
+	_asm
+	{
+		call isr_handler
+	}	
+
+	__asm
+	{
+		pop ebx;
+		mov ds, bx
+		mov es, bx
+		mov fs, bx
+		mov gs, bx
+
+		mov al, 0x20
+		out 0x20, al
+		popad;	
+		sti
+		iretd;
 	}
 }
 

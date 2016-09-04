@@ -225,14 +225,12 @@ void*	pmmngr_alloc_blocks (size_t size) {
 
 	if (pmmngr_get_free_block_count() <= size)
 	{
-		DebugPrintf("\naaa");
 		return 0;	//not enough space
 	}
 	int frame = mmap_first_free_s (size);
 	
 	if (frame == -1)
 	{
-		DebugPrintf("\naaa");
 		return 0;	//not enough space
 	}
 	for (uint32_t i=0; i<size; i++)
@@ -250,7 +248,7 @@ void	pmmngr_free_blocks (void* p, size_t size) {
 	physical_addr addr = (physical_addr)p;
 	int frame = addr / PMMNGR_BLOCK_SIZE;
 
-	DebugPrintf("\nFree Physical Block %d", addr);
+	//DebugPrintf("\nFree Physical Block %d", addr);
 
 	for (uint32_t i=0; i<size; i++)
 		mmap_unset (frame+i);

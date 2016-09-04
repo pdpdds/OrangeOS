@@ -33,7 +33,9 @@
 
 
 #define PROCESS_STATE_SLEEP  0
-#define PROCESS_STATE_ACTIVE 1
+#define PROCESS_STATE_RUNNING 1
+#define PROCESS_STATE_INIT  0
+
 
 //! set access bit
 #define I86_GDT_DESC_ACCESS			0x0001			//00000001

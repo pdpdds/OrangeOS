@@ -36,7 +36,6 @@ void cmd_alloc()
 	}
 }
 
-void SampleLoop2();
 int kkk = 0;
 void SampleLoop()
 {
@@ -108,7 +107,7 @@ void rect32(int x, int y, int w, int h, int col) {
 }
 
 /* thread cycles through colors of red. */
-void kthread_1() {
+DWORD WINAPI kthread_1(LPVOID parameter) {
 	int col = 0;
 	bool dir = true;
 	while (1) {
@@ -121,9 +120,11 @@ void kthread_1() {
 			if (col-- == 1)
 				dir = true;
 	}
+
+	return 0;
 }
 
-void SampleLoop2()
+DWORD WINAPI SampleLoop2(LPVOID parameter) 
 {
 	char* str = "\n\rHello world3!";
 
@@ -143,6 +144,7 @@ void SampleLoop2()
 	}
 
 	for (;;);
+	return 0;
 }
 
 void cmd_memtask()
@@ -272,18 +274,16 @@ void go_user() {
 }
 
 // proc (process) command
-void cmd_proc() {
+void cmd_proc(char* pName) {
 
-	int ret = 0;
-	char name[32];
+	int ret = 0;	
+	if (pName == NULL)
+		return;
 
-	DebugPrintf("\n\rProgram file: ");
-	console.GetCommand(name, 30);
-
-	Process* pProcess = ProcessManager::GetInstance()->CreateProcess(name, PROCESS_USER);
+	Process* pProcess = ProcessManager::GetInstance()->CreateProcess(pName, PROCESS_USER);
 	if (pProcess == 0)
 	{
-		DebugPrintf("\n\rError creating process");
+		console.Print("Can't Execute Process. %d\n", pName);
 	}
 	else
 		ProcessManager::GetInstance()->ExecuteProcess(pProcess);
@@ -291,6 +291,9 @@ void cmd_proc() {
 
 bool ConsoleManager::RunCommand(char* buf) 
 {
+
+	if (buf[0] == '\0')
+		return false;	
 
 	if (strcmp(buf, "user") == 0) {
 		go_user();
@@ -333,8 +336,8 @@ bool ConsoleManager::RunCommand(char* buf)
 	}
 
 	//! run process
-	else if (strcmp(buf, "proc") == 0) {
-		cmd_proc();
+	else if (strstr(buf, ".exe") > 0) {
+		cmd_proc(buf);
 	}
 	else
 	{
@@ -343,3 +346,4 @@ bool ConsoleManager::RunCommand(char* buf)
 
 	return false;
 }
+

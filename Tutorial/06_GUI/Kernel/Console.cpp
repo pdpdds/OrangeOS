@@ -334,9 +334,9 @@ void Console::GetCommand(char* commandBuffer, int bufSize)
 
 				//! go back one char
 				uint y, x;
-				GetCursorPos(x, y);
+				GetCursorPos(x, y);				
 				if (x > 0)
-					MoveCursor(--x, y);
+					MoveCursor(x, y);
 				else {
 					//! x is already 0, so go back one line
 					y--;

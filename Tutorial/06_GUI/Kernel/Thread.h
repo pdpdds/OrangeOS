@@ -1,6 +1,7 @@
 #pragma once
 #include "windef.h"
 #include "task.h"
+#include "Hal.h"
 
 #define TASK_RUNNING            1
 #define TASK_RUNNABLE           2
@@ -81,10 +82,13 @@ public:
 	uint16_t curfs;
 	uint16_t curEs;
 	uint16_t curds;
+	uint16_t ss;
 
 	uint32_t curEip;
 	uint32_t curCS;
 	uint32_t curFlags;
 	uint32_t curESP;
+	
+	registers_t m_regs;
 };
 

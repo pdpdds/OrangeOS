@@ -1,6 +1,7 @@
 #include "sysapi.h"
 #include "kheap.h"
 #include "idt.h"
+#include "ProcessManager.h"
 
 _declspec(naked) void syscall_dispatcher() 
 {
@@ -84,4 +85,37 @@ int __cdecl _purecall()
 void operator delete[](void *p)
 {
 	kfree(p);
+}
+
+#include "Console.h"
+extern Console console;
+int printf(const char* str, ...)
+{
+	console.Write(str);
+	return 0;
+}
+
+
+
+HANDLE CreateThread(SIZE_T dwStackSize, LPTHREAD_START_ROUTINE lpStartAddress, LPVOID lpParameter, DWORD dwCreateionFlags, LPDWORD lpThreadId)
+{
+	Process* cur = ProcessManager::GetInstance()->g_pCurProcess;
+
+	if (cur->TaskID == PROC_INVALID_ID)
+	{
+		console.Print("Invailid Process Id\n");
+		return 0;
+	}
+
+	Thread* newThread = ProcessManager::GetInstance()->CreateMemoryThread(cur, lpStartAddress);
+
+	if(newThread == NULL)
+	{
+		console.Print("Thread Create Fail!!\n");
+		return 0;
+	}
+	
+	List_Add(&cur->pThreadQueue, "", newThread);
+	
+	return (HANDLE)newThread;
 }

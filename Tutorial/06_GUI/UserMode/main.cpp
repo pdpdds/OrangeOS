@@ -1,62 +1,60 @@
 #include "sysapi.h"
 #include "string.h"
 
-void EntryPoint() {
-
-	char* message ="\n\rHello world2!";
+void CreateHeap()
+{
 	__asm {
 
-			mov eax, 4
-			int 0x80
+		mov eax, 4
+		int 0x80
 	}
+}
 
+int printf(const char* str)
+{
 	__asm {
 
 		/* display message through kernel terminal */
-		mov ebx, message
+		mov ebx, str
 		mov eax, 0
 		int 0x80
 	}
+}
 
+void EntryPoint() {
+
+	CreateHeap();
+
+	char* message ="Hello world!!\n";	
+	printf(message);
 
 	char* a = new char[100];
-	strcpy(a, "\nProcess2 Reply.");
+	strcpy(a, "Process2 Reply\n");
 
-	__asm {
-
-		/* display message through kernel terminal */
-		mov ebx, a
-			mov eax, 0
-			int 0x80
-	}
+	printf(a);
 
 	int first = GetTickCount();
-	while (1)
+	int count = 4;
+	while (count != 0)
 	{
-		
+	//	int b = 0;
 		int second = GetTickCount();
-		if (second - first > 100)
+		if (second - first > 500)
 		{
-			__asm
-			{
-				mov ebx, a	
-				mov eax, 0
-				int 0x80
-			}
+			//printf(a);
 
 			first = GetTickCount();
+			count -= 1;
 		}
-
 	}
 
-	
+	//for (;;);	
 
 	delete a;
-
+	
 	__asm {
 			/* terminate */
 			mov eax, 1
 			int 0x80
-	}
-	for (;;);
+	}	
 }

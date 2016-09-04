@@ -22,10 +22,10 @@ public:
 	Process* CreateSystemProcess();
 	Process* CreateProcess(char* appname, UINT32 processType);		
 
-	Process* CreateMemoryProcess(void(*lpStartAddress)());	
+	Process* CreateMemoryProcess(LPTHREAD_START_ROUTINE lpStartAddress);
 
 	Thread* CreateThread(Process* pProcess, FILE* pFile);
-	Thread* CreateMemoryThread(Process* pProcess, void(*lpStartAddress)());	
+	Thread* CreateMemoryThread(Process* pProcess, LPTHREAD_START_ROUTINE lpStartAddress);
 
 	bool ExecuteProcess(Process* pProces);
 

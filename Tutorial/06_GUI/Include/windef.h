@@ -55,6 +55,7 @@ typedef          char  s8int;
 
   #ifndef _SIZE_T_DEFINED
     typedef unsigned int size_t;
+	typedef unsigned int SIZE_T;
     #define _SIZE_T_DEFINED
   #endif
 
@@ -110,3 +111,9 @@ typedef          char  s8int;
 
   #define FALSE 0
   #define TRUE  1
+
+  typedef void *LPVOID;
+  typedef DWORD *LPDWORD;
+  #define WINAPI __stdcall 
+
+  typedef DWORD(WINAPI *LPTHREAD_START_ROUTINE) (LPVOID lpThreadParameter);

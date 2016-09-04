@@ -4,8 +4,10 @@
 #include "Thread.h"
 #include "DebugDisplay.h"
 #include "string.h"
+#include "Console.h"
 
 ProcessManager* ProcessManager::m_pProcessManager = 0;
+extern Console console;
 
 ProcessManager::ProcessManager()
 {
@@ -17,7 +19,7 @@ ProcessManager::~ProcessManager()
 {
 }
 
-Process* ProcessManager::CreateMemoryProcess(void(*lpStartAddress)())
+Process* ProcessManager::CreateMemoryProcess(LPTHREAD_START_ROUTINE lpStartAddress)
 {
 	Process* pProcess = new Process();
 	pProcess->TaskID = 1;
@@ -25,13 +27,13 @@ Process* ProcessManager::CreateMemoryProcess(void(*lpStartAddress)())
 	mapKernelSpace(pProcess->pPageDirectory);
 
 	pProcess->dwPriority = 1;
-	pProcess->dwRunState = PROCESS_STATE_ACTIVE;
+	pProcess->dwRunState = PROCESS_STATE_INIT;
 	
 	Thread* pThread = CreateMemoryThread(pProcess, lpStartAddress);
 	List_Add(&pProcess->pThreadQueue, "", pThread);
 	//List_Add(&pProcessQueue, "", pProcess);
 
-	DebugPrintf("\nCreate Success Memory Task");
+	console.Print("Create Success Memory Task\n");
 
 	return pProcess;
 }
@@ -60,7 +62,7 @@ Thread* ProcessManager::CreateThread(Process* pProcess, FILE* file)
 
 	pThread->kernelStack = 0;
 	pThread->priority = 1;
-	pThread->state = PROCESS_STATE_ACTIVE;
+	pThread->state = PROCESS_STATE_INIT;
 	pThread->initialStack = 0;
 	pThread->stackLimit = (void*)((uint32_t)pThread->initialStack + 4096);
 	pThread->imageBase = ntHeaders->OptionalHeader.ImageBase;
@@ -81,8 +83,7 @@ Thread* ProcessManager::CreateThread(Process* pProcess, FILE* file)
 	
 	/* map page into address space */
 	for (int i = 0; i <pProcess->dwPageCount; i++)
-	{
-		//DebugPrintf("\ndsfdsd");
+	{		
 		vmmngr_mapPhysicalAddress(pProcess->pPageDirectory,
 			ntHeaders->OptionalHeader.ImageBase + i * 4096,
 			(uint32_t)memory + i * 4096,
@@ -122,22 +123,32 @@ Thread* ProcessManager::CreateThread(Process* pProcess, FILE* file)
 	/* final initialization */
 	pThread->initialStack = stack;
 	pThread->frame.esp = (uint32_t)pThread->initialStack;
-	pThread->frame.ebp = pThread->frame.esp;
+	pThread->frame.ebp = pThread->frame.esp;	
 
-	//DebugPrintf("\nThread Creation Success");
-	
+	pThread->curEip = pThread->frame.eip;
+	pThread->curCS = pThread->curEip;
+	pThread->curESP = pThread->frame.esp;
+	pThread->curFlags = pThread->frame.flags;	
+
+	pThread->frame.eax = 0;
+	pThread->frame.ecx = 0;
+	pThread->frame.edx = 0;
+	pThread->frame.ebx = 0;
+	pThread->frame.esi = 0;
+	pThread->frame.edi = 0;
+
 	return pThread;
 
 }
 
-Thread* ProcessManager::CreateMemoryThread(Process* pProcess, void(*lpStartAddress)())
+Thread* ProcessManager::CreateMemoryThread(Process* pProcess, LPTHREAD_START_ROUTINE lpStartAddress)
 {
 	Thread* pThread = new Thread();
 	pThread->pParent = pProcess;
 
 	pThread->kernelStack = 0;
 	pThread->priority = 1;
-	pThread->state = PROCESS_STATE_ACTIVE;
+	pThread->state = PROCESS_STATE_INIT;
 	pThread->initialStack = 0;
 	pThread->stackLimit = (void*)((uint32_t)pThread->initialStack + 4096);
 	pThread->imageBase = 0;
@@ -191,10 +202,11 @@ Process* ProcessManager::CreateProcess(char* appname, UINT32 processType)
 	pProcess->TaskID = ProcessManager::GetInstance()->GetNextProcessId();
 	pProcess->pPageDirectory = addressSpace;
 	pProcess->dwPriority = 1;
-	pProcess->dwRunState = PROCESS_STATE_ACTIVE;
+	pProcess->dwRunState = PROCESS_STATE_INIT;
+	strcpy(pProcess->processName, appname);
 
 	Thread* pThread = CreateThread(pProcess, &file);	
-	List_Add(&pProcess->pThreadQueue, "", pThread);
+	List_Add(&pProcess->pThreadQueue, appname, pThread);
 	
 	return pProcess;
 }
@@ -202,10 +214,7 @@ Process* ProcessManager::CreateProcess(char* appname, UINT32 processType)
 #include "Process.h"
 Process* pTest = 0;
 bool ProcessManager::ExecuteProcess(Process* pProcess)
-{
-	//pTest = ProcessManager::CreateProcess("proc.exe");
-
-
+{	
 	if (pProcess == 0)
 		return false;	
 
@@ -224,14 +233,14 @@ bool ProcessManager::ExecuteProcess(Process* pProcess)
 	entryPoint = pThread->frame.eip;
 	procStack = pThread->frame.esp;
 
-	DebugPrintf("\neip : %x", pThread->frame.eip);
-	DebugPrintf("\npage directory : %x", pProcess->pPageDirectory);
+	console.Print("eip : %x\n", pThread->frame.eip);
+	console.Print("page directory : %x\n", pProcess->pPageDirectory);
 	
 	__asm cli
-	ProcessManager::GetInstance()->g_pCurProcess = pProcess;
-	List_Add(&pProcessQueue, "", pProcess);
+	//ProcessManager::GetInstance()->g_pCurProcess = pProcess;
+	List_Add(&pProcessQueue, pProcess->processName, pProcess);
 	__asm sti
-	pmmngr_load_PDBR((physical_addr)pProcess->pPageDirectory);	
+	/*pmmngr_load_PDBR((physical_addr)pProcess->pPageDirectory);
 	
 	__asm {
 		mov     ax, 0x23; user mode data selector is 0x20 (GDT entry 3).Also sets RPL to 3
@@ -248,13 +257,13 @@ bool ProcessManager::ExecuteProcess(Process* pProcess)
 			push    0x1b; CS, user mode code selector is 0x18.With RPL 3 this is 0x1b
 			push[entryPoint]; EIP
 			iretd
-	}
+	}*/
 
 	return true;
 }
 #include "Hal.h"
 extern void run();
-void StartRoutine()
+DWORD WINAPI StartRoutine(LPVOID parameter)
 {
 	while (1) {
 		run();
@@ -262,6 +271,8 @@ void StartRoutine()
 	
 
 	for (;;);
+
+	return 0;
 }
 
 Process* ProcessManager::CreateSystemProcess()
@@ -273,12 +284,14 @@ Process* ProcessManager::CreateSystemProcess()
 	mapKernelSpace(pProcess->pPageDirectory);
 
 	pProcess->dwPriority = 1;
-	pProcess->dwRunState = PROCESS_STATE_ACTIVE;
+	pProcess->dwRunState = PROCESS_STATE_RUNNING;
 
 	Thread* pThread = CreateMemoryThread(pProcess, StartRoutine);
 	
 	List_Add(&pProcess->pThreadQueue, "", pThread);
 	List_Add(&pProcessQueue, "", pProcess);
+
+	g_pCurProcess = pProcess;
 
 	return pProcess;
 }

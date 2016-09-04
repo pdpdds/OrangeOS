@@ -23,6 +23,7 @@ public:
 	UINT32 dwPageCount;
 	UINT32 dwProcessType;
 	UINT32 dwTickCount;
+	char processName[256];
 
 	pdirectory* pPageDirectory;
 	TaskStateSegment* pTSS;

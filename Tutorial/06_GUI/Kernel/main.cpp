@@ -107,15 +107,17 @@ int _cdecl kmain(multiboot_info* bootinfo) {
 	i86_gdt_initialize();
 	i86_idt_initialize(0x8);
 	i86_pic_initialize(0x20, 0x28);
-	i86_pit_initialize();
-	
-	i86_pit_start_counter(100, I86_PIT_OCW_COUNTER_0, I86_PIT_OCW_MODE_SQUAREWAVEGEN);
+	i86_pit_initialize();	
 	
 	InterruptEnable();
 
 	SetInterruptVector();
+	//setvect(32, scheduler_isr, 0x80);
 
 	InitializeMemorySystem(bootinfo, g_kernelSize);
+
+	//i86_install_ir(SYSTEM_TMR_INT_NUMBER, I86_IDT_DESC_PRESENT | I86_IDT_DESC_BIT32 | 0x0500, 0x8, (I86_IRQ_HANDLER)TMR_TSS_SEG);
+	i86_pit_start_counter(100, I86_PIT_OCW_COUNTER_0, I86_PIT_OCW_MODE_SQUAREWAVEGEN);
 
 //커널사이즈에 512를 곱하면 바이트로 환산된다.
 //현재 커널의 사이즈는 4096바이트다.
@@ -125,6 +127,16 @@ int _cdecl kmain(multiboot_info* bootinfo) {
 	kkybrd_install(33);
 
 	InitializeFloppyDrive();
+
+	InitializeSysCall();
+
+	//! initialize TSS
+	install_tss(5, 0x10, 0x9000);
+
+	/* set video mode and map framebuffer. */
+	VbeBochsSetMode(WIDTH, HEIGHT, BPP);
+	VbeBochsMapLFB();
+	fillScreen32();
 
 	//HardDiskHandler hardHandler;
 	//hardHandler.Initialize();	
@@ -156,17 +168,7 @@ int _cdecl kmain(multiboot_info* bootinfo) {
 
 	ZetPlane* pZetPlane = new ZetPlane();
 	pZetPlane->m_rotation = 50;
-	console.Print("ZetPlane's Rotation is %d\n", pZetPlane->m_rotation);
-
-	InitializeSysCall();
-
-	//! initialize TSS
-	install_tss(5, 0x10, 0x9000);
-
-	/* set video mode and map framebuffer. */
-	VbeBochsSetMode(WIDTH, HEIGHT, BPP);
-	VbeBochsMapLFB();
-	fillScreen32();
+	console.Print("ZetPlane's Rotation is %d\n", pZetPlane->m_rotation);	
 
 
 	Process* pProcess = ProcessManager::GetInstance()->CreateSystemProcess();
@@ -301,11 +303,27 @@ void run()
 	while (1) 
 	{
 		console.Print("Command> ");
+		memset(commandBuffer, 0, MAXPATH);		
+		//console.Print("commandBuffer Address : 0x%x\n", &commandBuffer);
 		
 		console.GetCommand(commandBuffer, MAXPATH-2);
 		console.Print("\n");
 		
 		if (manager.RunCommand(commandBuffer) == true)
 			break;
+
+		/*int first = GetTickCount();
+		int count = 4;
+		while (count != 0)
+		{
+
+			int second = GetTickCount();
+			if (second - first > 100)
+			{
+				console.Print("%d\n", second);
+
+				first = GetTickCount();				
+			}
+		}*/
 	}
 }
