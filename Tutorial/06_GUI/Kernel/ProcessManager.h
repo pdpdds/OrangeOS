@@ -20,19 +20,19 @@ public:
 
 	int GetNextProcessId(){ return m_nextProcessId++; }
 	Process* CreateSystemProcess();
-	Process* CreateProcess(char* appname, UINT32 processType);		
+	Process* CreateProcess(char* appName, UINT32 processType);
 
 	Process* CreateMemoryProcess(LPTHREAD_START_ROUTINE lpStartAddress);
 
 	Thread* CreateThread(Process* pProcess, FILE* pFile);
 	Thread* CreateMemoryThread(Process* pProcess, LPTHREAD_START_ROUTINE lpStartAddress);
 
-	bool ExecuteProcess(Process* pProces);
+	bool AddProcess(Process* pProces);
+	
+	Process* GetCurrentProcess() { return m_pCurrentProcess; }
+	void SetCurrentProcess(Process* pProcess) { m_pCurrentProcess = pProcess; }
 
-	LPLISTNODE pProcessQueue;
-	int m_nextProcessId;
-
-	Process* g_pCurProcess;
+	Orange::LinkedList* GetProcessList() { return&m_processList;}
 
 	static ProcessManager* GetInstance()
 	{
@@ -42,5 +42,11 @@ public:
 		return m_pProcessManager;
 	}
 
+
 	static ProcessManager* m_pProcessManager;
+
+private:
+	int m_nextProcessId;
+	Process* m_pCurrentProcess;
+	Orange::LinkedList m_processList;
 };

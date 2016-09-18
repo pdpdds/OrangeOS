@@ -41,7 +41,7 @@ void EntryPoint() {
 		int second = GetTickCount();
 		if (second - first > 500)
 		{
-			//printf(a);
+			printf(a);
 
 			first = GetTickCount();
 			//count -= 1;

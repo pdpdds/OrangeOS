@@ -8,11 +8,17 @@
 #define PROCESS_USER 0
 #define PROCESS_KERNEL 1
 
+class Thread;
+
 class Process
 {
 public:
 	Process();
 	virtual ~Process();
+
+	BOOL AddThread(Thread* pThread);
+	Thread* GetThread(int index);
+	BOOL DelThread(void* ptr);
 
 	void SetPDBR();
 
@@ -28,8 +34,9 @@ public:
 	pdirectory* pPageDirectory;
 	TaskStateSegment* pTSS;
 	heap_t* pHeap;
-	LPLISTNODE pThreadQueue;
 
+private:
+	Orange::LinkedList m_threadList;
 
 };
 

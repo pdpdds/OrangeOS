@@ -189,10 +189,10 @@ int _cdecl kmain(multiboot_info* bootinfo)
 	if(pProcess)	
 		console.Print("Create Success System Process\n");
 
-	ProcessManager::GetInstance()->g_pCurProcess = pProcess;
+	ProcessManager::GetInstance()->SetCurrentProcess(pProcess);
 	systemOn = true;
 
-	Thread* pThread = (Thread*)List_GetData(pProcess->pThreadQueue, "", 0);
+	Thread* pThread = pProcess->GetThread(0);
 	int entryPoint = (int)pThread->frame.eip;
 	unsigned int procStack = pThread->frame.esp;
 

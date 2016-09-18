@@ -99,7 +99,7 @@ int printf(const char* str, ...)
 
 HANDLE CreateThread(SIZE_T dwStackSize, LPTHREAD_START_ROUTINE lpStartAddress, LPVOID lpParameter, DWORD dwCreateionFlags, LPDWORD lpThreadId)
 {
-	Process* cur = ProcessManager::GetInstance()->g_pCurProcess;
+	Process* cur = ProcessManager::GetInstance()->GetCurrentProcess();
 
 	if (cur->TaskID == PROC_INVALID_ID)
 	{
@@ -114,8 +114,8 @@ HANDLE CreateThread(SIZE_T dwStackSize, LPTHREAD_START_ROUTINE lpStartAddress, L
 		console.Print("Thread Create Fail!!\n");
 		return 0;
 	}
-	
-	List_Add(&cur->pThreadQueue, "", newThread);
+
+	cur->AddThread(newThread);	
 	
 	return (HANDLE)newThread;
 }

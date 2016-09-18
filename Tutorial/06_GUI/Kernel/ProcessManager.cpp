@@ -2,9 +2,9 @@
 #include "Process.h"
 #include "task.h"
 #include "Thread.h"
-#include "DebugDisplay.h"
 #include "string.h"
 #include "Console.h"
+#include "Process.h"
 
 ProcessManager* ProcessManager::m_pProcessManager = 0;
 extern Console console;
@@ -12,7 +12,7 @@ extern Console console;
 ProcessManager::ProcessManager()
 {
 	m_nextProcessId = 1;
-	g_pCurProcess = 0;
+	m_pCurrentProcess = 0;
 }
 
 ProcessManager::~ProcessManager()
@@ -30,9 +30,8 @@ Process* ProcessManager::CreateMemoryProcess(LPTHREAD_START_ROUTINE lpStartAddre
 	pProcess->dwRunState = PROCESS_STATE_INIT;
 	
 	Thread* pThread = CreateMemoryThread(pProcess, lpStartAddress);
-	List_Add(&pProcess->pThreadQueue, "", pThread);
-	//List_Add(&pProcessQueue, "", pProcess);
-
+	pProcess->AddThread(pThread);
+	
 	console.Print("Create Success Memory Task\n");
 
 	return pProcess;
@@ -205,18 +204,16 @@ Process* ProcessManager::CreateProcess(char* appname, UINT32 processType)
 	pProcess->dwRunState = PROCESS_STATE_INIT;
 	strcpy(pProcess->processName, appname);
 
-	Thread* pThread = CreateThread(pProcess, &file);	
-	List_Add(&pProcess->pThreadQueue, appname, pThread);
+	Thread* pThread = CreateThread(pProcess, &file);
+	pProcess->AddThread(pThread);	
 	
 	return pProcess;
 }
 
-#include "Process.h"
-Process* pTest = 0;
-bool ProcessManager::ExecuteProcess(Process* pProcess)
+bool ProcessManager::AddProcess(Process* pProcess)
 {	
 	if (pProcess == 0)
-		return false;	
+		return false;
 
 	int entryPoint = 0;
 	unsigned int procStack = 0;
@@ -227,7 +224,7 @@ bool ProcessManager::ExecuteProcess(Process* pProcess)
 	if (!pProcess->pPageDirectory)
 		return false;
 
-	Thread* pThread = (Thread*)List_GetData(pProcess->pThreadQueue, "", 0);
+	Thread* pThread = pProcess->GetThread(0);
 	
 	/* get esp and eip of main thread */
 	entryPoint = pThread->frame.eip;
@@ -237,28 +234,9 @@ bool ProcessManager::ExecuteProcess(Process* pProcess)
 	console.Print("page directory : %x\n", pProcess->pPageDirectory);
 	
 	__asm cli
-	//ProcessManager::GetInstance()->g_pCurProcess = pProcess;
-	List_Add(&pProcessQueue, pProcess->processName, pProcess);
-	__asm sti
-	/*pmmngr_load_PDBR((physical_addr)pProcess->pPageDirectory);
 	
-	__asm {
-		mov     ax, 0x23; user mode data selector is 0x20 (GDT entry 3).Also sets RPL to 3
-			mov     ds, ax
-			mov     es, ax
-			mov     fs, ax
-			mov     gs, ax
-			;
-		; create stack frame
-			;
-		push   0x23; SS, notice it uses same selector as above
-			push[procStack]; stack
-			push    0x200; EFLAGS
-			push    0x1b; CS, user mode code selector is 0x18.With RPL 3 this is 0x1b
-			push[entryPoint]; EIP
-			iretd
-	}*/
-
+	m_processList.Add(pProcess);	
+	
 	return true;
 }
 #include "Hal.h"
@@ -288,10 +266,8 @@ Process* ProcessManager::CreateSystemProcess()
 
 	Thread* pThread = CreateMemoryThread(pProcess, StartRoutine);
 	
-	List_Add(&pProcess->pThreadQueue, "", pThread);
-	List_Add(&pProcessQueue, "", pProcess);
-
-	g_pCurProcess = pProcess;
+	pProcess->AddThread(pThread);
+	AddProcess(pProcess);	
 
 	return pProcess;
 }

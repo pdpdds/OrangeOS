@@ -169,7 +169,7 @@ void TerminateProcess () {
 		cli
 	}
 
-	Process* cur = ProcessManager::GetInstance()->g_pCurProcess;
+	Process* cur = ProcessManager::GetInstance()->GetCurrentProcess();
 	
 	if (cur->TaskID == PROC_INVALID_ID)
 	{
@@ -180,8 +180,8 @@ void TerminateProcess () {
 	/* release threads */
 	
 	//Thread* pThread = ProcessManager::GetInstance()->g_pThread;
-	Thread* pThread = (Thread*)List_GetData(cur->pThreadQueue, "", 0);
-	List_Delete(&cur->pThreadQueue, "", 0);
+	Thread* pThread = cur->GetThread(0);
+	cur->DelThread(0);	
 
 	u32int heapAddess = pThread->imageBase + pThread->imageSize + PAGE_SIZE + PAGE_SIZE * 2;
 	heapAddess = heapAddess - (heapAddess % PAGE_SIZE);
@@ -226,16 +226,16 @@ void TerminateProcess () {
 
 	pmmngr_free_block(cur->pPageDirectory);	
 
-	LISTNODE *pProcessList = ProcessManager::GetInstance()->pProcessQueue;
+	Orange::LinkedList *pProcessList = ProcessManager::GetInstance()->GetProcessList();
 	
-	List_Delete(&pProcessList, cur->processName, -1);
+	pProcessList->Delete(cur);	
 	console.Print("terminate %s\n", cur->processName);
 	
 	delete pThread;
 	delete cur;
 
-	Process* pProcess = (Process*)List_GetData(pProcessList, "", 0);
-	ProcessManager::GetInstance()->g_pCurProcess = pProcess;
+	Process* pProcess = (Process*)pProcessList->Get(0);
+	ProcessManager::GetInstance()->SetCurrentProcess(pProcess);
 	pProcess->dwRunState = PROCESS_STATE_SLEEP;
 
 	console.Print("next processs %x\n", pProcess);
@@ -272,7 +272,8 @@ void TerminateProcess () {
 extern "C" {
 	void TerminateMemoryProcess() {
 		
-		Process* pProcess = (Process*)List_GetData(ProcessManager::GetInstance()->pProcessQueue, "", 0);					
+		Orange::LinkedList *pProcessList = ProcessManager::GetInstance()->GetProcessList();
+		Process* pProcess = (Process*)pProcessList->Get(0);
 
 		if (pProcess->TaskID == PROC_INVALID_ID)
 		{
@@ -283,7 +284,7 @@ extern "C" {
 		/* release threads */
 		int i = 0;
 
-		Thread* pThread = (Thread*)List_GetData(pProcess->pThreadQueue, "", 0);		
+		Thread* pThread = pProcess->GetThread(0);
 		
 		/* get physical address of stack */
 		void* stackFrame = vmmngr_getPhysicalAddress(pProcess->pPageDirectory,
@@ -333,8 +334,8 @@ extern "C" {
 
 extern "C" {
 	uint32_t MemoryAlloc(size_t size) {
-		Process* pProcess = ProcessManager::GetInstance()->g_pCurProcess;
-		Thread* pThread = (Thread*)List_GetData(pProcess->pThreadQueue, "", 0);
+		Process* pProcess = ProcessManager::GetInstance()->GetCurrentProcess();
+		Thread* pThread = pProcess->GetThread(0);
 		console.Print("process heap alloc, %d %x\n", size, pThread->lpHeap);
 		void *addr = alloc(size, (u8int)0, (heap_t*)pThread->lpHeap);
 		console.Print("process heap alloc, %d %x\n", size, pThread->lpHeap);
@@ -346,8 +347,8 @@ extern "C" {
 
 extern "C" {
 	void MemoryFree(void* p) {
-		Process* pProcess = ProcessManager::GetInstance()->g_pCurProcess;
-		Thread* pThread = (Thread*)List_GetData(pProcess->pThreadQueue, "", 0);
+		Process* pProcess = ProcessManager::GetInstance()->GetCurrentProcess();
+		Thread* pThread = pProcess->GetThread(0);
 		free(p, (heap_t*)pThread->lpHeap);
 	}
 } // extern "C"
@@ -362,8 +363,8 @@ extern "C" {
 extern "C" {
 	void CreateDefaultHeap() {
 		
-		Process* pProcess = ProcessManager::GetInstance()->g_pCurProcess;
-		Thread* pThread = (Thread*)List_GetData(pProcess->pThreadQueue, "", 0);
+		Process* pProcess = ProcessManager::GetInstance()->GetCurrentProcess();
+		Thread* pThread = pProcess->GetThread(0);
 		//Thread* pThread = ProcessManager::GetInstance()->g_pThread;
 		void* pHeapaaPhys = (void*)pmmngr_alloc_blocks(300);
 		

@@ -45,11 +45,11 @@ bool  Scheduler::DoSchedule(int tick, uint32_t registers)
 
 	if (systemOn == true)
 	{
-		Process* curProcess = ProcessManager::GetInstance()->g_pCurProcess;
+		Process* curProcess = ProcessManager::GetInstance()->GetCurrentProcess();
 
 		if (curProcess)
 		{
-			Thread* pCurThread = (Thread*)List_GetData(curProcess->pThreadQueue, "", 0);
+			Thread* pCurThread = curProcess->GetThread(0);
 			pCurThread->curESP = (*(uint32_t*)(registers - 8));
 			pCurThread->curFlags = (*(uint32_t*)(registers - 12));
 			pCurThread->curCS = (*(uint32_t*)(registers - 16));
@@ -69,12 +69,12 @@ bool  Scheduler::DoSchedule(int tick, uint32_t registers)
 			pCurThread->frame.esi = (*(uint32_t*)(registers - 48));
 			pCurThread->frame.edi = (*(uint32_t*)(registers - 52));
 
-			LISTNODE *pProcessList = ProcessManager::GetInstance()->pProcessQueue;
-			int processCount = List_Count(pProcessList);
+			Orange::LinkedList *pProcessList = ProcessManager::GetInstance()->GetProcessList();
+			int processCount = pProcessList->Count();
 
 			for (int index = 0; index < processCount; index++)
 			{
-				Process* pProcess = (Process*)List_GetData(pProcessList, "", index);
+				Process* pProcess = (Process*)pProcessList->Get(index);
 
 				if (curProcess == pProcess)
 					continue;
@@ -89,8 +89,8 @@ bool  Scheduler::DoSchedule(int tick, uint32_t registers)
 					{
 
 						//console.Print("Scheduler1 : %d\n", processCount);
-						ProcessManager::GetInstance()->g_pCurProcess = pProcess;
-						Thread* pThread = (Thread*)List_GetData(pProcess->pThreadQueue, "", 0);
+						ProcessManager::GetInstance()->SetCurrentProcess(pProcess);
+						Thread* pThread = pProcess->GetThread(0);
 
 
 						entryPoint = pThread->curEip;
@@ -232,8 +232,8 @@ bool  Scheduler::DoSchedule(int tick, uint32_t registers)
 					else if (pProcess->dwProcessType == PROCESS_KERNEL)
 					{
 
-						ProcessManager::GetInstance()->g_pCurProcess = pProcess;
-						Thread* pThread = (Thread*)List_GetData(pProcess->pThreadQueue, "", 0);
+						ProcessManager::GetInstance()->SetCurrentProcess(pProcess);
+						Thread* pThread = pProcess->GetThread(0);
 
 
 						entryPoint = pThread->curEip;
@@ -360,11 +360,11 @@ bool  Scheduler::DoScheduleA(int tick, registers_t regs)
 			//console.Print("Scheduler4 : %d\n", count1);
 		}
 
-		Process* curProcess = ProcessManager::GetInstance()->g_pCurProcess;
+		Process* curProcess = ProcessManager::GetInstance()->GetCurrentProcess();
 		
 		if (curProcess)
 		{
-			Thread* pCurThread = (Thread*)List_GetData(curProcess->pThreadQueue, "", 0);
+			Thread* pCurThread = curProcess->GetThread(0);
 			pCurThread->m_regs = regs;
 
 
@@ -383,12 +383,13 @@ bool  Scheduler::DoScheduleA(int tick, registers_t regs)
 			pCurThread->frame.edi = regs.edi;
 		}
 
-		LISTNODE *pProcessList = ProcessManager::GetInstance()->pProcessQueue;
-		int processCount = List_Count(pProcessList);
+		Orange::LinkedList *pProcessList = ProcessManager::GetInstance()->GetProcessList();
+		int processCount = pProcessList->Count();
+
 		for (int index = 0; index < processCount; index++)
 		{
-			Process* pProcess = (Process*)List_GetData(pProcessList, "", index);
-			Thread* pThread = (Thread*)List_GetData(pProcess->pThreadQueue, "", 0);
+			Process* pProcess = (Process*)pProcessList->Get(index);			
+			Thread* pThread = pProcess->GetThread(0);
 
 			if (curProcess == pProcess)
 				if (curProcess->dwRunState != PROCESS_STATE_SLEEP)
@@ -402,7 +403,7 @@ bool  Scheduler::DoScheduleA(int tick, registers_t regs)
 				{
 					static int count = 0;
 					//console.Print("Scheduler1 : %d\n", count++);
-					Thread* pThread = (Thread*)List_GetData(pProcess->pThreadQueue, "", 0);
+					Thread* pThread = pProcess->GetThread(0);
 
 					entryPoint = pThread->curEip;
 					procStack = pThread->curESP;
@@ -430,7 +431,7 @@ bool  Scheduler::DoScheduleA(int tick, registers_t regs)
 
 					if (pThread->dwRunState == PROCESS_STATE_INIT)
 					{
-						ProcessManager::GetInstance()->g_pCurProcess = pProcess;
+						ProcessManager::GetInstance()->SetCurrentProcess(pProcess);
 						pmmngr_load_PDBR((physical_addr)pProcess->pPageDirectory);
 						OutPortByte(0x20, 0x20);
 						pThread->dwRunState = PROCESS_STATE_RUNNING;
@@ -463,7 +464,7 @@ bool  Scheduler::DoScheduleA(int tick, registers_t regs)
 						//console.Print("flags : %x\n", pThread->curFlags);
 						//console.Print("esp : %x\n", pThread->curESP);
 					//	console.Print("UserESP : %x\n", pThread->m_regs.useresp);
-						ProcessManager::GetInstance()->g_pCurProcess = pProcess;
+						ProcessManager::GetInstance()->SetCurrentProcess(pProcess);
 						pmmngr_load_PDBR((physical_addr)pProcess->pPageDirectory);
 						OutPortByte(0x20, 0x20);
 						pThread->dwRunState = PROCESS_STATE_RUNNING;
@@ -513,8 +514,8 @@ bool  Scheduler::DoScheduleA(int tick, registers_t regs)
 				{
 					pProcess->dwRunState = PROCESS_STATE_RUNNING;
 					//console.Print("Scheduler2 : %d\n", processCount);
-					ProcessManager::GetInstance()->g_pCurProcess = pProcess;
-					Thread* pThread = (Thread*)List_GetData(pProcess->pThreadQueue, "", 0);
+					ProcessManager::GetInstance()->SetCurrentProcess(pProcess);
+					Thread* pThread = pProcess->GetThread(0);
 
 
 					entryPoint = pThread->curEip;

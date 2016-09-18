@@ -158,7 +158,7 @@ void cmd_memtask()
 
 		int entryPoint = 0;
 		unsigned int procStack = 0;
-		Thread* pThread = (Thread*)List_GetData(pProcess->pThreadQueue, "", 0);
+		Thread* pThread = pProcess->GetThread(0);
 
 		/* get esp and eip of main thread */
 		entryPoint = pThread->frame.eip;
@@ -286,7 +286,7 @@ void cmd_proc(char* pName) {
 		console.Print("Can't Execute Process. %d\n", pName);
 	}
 	else
-		ProcessManager::GetInstance()->ExecuteProcess(pProcess);
+		ProcessManager::GetInstance()->AddProcess(pProcess);
 }
 
 bool ConsoleManager::RunCommand(char* buf) 
