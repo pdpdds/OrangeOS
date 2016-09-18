@@ -22,6 +22,9 @@
     <Filter Include="Process">
       <UniqueIdentifier>{4e8b9853-f281-4ba6-b922-0a30235e6756}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Mint64">
+      <UniqueIdentifier>{bcab9d7b-f7f0-44c6-9503-104314014f9d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="entry.cpp">
@@ -119,6 +122,24 @@
     <ClCompile Include="kybrd.cpp" />
     <ClCompile Include="Scheduler.cpp" />
     <ClCompile Include="ConsoleManager.cpp" />
+    <ClCompile Include="..\Mint64\Synchronization.cpp">
+      <Filter>Mint64</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Mint64\Keyboard.cpp">
+      <Filter>Mint64</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Mint64\Queue.cpp">
+      <Filter>Mint64</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Mint64\Mouse.cpp">
+      <Filter>Mint64</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Mint64\kList.cpp">
+      <Filter>Mint64</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Mint64\HardDisk.cpp">
+      <Filter>Mint64</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DebugDisplay.h">
@@ -217,5 +238,26 @@
     <ClInclude Include="kybrd.h" />
     <ClInclude Include="Scheduler.h" />
     <ClInclude Include="ConsoleManager.h" />
+    <ClInclude Include="..\Mint64\Keyboard.h">
+      <Filter>Mint64</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Mint64\Synchronization.h">
+      <Filter>Mint64</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Mint64\Queue.h">
+      <Filter>Mint64</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Mint64\Mouse.h">
+      <Filter>Mint64</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Mint64\kList.h">
+      <Filter>Mint64</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Mint64\KTask.h">
+      <Filter>Mint64</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Mint64\HardDisk.h">
+      <Filter>Mint64</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

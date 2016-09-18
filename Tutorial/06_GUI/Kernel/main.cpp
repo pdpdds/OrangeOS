@@ -13,7 +13,7 @@
 #include "mmngr_phys.h"
 #include "mmngr_virtual.h"
 #include "kheap.h"
-#include "HardDisk.h"
+#include "../Mint64/HardDisk.h"
 #include "flpydsk.h"
 #include "fat12.h"
 #include "ZetPlane.h"
@@ -23,6 +23,8 @@
 #include "ConsoleManager.h"
 #include "List.h"
 #include "kybrd.h"
+#include "Keyboard.h"
+
 
 
 bool systemOn = false;
@@ -98,9 +100,9 @@ void fillScreen32() {
 #define VBE_DISPI_ENABLED               0x01
 #define VBE_DISPI_LFB_ENABLED           0x40
 
-
-
-int _cdecl kmain(multiboot_info* bootinfo) {
+extern void _cdecl kKeyboardHandler();
+int _cdecl kmain(multiboot_info* bootinfo) 
+{
 
 	InterruptDisable();
 
@@ -124,7 +126,14 @@ int _cdecl kmain(multiboot_info* bootinfo) {
 	g_kernelSize *= 512;
 
 	//! install the keyboard to IR 33, uses IRQ 1
-	kkybrd_install(33);
+	//kkybrd_install(33);
+	setvect(33, kKeyboardHandler);
+	
+	// 키보드를 활성화
+	if (kInitializeKeyboard() == TRUE)
+	{		
+		kChangeKeyboardLED(FALSE, FALSE, FALSE);
+	}
 
 	InitializeFloppyDrive();
 
@@ -140,10 +149,14 @@ int _cdecl kmain(multiboot_info* bootinfo) {
 
 	//HardDiskHandler hardHandler;
 	//hardHandler.Initialize();	
-
 	
 	console.SetBackColor(ConsoleColor::Blue);
 	console.Clear();
+
+	/*if (kInitializeHDD() == TRUE)
+	{
+		console.Print("AAAAAAAAAAAAAAAAAAAAAAAAA\n");
+	}*/
 
 	//console.Print("HardDisk Count : %d\n", hardHandler.GetTotalDevices());
 	console.Print("Orange OS Console System Initialize\n");
@@ -294,6 +307,8 @@ void InitializeFloppyDrive()
 	fsysFatInitialize();
 }
 
+
+
 void run() 
 {
 	ConsoleManager manager;
@@ -304,7 +319,7 @@ void run()
 	{
 		console.Print("Command> ");
 		memset(commandBuffer, 0, MAXPATH);		
-		//console.Print("commandBuffer Address : 0x%x\n", &commandBuffer);
+		//console.Print("commandBuffer Address : 0x%x\n", &commandBuffer);	
 		
 		console.GetCommand(commandBuffer, MAXPATH-2);
 		console.Print("\n");

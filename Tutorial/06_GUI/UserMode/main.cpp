@@ -44,7 +44,7 @@ void EntryPoint() {
 			//printf(a);
 
 			first = GetTickCount();
-			count -= 1;
+			//count -= 1;
 		}
 	}
 

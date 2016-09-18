@@ -305,7 +305,7 @@ void Console::SetColor(ConsoleColor Text, ConsoleColor Back, bool blink)
 }
 
 //Get Command from prompt
-void Console::GetCommand(char* commandBuffer, int bufSize)
+/*void Console::GetCommand(char* commandBuffer, int bufSize)
 {
 	KEYCODE key = KEY_UNKNOWN;
 	bool	BufChar;
@@ -370,7 +370,7 @@ void Console::GetCommand(char* commandBuffer, int bufSize)
 
 	//! null terminate the string
 	commandBuffer[i] = '\0';	
-}
+}*/
 
 //리팩토링
 //! wait for key stroke
@@ -385,4 +385,97 @@ KEYCODE	Console::GetChar()
 	//! discard last keypress (we handled it) and return
 	kkybrd_discard_last_key();
 	return key;
+}
+
+#include "Keyboard.h"
+
+BYTE kGetCh(void)
+{
+	KEYDATA stData;
+
+	// 키가 눌러질 때까지 대기함
+	while (1)
+	{
+		// 키 큐에 데이터가 수신될 때까지 대기
+		while (kGetKeyFromKeyQueue(&stData) == FALSE)
+		{
+		}
+
+
+
+		// 키가 눌렸다는 데이터가 수신되면 ASCII 코드를 반환
+		if (stData.bFlags & KEY_FLAGS_DOWN)
+		{
+			return stData.bASCIICode;
+		}
+	}
+}
+
+//Get Command from prompt
+void Console::GetCommand(char* commandBuffer, int bufSize)
+{
+	//KEYCODE key = KEY_UNKNOWN;
+	bool	BufChar;
+
+	//! get command string
+	int i = 0;
+	while (i < bufSize) {
+
+		//! buffer the next char
+		BufChar = true;
+
+		//! grab next char		
+		
+		BYTE key = kGetCh();
+
+		//! end of command if enter is pressed
+		if (key == KEY_ENTER)
+			break;
+
+		//! backspace
+		if (key == (BYTE)KEY_BACKSPACE) {
+
+			//! dont buffer this char
+			BufChar = false;
+
+			if (i > 0) {
+
+				//! go back one char
+				uint y, x;
+				GetCursorPos(x, y);
+				if (x > 0)
+					MoveCursor(x, y);
+				else {
+					//! x is already 0, so go back one line
+					y--;
+					x = 80;
+				}
+
+				//! erase the character from display
+				WriteChar(' ');
+				MoveCursor(x, y);
+
+				//! go back one char in cmd buf
+				i--;
+			}
+		}
+
+		//! only add the char if it is to be buffered
+		if (BufChar) {
+
+			//! convert key to an ascii char and put it in buffer
+			char c = kkybrd_key_to_ascii((KEYCODE)key);
+			if (c != 0) { //insure its an ascii char
+
+				WriteChar(c);
+				commandBuffer[i++] = c;
+			}
+		}
+
+		//! wait for next key. You may need to adjust this to suite your needs
+		SimpleSleep(10);
+	}
+
+	//! null terminate the string
+	commandBuffer[i] = '\0';
 }
