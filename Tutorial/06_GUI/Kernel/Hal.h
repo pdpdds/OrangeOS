@@ -7,6 +7,8 @@
 #define interrupt
 #endif
 
+#define PAGE_SIZE 4096
+
 #define far
 #define near
 
@@ -30,6 +32,22 @@ inline static void InterruptEnable()
 }
 
 inline static void InterruptDisable()
+{
+	__asm
+	{
+		cli
+	}
+}
+
+inline static void Unlock()
+{
+	__asm
+	{
+		sti
+	}
+}
+
+inline static void Lock()
 {
 	__asm
 	{

@@ -107,7 +107,7 @@ HANDLE CreateThread(SIZE_T dwStackSize, LPTHREAD_START_ROUTINE lpStartAddress, L
 		return 0;
 	}
 
-	Thread* newThread = ProcessManager::GetInstance()->CreateMemoryThread(cur, lpStartAddress);
+	Thread* newThread = ProcessManager::GetInstance()->CreateThread(cur, lpStartAddress);
 
 	if(newThread == NULL)
 	{

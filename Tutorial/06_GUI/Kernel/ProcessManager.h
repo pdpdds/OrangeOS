@@ -18,21 +18,23 @@ public:
 	ProcessManager();
 	virtual ~ProcessManager();
 
-	int GetNextProcessId(){ return m_nextProcessId++; }
+	
 	Process* CreateSystemProcess();
 	Process* CreateProcess(char* appName, UINT32 processType);
 
-	Process* CreateMemoryProcess(LPTHREAD_START_ROUTINE lpStartAddress);
+	Process* CreateProcess(LPTHREAD_START_ROUTINE lpStartAddress);
 
 	Thread* CreateThread(Process* pProcess, FILE* pFile);
-	Thread* CreateMemoryThread(Process* pProcess, LPTHREAD_START_ROUTINE lpStartAddress);
+	Thread* CreateThread(Process* pProcess, LPTHREAD_START_ROUTINE lpStartAddress);
 
 	bool AddProcess(Process* pProces);
 	
 	Process* GetCurrentProcess() { return m_pCurrentProcess; }
 	void SetCurrentProcess(Process* pProcess) { m_pCurrentProcess = pProcess; }
 
-	Orange::LinkedList* GetProcessList() { return&m_processList;}
+
+	Orange::LinkedList* GetProcessList() { return &m_processList;}
+	int GetNextProcessId() { return m_nextProcessId++; }
 
 	static ProcessManager* GetInstance()
 	{

@@ -1,10 +1,12 @@
 #include "ProcessManager.h"
 #include "Process.h"
-#include "task.h"
+#include "Hal.h"
+#include "Task.h"
 #include "Thread.h"
 #include "string.h"
 #include "Console.h"
 #include "Process.h"
+#include "task.h"
 
 ProcessManager* ProcessManager::m_pProcessManager = 0;
 extern Console console;
@@ -19,26 +21,24 @@ ProcessManager::~ProcessManager()
 {
 }
 
-Process* ProcessManager::CreateMemoryProcess(LPTHREAD_START_ROUTINE lpStartAddress)
+Process* ProcessManager::CreateProcess(LPTHREAD_START_ROUTINE lpStartAddress)
 {
 	Process* pProcess = new Process();
-	pProcess->TaskID = 1;
+	pProcess->TaskID = GetNextProcessId();
 	pProcess->pPageDirectory = vmmngr_createAddressSpace();
 	mapKernelSpace(pProcess->pPageDirectory);
 
 	pProcess->dwPriority = 1;
 	pProcess->dwRunState = PROCESS_STATE_INIT;
 	
-	Thread* pThread = CreateMemoryThread(pProcess, lpStartAddress);
+	Thread* pThread = CreateThread(pProcess, lpStartAddress);
 	pProcess->AddThread(pThread);
 	
-	console.Print("Create Success Memory Task\n");
+	console.Print("Create Success Task %d\n", pProcess->TaskID);
 
 	return pProcess;
 }
 
-#include "task.h"
-#define PAGE_SIZE 4096
 Thread* ProcessManager::CreateThread(Process* pProcess, FILE* file)
 {
 	unsigned char buf[512];
@@ -140,7 +140,7 @@ Thread* ProcessManager::CreateThread(Process* pProcess, FILE* file)
 
 }
 
-Thread* ProcessManager::CreateMemoryThread(Process* pProcess, LPTHREAD_START_ROUTINE lpStartAddress)
+Thread* ProcessManager::CreateThread(Process* pProcess, LPTHREAD_START_ROUTINE lpStartAddress)
 {
 	Thread* pThread = new Thread();
 	pThread->pParent = pProcess;
@@ -172,7 +172,6 @@ Thread* ProcessManager::CreateMemoryThread(Process* pProcess, LPTHREAD_START_ROU
 	pThread->frame.ebp = pThread->frame.esp;
 
 	return pThread;
-	
 }
 
 Process* ProcessManager::CreateProcess(char* appname, UINT32 processType)
@@ -231,22 +230,21 @@ bool ProcessManager::AddProcess(Process* pProcess)
 	procStack = pThread->frame.esp;
 
 	console.Print("eip : %x\n", pThread->frame.eip);
-	console.Print("page directory : %x\n", pProcess->pPageDirectory);
-	
-	__asm cli
-	
-	m_processList.Add(pProcess);	
+	console.Print("page directory : %x\n", pProcess->pPageDirectory);	
+
+	Lock();	
+	m_processList.Add(pProcess);
+	Unlock();
 	
 	return true;
 }
-#include "Hal.h"
+
 extern void run();
 DWORD WINAPI StartRoutine(LPVOID parameter)
 {
 	while (1) {
 		run();
-	}
-	
+	}	
 
 	for (;;);
 
@@ -264,7 +262,7 @@ Process* ProcessManager::CreateSystemProcess()
 	pProcess->dwPriority = 1;
 	pProcess->dwRunState = PROCESS_STATE_RUNNING;
 
-	Thread* pThread = CreateMemoryThread(pProcess, StartRoutine);
+	Thread* pThread = CreateThread(pProcess, StartRoutine);
 	
 	pProcess->AddThread(pThread);
 	AddProcess(pProcess);	
