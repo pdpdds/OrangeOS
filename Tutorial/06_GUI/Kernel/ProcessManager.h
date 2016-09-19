@@ -20,15 +20,7 @@ public:
 
 	
 	Process* CreateSystemProcess();
-	Process* CreateProcess(char* appName, UINT32 processType);
 
-	Process* CreateProcess(LPTHREAD_START_ROUTINE lpStartAddress);
-
-	Thread* CreateThread(Process* pProcess, FILE* pFile);
-	Thread* CreateThread(Process* pProcess, LPTHREAD_START_ROUTINE lpStartAddress);
-
-	bool AddProcess(Process* pProces);
-	
 	Process* GetCurrentProcess() { return m_pCurrentProcess; }
 	void SetCurrentProcess(Process* pProcess) { m_pCurrentProcess = pProcess; }
 
@@ -46,6 +38,14 @@ public:
 
 
 	static ProcessManager* m_pProcessManager;
+
+private:
+	Process* CreateProcess(char* appName, UINT32 processType);
+	Process* CreateProcess(LPTHREAD_START_ROUTINE lpStartAddress);
+	Thread* CreateThread(Process* pProcess, FILE* pFile);
+	Thread* CreateThread(Process* pProcess, LPTHREAD_START_ROUTINE lpStartAddress);
+
+	bool AddProcess(Process* pProces);
 
 private:
 	int m_nextProcessId;

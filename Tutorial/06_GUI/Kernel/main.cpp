@@ -26,7 +26,6 @@
 #include "Keyboard.h"
 
 
-
 bool systemOn = false;
 Console console;
 extern uint32_t g_kernelSize;

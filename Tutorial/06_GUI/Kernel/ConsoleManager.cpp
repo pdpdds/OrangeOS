@@ -151,7 +151,7 @@ void cmd_memtask()
 {
 
 
-	Process* pProcess = ProcessManager::GetInstance()->CreateMemoryProcess(kthread_1);
+	Process* pProcess = ProcessManager::GetInstance()->CreateProcess(kthread_1);
 
 	if (pProcess)
 	{
