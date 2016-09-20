@@ -187,7 +187,7 @@ void cmd_memtask()
 		}
 	}
 
-	ProcessManager::GetInstance()->CreateMemoryProcess(SampleLoop2);
+	ProcessManager::GetInstance()->CreateProcess(SampleLoop2);
 
 }
 

@@ -2,7 +2,7 @@
 
 Process::Process()
 {
-	TaskID = -1;
+	m_taskId = -1;
 	dwTickCount = 0;
 }
 

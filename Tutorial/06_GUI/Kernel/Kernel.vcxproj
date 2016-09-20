@@ -121,6 +121,7 @@
     <ClCompile Include="Hal.cpp" />
     <ClCompile Include="Harddisk.cpp" />
     <ClCompile Include="IDT.cpp" />
+    <ClCompile Include="KernelProcedure.cpp" />
     <ClCompile Include="kheap.cpp" />
     <ClCompile Include="kybrd.cpp" />
     <ClCompile Include="List.cpp" />
@@ -128,6 +129,7 @@
     <ClCompile Include="mmngr_phys.cpp" />
     <ClCompile Include="mmngr_virtual.cpp" />
     <ClCompile Include="ordered_array.cpp" />
+    <ClCompile Include="PhysicsMemoryManager.cpp" />
     <ClCompile Include="pic.cpp" />
     <ClCompile Include="PIT.cpp" />
     <ClCompile Include="Plane.cpp" />
@@ -167,12 +169,14 @@
     <ClInclude Include="HardDisk.h" />
     <ClInclude Include="IDT.h" />
     <ClInclude Include="image.h" />
+    <ClInclude Include="KernelProcedure.h" />
     <ClInclude Include="kheap.h" />
     <ClInclude Include="kybrd.h" />
     <ClInclude Include="List.h" />
     <ClInclude Include="mmngr_phys.h" />
     <ClInclude Include="mmngr_virtual.h" />
     <ClInclude Include="ordered_array.h" />
+    <ClInclude Include="PhysicsMemoryManager.h" />
     <ClInclude Include="pic.h" />
     <ClInclude Include="PIT.h" />
     <ClInclude Include="Plane.h" />

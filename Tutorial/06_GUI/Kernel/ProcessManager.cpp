@@ -24,7 +24,7 @@ ProcessManager::~ProcessManager()
 Process* ProcessManager::CreateProcess(LPTHREAD_START_ROUTINE lpStartAddress)
 {
 	Process* pProcess = new Process();
-	pProcess->TaskID = GetNextProcessId();
+	pProcess->m_taskId = GetNextProcessId();
 	pProcess->pPageDirectory = vmmngr_createAddressSpace();
 	mapKernelSpace(pProcess->pPageDirectory);
 
@@ -34,7 +34,7 @@ Process* ProcessManager::CreateProcess(LPTHREAD_START_ROUTINE lpStartAddress)
 	Thread* pThread = CreateThread(pProcess, lpStartAddress);
 	pProcess->AddThread(pThread);
 	
-	console.Print("Create Success Task %d\n", pProcess->TaskID);
+	console.Print("Create Success Task %d\n", pProcess->m_taskId);
 
 	return pProcess;
 }
@@ -174,37 +174,41 @@ Thread* ProcessManager::CreateThread(Process* pProcess, LPTHREAD_START_ROUTINE l
 	return pThread;
 }
 
-Process* ProcessManager::CreateProcess(char* appname, UINT32 processType)
+Process* ProcessManager::CreateProcess(char* appName, UINT32 processType)
 {
 	FILE file;
 
 	/* open file */
-	file = volOpenFile(appname);
+	file = volOpenFile(appName);
+
 	if (file.flags == FS_INVALID)
-		return 0;
+		return NULL;
+
 	if ((file.flags & FS_DIRECTORY) == FS_DIRECTORY)
 		return 0;
 
 	pdirectory* addressSpace = 0;
 
 	addressSpace = vmmngr_createAddressSpace();
-	if (!addressSpace) {		
+
+	if (!addressSpace) 
+	{		
 		volCloseFile(&file);
-		return 0;
+		return NULL;
 	}
 
 	mapKernelSpace(addressSpace);
 
 	Process* pProcess = new Process();
 
-	pProcess->TaskID = ProcessManager::GetInstance()->GetNextProcessId();
+	pProcess->m_taskId = ProcessManager::GetInstance()->GetNextProcessId();
 	pProcess->pPageDirectory = addressSpace;
 	pProcess->dwPriority = 1;
 	pProcess->dwRunState = PROCESS_STATE_INIT;
-	strcpy(pProcess->processName, appname);
+	strcpy(pProcess->processName, appName);
 
 	Thread* pThread = CreateThread(pProcess, &file);
-	pProcess->AddThread(pThread);	
+	pProcess->AddThread(pThread);
 	
 	return pProcess;
 }
@@ -217,7 +221,7 @@ bool ProcessManager::AddProcess(Process* pProcess)
 	int entryPoint = 0;
 	unsigned int procStack = 0;
 
-	if (pProcess->TaskID == PROC_INVALID_ID)
+	if (pProcess->m_taskId == PROC_INVALID_ID)
 		return false;
 
 	if (!pProcess->pPageDirectory)
@@ -254,7 +258,7 @@ DWORD WINAPI StartRoutine(LPVOID parameter)
 Process* ProcessManager::CreateSystemProcess()
 {
 	Process* pProcess = new Process();
-	pProcess->TaskID = ProcessManager::GetInstance()->GetNextProcessId();
+	pProcess->m_taskId = GetNextProcessId();
 	pProcess->pPageDirectory = vmmngr_get_directory();
 	pProcess->dwProcessType = PROCESS_KERNEL;
 	mapKernelSpace(pProcess->pPageDirectory);

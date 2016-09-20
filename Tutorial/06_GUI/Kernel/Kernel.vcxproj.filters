@@ -140,6 +140,10 @@
     <ClCompile Include="..\Mint64\HardDisk.cpp">
       <Filter>Mint64</Filter>
     </ClCompile>
+    <ClCompile Include="KernelProcedure.cpp" />
+    <ClCompile Include="PhysicsMemoryManager.cpp">
+      <Filter>Memory</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DebugDisplay.h">
@@ -258,6 +262,10 @@
     </ClInclude>
     <ClInclude Include="..\Mint64\HardDisk.h">
       <Filter>Mint64</Filter>
+    </ClInclude>
+    <ClInclude Include="KernelProcedure.h" />
+    <ClInclude Include="PhysicsMemoryManager.h">
+      <Filter>Memory</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

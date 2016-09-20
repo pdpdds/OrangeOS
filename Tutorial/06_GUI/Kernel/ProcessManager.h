@@ -18,9 +18,7 @@ public:
 	ProcessManager();
 	virtual ~ProcessManager();
 
-	
-	Process* CreateSystemProcess();
-
+		
 	Process* GetCurrentProcess() { return m_pCurrentProcess; }
 	void SetCurrentProcess(Process* pProcess) { m_pCurrentProcess = pProcess; }
 
@@ -35,19 +33,20 @@ public:
 
 		return m_pProcessManager;
 	}
-
-
-	static ProcessManager* m_pProcessManager;
-
-private:
+	
+	Process* CreateSystemProcess();
 	Process* CreateProcess(char* appName, UINT32 processType);
 	Process* CreateProcess(LPTHREAD_START_ROUTINE lpStartAddress);
 	Thread* CreateThread(Process* pProcess, FILE* pFile);
 	Thread* CreateThread(Process* pProcess, LPTHREAD_START_ROUTINE lpStartAddress);
 
-	bool AddProcess(Process* pProces);
+	bool AddProcess(Process* pProces);	
+
+private:	
 
 private:
+	static ProcessManager* m_pProcessManager;
+
 	int m_nextProcessId;
 	Process* m_pCurrentProcess;
 	Orange::LinkedList m_processList;

@@ -32,9 +32,11 @@
 #define USER_SS					USER_DS
 
 
-#define PROCESS_STATE_SLEEP  0
-#define PROCESS_STATE_RUNNING 1
 #define PROCESS_STATE_INIT  0
+#define PROCESS_STATE_WAIT  1
+#define PROCESS_STATE_RUNNING 2
+#define PROCESS_STATE_SLEEP  3
+
 
 
 //! set access bit

@@ -159,7 +159,7 @@ void	pmmngr_init (size_t memSize, physical_addr bitmap) {
 
 	_mmngr_memory_size	=	memSize;
 	_mmngr_memory_map	=	(uint32_t*) bitmap;
-	_mmngr_max_blocks	=	(pmmngr_get_memory_size()*1024) / PMMNGR_BLOCK_SIZE;
+	_mmngr_max_blocks	=	(pmmngr_get_memory_size()) / PMMNGR_BLOCK_SIZE;
 	_mmngr_used_blocks	=	pmmngr_get_block_count();	
 
 	//! By default, all of memory is in use

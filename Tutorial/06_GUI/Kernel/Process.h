@@ -22,7 +22,7 @@ public:
 
 	void SetPDBR();
 
-	UINT32 TaskID;
+	UINT32 m_taskId;
 	UINT32 dwRunState;
 	UINT32 dwPriority;
 	UINT32 dwWaitingTime;

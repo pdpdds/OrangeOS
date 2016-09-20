@@ -171,7 +171,7 @@ void TerminateProcess () {
 
 	Process* cur = ProcessManager::GetInstance()->GetCurrentProcess();
 	
-	if (cur->TaskID == PROC_INVALID_ID)
+	if (cur->m_taskId == PROC_INVALID_ID)
 	{
 		console.Print("Invailid Process Id\n");
 		return;
@@ -275,7 +275,7 @@ extern "C" {
 		Orange::LinkedList *pProcessList = ProcessManager::GetInstance()->GetProcessList();
 		Process* pProcess = (Process*)pProcessList->Get(0);
 
-		if (pProcess->TaskID == PROC_INVALID_ID)
+		if (pProcess->m_taskId == PROC_INVALID_ID)
 		{
 			console.Print("Invalid Memory Process Id\n");
 			return;

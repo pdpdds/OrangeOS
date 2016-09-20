@@ -115,14 +115,13 @@ int _cdecl kmain(multiboot_info* bootinfo)
 	SetInterruptVector();
 	//setvect(32, scheduler_isr, 0x80);
 
+	//커널사이즈에 512를 곱하면 바이트로 환산된다.
+	//현재 커널의 사이즈는 4096바이트다.
+	g_kernelSize *= 512;
 	InitializeMemorySystem(bootinfo, g_kernelSize);
 
 	//i86_install_ir(SYSTEM_TMR_INT_NUMBER, I86_IDT_DESC_PRESENT | I86_IDT_DESC_BIT32 | 0x0500, 0x8, (I86_IRQ_HANDLER)TMR_TSS_SEG);
 	i86_pit_start_counter(100, I86_PIT_OCW_COUNTER_0, I86_PIT_OCW_MODE_SQUAREWAVEGEN);
-
-//커널사이즈에 512를 곱하면 바이트로 환산된다.
-//현재 커널의 사이즈는 4096바이트다.
-	g_kernelSize *= 512;
 
 	//! install the keyboard to IR 33, uses IRQ 1
 	//kkybrd_install(33);
@@ -244,8 +243,8 @@ void SetInterruptVector()
 }
 
 bool InitializeMemorySystem(multiboot_info* bootinfo, uint32_t kernelSize)
-{
-	pmmngr_init((size_t)bootinfo->m_memorySize, 0xC0000000 + kernelSize * 512);
+{	
+	pmmngr_init(bootinfo->m_memorySize * 1024, 0xC0000000 + g_kernelSize);
 
 	memory_region*	region = (memory_region*)0x1000;
 
@@ -259,7 +258,7 @@ bool InitializeMemorySystem(multiboot_info* bootinfo, uint32_t kernelSize)
 
 		pmmngr_init_region(region[i].startLo, region[i].sizeLo);
 	}
-	pmmngr_deinit_region(0x100000, kernelSize * 512 + 4096 * 1024 + 4096 * 1024);
+	pmmngr_deinit_region(0x100000, kernelSize + 4096 * 1024 + 4096 * 1024);
 	/*
 	kernel stack location
 	*/
