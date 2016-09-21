@@ -1,6 +1,8 @@
 #include "PhysicalMemoryManager.h"
 #include "string.h"
 
+PhysicalMemoryManager PhysicalMemoryManager::m_physicsMemoryManager;
+
 PhysicalMemoryManager::PhysicalMemoryManager()
 {
 }

@@ -31,26 +31,57 @@ bool VirtualMemoryManager::CreatePageTable(PageDirectory* dir, uint32_t virt, ui
 		if (pBlock == NULL)
 			return false;
 
+		memset(pBlock, 0, PAGE_TABLE_SIZE);
 		pageDirectory[virt >> 22] = ((uint32_t)pBlock) | flags;
-		memset(pBlock, 0, 4096);
-
+		
 		/* map page table into directory */
 		MapPhysicalAddressToVirtualAddresss(dir, (uint32_t)pBlock, (uint32_t)pBlock, flags);
 	}
 	return true;
 }
 
-/**
-* Map physical address to virtual
-* \param dir Page directory
-* \param virt Virtual address
-* \param phys Physical address
-* \param flags Page flags
-*/
+//PDE나 PTE의 플래그는 같은 값을 공유
+//가상주소를 물리 주소에 매핑
 void VirtualMemoryManager::MapPhysicalAddressToVirtualAddresss(PageDirectory* dir, uint32_t virt, uint32_t phys, uint32_t flags)
 {
 	PDE* pageDir = dir->m_entries;
 	if (pageDir[virt >> 22] == 0)
 		CreatePageTable(dir, virt, flags);
 	((uint32_t*)(pageDir[virt >> 22] & ~0xfff))[virt << 10 >> 10 >> 12] = phys | flags;
+}
+
+void VirtualMemoryManager::UnmapPageTable(PageDirectory* dir, uint32_t virt) 
+{
+	PDE* pageDir = dir->m_entries;
+	if (pageDir[virt >> 22] != 0) {
+
+		/* get mapped frame */
+		void* frame = (void*)(pageDir[virt >> 22] & 0x7FFFF000);
+
+		/* unmap frame */
+		PhysicalMemoryManager::GetInstance()->FreeBlock(frame);		
+		pageDir[virt >> 22] = 0;
+	}
+}
+
+
+void VirtualMemoryManager::UnmapPhysicalAddress(PageDirectory* dir, uint32_t virt)
+{
+	PDE* pagedir = dir->m_entries;
+	if (pagedir[virt >> 22] != 0)
+		UnmapPageTable(dir, virt);
+}
+
+PageDirectory* VirtualMemoryManager::CreateAddressSpace()
+{
+	PageDirectory* dir = NULL;
+
+	/* allocate page directory */
+	dir = (PageDirectory*)PhysicalMemoryManager::GetInstance()->AllocBlock();
+	if (!dir)
+		return NULL;
+	
+	memset(dir, 0, sizeof(PageDirectory));
+
+	return dir;
 }

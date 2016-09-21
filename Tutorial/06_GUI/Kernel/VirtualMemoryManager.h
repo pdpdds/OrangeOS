@@ -17,6 +17,7 @@ using namespace PageDirectoryEntry;
 
 #define PAGES_PER_TABLE		1024
 #define PAGES_PER_DIRECTORY	1024
+#define PAGE_TABLE_SIZE		4096
 
 typedef struct tag_PageTable 
 {
@@ -34,9 +35,7 @@ public:
 	VirtualMemoryManager();
 	virtual ~VirtualMemoryManager();
 
-	void* GetPhysicalAddressFromVirtualAddress(PageDirectory* directory, uint32_t virtualAddress);
-
-
+	
 	//! initialize the memory manager
 	void vmmngr_initialize();
 
@@ -76,11 +75,10 @@ public:
 
 	bool CreatePageTable(PageDirectory* dir, uint32_t virt, uint32_t flags);
 	void MapPhysicalAddressToVirtualAddresss(PageDirectory* dir, uint32_t virt, uint32_t phys, uint32_t flags);
-	void        vmmngr_unmapPageTable(PageDirectory* dir, uint32_t virt);
-	void        vmmngr_unmapPhysicalAddress(PageDirectory* dir, uint32_t virt);
-	PageDirectory* vmmngr_createAddressSpace();
-	void*       vmmngr_getPhysicalAddress(PageDirectory* dir, uint32_t virt);
-
+	void* GetPhysicalAddressFromVirtualAddress(PageDirectory* directory, uint32_t virtualAddress);
+	void UnmapPageTable(PageDirectory* dir, uint32_t virt);
+	void UnmapPhysicalAddress(PageDirectory* dir, uint32_t virt);
+	PageDirectory* CreateAddressSpace();
 
 	static VirtualMemoryManager* GetInstance()
 	{
