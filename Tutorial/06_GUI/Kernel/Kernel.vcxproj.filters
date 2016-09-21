@@ -147,10 +147,10 @@
     <ClCompile Include="VirtualMemoryManager.cpp">
       <Filter>Memory</Filter>
     </ClCompile>
-    <ClCompile Include="PageDirectory.cpp">
+    <ClCompile Include="PageTableEntry.cpp">
       <Filter>Memory</Filter>
     </ClCompile>
-    <ClCompile Include="PageTable.cpp">
+    <ClCompile Include="PageDirectoryEntry.cpp">
       <Filter>Memory</Filter>
     </ClCompile>
   </ItemGroup>
@@ -279,10 +279,10 @@
     <ClInclude Include="VirtualMemoryManager.h">
       <Filter>Memory</Filter>
     </ClInclude>
-    <ClInclude Include="PageDirectory.h">
+    <ClInclude Include="PageTableEntry.h">
       <Filter>Memory</Filter>
     </ClInclude>
-    <ClInclude Include="PageTable.h">
+    <ClInclude Include="PageDirectoryEntry.h">
       <Filter>Memory</Filter>
     </ClInclude>
   </ItemGroup>

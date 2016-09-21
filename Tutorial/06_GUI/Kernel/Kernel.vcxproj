@@ -129,8 +129,8 @@
     <ClCompile Include="mmngr_phys.cpp" />
     <ClCompile Include="mmngr_virtual.cpp" />
     <ClCompile Include="ordered_array.cpp" />
-    <ClCompile Include="PageDirectory.cpp" />
-    <ClCompile Include="PageTable.cpp" />
+    <ClCompile Include="PageDirectoryEntry.cpp" />
+    <ClCompile Include="PageTableEntry.cpp" />
     <ClCompile Include="PhysicalMemoryManager.cpp" />
     <ClCompile Include="pic.cpp" />
     <ClCompile Include="PIT.cpp" />
@@ -179,8 +179,8 @@
     <ClInclude Include="mmngr_phys.h" />
     <ClInclude Include="mmngr_virtual.h" />
     <ClInclude Include="ordered_array.h" />
-    <ClInclude Include="PageDirectory.h" />
-    <ClInclude Include="PageTable.h" />
+    <ClInclude Include="PageDirectoryEntry.h" />
+    <ClInclude Include="PageTableEntry.h" />
     <ClInclude Include="PhysicalMemoryManager.h" />
     <ClInclude Include="pic.h" />
     <ClInclude Include="PIT.h" />
