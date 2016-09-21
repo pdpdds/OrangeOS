@@ -1,12 +1,12 @@
-#include "PageEntry.h"
+#include "PageTable.h"
 
 
 
-PageEntry::PageEntry()
+PageTable::PageTable()
 {
 }
 
 
-PageEntry::~PageEntry()
+PageTable::~PageTable()
 {
 }

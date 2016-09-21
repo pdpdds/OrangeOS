@@ -1,8 +1,8 @@
 #pragma once
-class PageEntry
+class PageTable
 {
 public:
-	PageEntry();
-	~PageEntry();
+	PageTable();
+	~PageTable();
 };
 

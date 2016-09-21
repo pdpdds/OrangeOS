@@ -11,13 +11,8 @@ VirtualMemoryManager::~VirtualMemoryManager()
 {
 }
 
-/**
-* Get physical address from virtual
-* \param dir Page directory
-* \param virt Virtual address
-* \ret Physical address
-*/
-void* VirtualMemoryManager::GetPhysicalAddressFromVirtualAddress(pdirectory* dir, uint32_t virt)
+//가상 주소와 매핑된 실제 물리 주소를 얻어낸다.
+void* VirtualMemoryManager::GetPhysicalAddressFromVirtualAddress(PageDirectory* directory, uint32_t virtualAddress)
 {
 	pd_entry* pagedir = dir->m_entries;
 	if (pagedir[virt >> 22] == 0)
