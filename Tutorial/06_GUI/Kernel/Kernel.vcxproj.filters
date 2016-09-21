@@ -141,7 +141,16 @@
       <Filter>Mint64</Filter>
     </ClCompile>
     <ClCompile Include="KernelProcedure.cpp" />
-    <ClCompile Include="PhysicsMemoryManager.cpp">
+    <ClCompile Include="PhysicalMemoryManager.cpp">
+      <Filter>Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="VirtualMemoryManager.cpp">
+      <Filter>Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="PageDirectory.cpp">
+      <Filter>Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="PageTable.cpp">
       <Filter>Memory</Filter>
     </ClCompile>
   </ItemGroup>
@@ -264,7 +273,16 @@
       <Filter>Mint64</Filter>
     </ClInclude>
     <ClInclude Include="KernelProcedure.h" />
-    <ClInclude Include="PhysicsMemoryManager.h">
+    <ClInclude Include="PhysicalMemoryManager.h">
+      <Filter>Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="VirtualMemoryManager.h">
+      <Filter>Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="PageDirectory.h">
+      <Filter>Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="PageTable.h">
       <Filter>Memory</Filter>
     </ClInclude>
   </ItemGroup>

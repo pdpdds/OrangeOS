@@ -129,7 +129,9 @@
     <ClCompile Include="mmngr_phys.cpp" />
     <ClCompile Include="mmngr_virtual.cpp" />
     <ClCompile Include="ordered_array.cpp" />
-    <ClCompile Include="PhysicsMemoryManager.cpp" />
+    <ClCompile Include="PageDirectory.cpp" />
+    <ClCompile Include="PageTable.cpp" />
+    <ClCompile Include="PhysicalMemoryManager.cpp" />
     <ClCompile Include="pic.cpp" />
     <ClCompile Include="PIT.cpp" />
     <ClCompile Include="Plane.cpp" />
@@ -142,6 +144,7 @@
     <ClCompile Include="Thread.cpp" />
     <ClCompile Include="tss.cpp" />
     <ClCompile Include="user.cpp" />
+    <ClCompile Include="VirtualMemoryManager.cpp" />
     <ClCompile Include="vmmngr_pde.cpp" />
     <ClCompile Include="vmmngr_pte.cpp" />
     <ClCompile Include="ZetPlane.cpp" />
@@ -176,7 +179,9 @@
     <ClInclude Include="mmngr_phys.h" />
     <ClInclude Include="mmngr_virtual.h" />
     <ClInclude Include="ordered_array.h" />
-    <ClInclude Include="PhysicsMemoryManager.h" />
+    <ClInclude Include="PageDirectory.h" />
+    <ClInclude Include="PageTable.h" />
+    <ClInclude Include="PhysicalMemoryManager.h" />
     <ClInclude Include="pic.h" />
     <ClInclude Include="PIT.h" />
     <ClInclude Include="Plane.h" />
@@ -189,6 +194,7 @@
     <ClInclude Include="TaskStateSegment.h" />
     <ClInclude Include="Thread.h" />
     <ClInclude Include="tss.h" />
+    <ClInclude Include="VirtualMemoryManager.h" />
     <ClInclude Include="vmmngr_pde.h" />
     <ClInclude Include="vmmngr_pte.h" />
     <ClInclude Include="ZetPlane.h" />
