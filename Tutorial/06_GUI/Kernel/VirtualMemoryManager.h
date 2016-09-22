@@ -4,6 +4,10 @@
 #include "PageDirectoryEntry.h"
 #include "PageTableEntry.h"
 
+
+#define KERNEL_VIRTUAL_BASE_ADDRESS 0xC0000000
+#define KERNEL_PHYSICAL_BASE_ADDRESS 0x400000
+
 using namespace PageTableEntry;
 using namespace PageDirectoryEntry;
 
@@ -46,21 +50,18 @@ class VirtualMemoryManager
 public:
 	VirtualMemoryManager();
 	virtual ~VirtualMemoryManager();
-	
-	//! initialize the memory manager
-	void vmmngr_initialize();
+		
+	bool Initialize();
 
 	bool AllocPage(PTE* e);
 	void FreePage(PTE* e);
 
-	//! switch to a new page directory
-	bool vmmngr_switch_pdirectory(PageDirectory*);
+	bool SwitchPageDirectory(PageDirectory* dir);
 
-	//! get current page directory
-	PageDirectory* vmmngr_get_directory();
+	PageDirectory* GetCurPageDirectory();
 
 	//! flushes a cached translation lookaside buffer (TLB) entry
-	void vmmngr_flush_tlb_entry(uint32_t addr);
+	void FlushTranslationLockBufferEntry(uint32_t addr);
 	
 //∞À¡ı«ÿæﬂ µ 
 	void ClearPageTable(PageTable* p);	
@@ -86,5 +87,11 @@ public:
 
 private:
 	static VirtualMemoryManager m_virtualMemoryManager;
+
+	//! current directory table
+	PageDirectory*		_cur_directory = 0;
+
+	//! current page directory base register
+	uint32_t	_cur_pdbr = 0;
 };
 
