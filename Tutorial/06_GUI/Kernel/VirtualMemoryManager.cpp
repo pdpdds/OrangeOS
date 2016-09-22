@@ -85,3 +85,68 @@ PageDirectory* VirtualMemoryManager::CreateAddressSpace()
 
 	return dir;
 }
+
+void VirtualMemoryManager::ClearPageDirectory(PageDirectory* dir)
+{
+	if (dir == NULL)
+		return;
+	
+	memset(dir, 0, sizeof(PageDirectory));
+}
+
+PDE* VirtualMemoryManager::GetPDE(PageDirectory* dir, uint32_t addr)
+{
+	if (dir == NULL)
+		return NULL;
+		
+	return &dir->m_entries[GetPageTableIndex(addr)];
+}
+
+uint32_t VirtualMemoryManager::GetPageTableIndex(uint32_t addr)
+{
+	return (addr >= DTABLE_ADDR_SPACE_SIZE) ? 0 : addr / PAGE_SIZE;
+}
+
+//살펴볼 것
+uint32_t VirtualMemoryManager::GetPageTableEntryIndex(uint32_t addr) 
+{
+	
+	return (addr >= PTABLE_ADDR_SPACE_SIZE) ? 0 : addr / PAGE_SIZE;
+}
+
+PTE* VirtualMemoryManager::GetPTE(PageTable* p, uint32_t addr) 
+{
+	if (p == NULL)
+		return NULL;
+	
+	return &p->m_entries[GetPageTableEntryIndex(addr)];
+}
+
+void VirtualMemoryManager::ClearPageTable(PageTable* p) 
+{
+	if (p != NULL)
+		memset(p, 0, sizeof(PageTable));
+}
+
+bool VirtualMemoryManager::AllocPage(PTE* e)
+{	
+	void* p = PhysicalMemoryManager::GetInstance()->AllocBlock();
+	
+	if (p == NULL)
+		return false;
+	
+	PageTableEntry::SetFrame(e, (uint32_t)p);
+	PageTableEntry::AddAttribute(e, I86_PTE_PRESENT);
+
+	return true;
+}
+
+void VirtualMemoryManager::FreePage(PTE* e) 
+{
+
+	void* p = (void*)PageTableEntry::GetFrame(*e);
+	if (p)
+		PhysicalMemoryManager::GetInstance()->FreeBlock(p);		
+
+	PageTableEntry::DelAttribute(e, I86_PTE_PRESENT);
+}

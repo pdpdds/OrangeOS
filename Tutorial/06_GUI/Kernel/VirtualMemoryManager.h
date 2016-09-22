@@ -19,6 +19,18 @@ using namespace PageDirectoryEntry;
 #define PAGES_PER_DIRECTORY	1024
 #define PAGE_TABLE_SIZE		4096
 
+//! page table represents 4mb address space
+#define PTABLE_ADDR_SPACE_SIZE 0x400000
+//! directory table represents 4gb address space
+#define DTABLE_ADDR_SPACE_SIZE 0x100000000
+//! page sizes are 4k
+#define PAGE_SIZE 4096
+
+// chapter 21
+#define PAGE_DIRECTORY_INDEX(x) (((x) >> 22) & 0x3ff)
+#define PAGE_TABLE_INDEX(x) (((x) >> 12) & 0x3ff)
+#define PAGE_GET_PHYSICAL_ADDRESS(x) (*x & ~0xfff)
+
 typedef struct tag_PageTable 
 {
 	PTE m_entries[PAGES_PER_TABLE];
@@ -34,16 +46,12 @@ class VirtualMemoryManager
 public:
 	VirtualMemoryManager();
 	virtual ~VirtualMemoryManager();
-
 	
 	//! initialize the memory manager
 	void vmmngr_initialize();
 
-	//! allocates a page in physical memory
-	bool vmmngr_alloc_page(PTE*);
-
-	//! frees a page in physical memory
-	void vmmngr_free_page(PTE* e);
+	bool AllocPage(PTE* e);
+	void FreePage(PTE* e);
 
 	//! switch to a new page directory
 	bool vmmngr_switch_pdirectory(PageDirectory*);
@@ -53,25 +61,16 @@ public:
 
 	//! flushes a cached translation lookaside buffer (TLB) entry
 	void vmmngr_flush_tlb_entry(uint32_t addr);
-
-	//! clears a page table
-	void vmmngr_ptable_clear(PageTable* p);
-
-	//! convert virtual address to page table index
-	uint32_t vmmngr_ptable_virt_to_index(uint32_t addr);
-
-	//! get page entry from page table
-	PTE* vmmngr_ptable_lookup_entry(PageTable* p, uint32_t addr);
-
-	//! convert virtual address to page directory index
-	uint32_t vmmngr_pdirectory_virt_to_index(uint32_t addr);
-
-	//! clears a page directory table
-	void vmmngr_pdirectory_clear(PageDirectory* dir);
-
-	//! get directory entry from directory table
-	PDE* vmmngr_pdirectory_lookup_entry(PageDirectory* p, uint32_t addr);
-
+	
+//∞À¡ı«ÿæﬂ µ 
+	void ClearPageTable(PageTable* p);	
+	PTE* GetPTE(PageTable* p, uint32_t addr);
+	uint32_t GetPageTableEntryIndex(uint32_t addr);
+	
+	uint32_t GetPageTableIndex(uint32_t addr);
+	void ClearPageDirectory(PageDirectory* dir);	
+	PDE* GetPDE(PageDirectory* p, uint32_t addr);
+//
 
 	bool CreatePageTable(PageDirectory* dir, uint32_t virt, uint32_t flags);
 	void MapPhysicalAddressToVirtualAddresss(PageDirectory* dir, uint32_t virt, uint32_t phys, uint32_t flags);
