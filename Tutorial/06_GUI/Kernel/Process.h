@@ -1,6 +1,6 @@
 #pragma once
 #include "windef.h"
-#include "mmngr_virtual.h"
+#include "VirtualMemoryManager.h"
 #include "TaskStateSegment.h"
 #include "kheap.h"
 #include "List.h"
@@ -31,7 +31,7 @@ public:
 	UINT32 dwTickCount;
 	char processName[256];
 
-	pdirectory* pPageDirectory;
+	PageDirectory* pPageDirectory;
 	TaskStateSegment* pTSS;
 	heap_t* pHeap;
 

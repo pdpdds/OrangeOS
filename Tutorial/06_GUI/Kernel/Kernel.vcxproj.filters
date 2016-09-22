@@ -60,18 +60,6 @@
     <ClCompile Include="RTC.cpp">
       <Filter>Hal</Filter>
     </ClCompile>
-    <ClCompile Include="mmngr_phys.cpp">
-      <Filter>Memory</Filter>
-    </ClCompile>
-    <ClCompile Include="mmngr_virtual.cpp">
-      <Filter>Memory</Filter>
-    </ClCompile>
-    <ClCompile Include="vmmngr_pde.cpp">
-      <Filter>Memory</Filter>
-    </ClCompile>
-    <ClCompile Include="vmmngr_pte.cpp">
-      <Filter>Memory</Filter>
-    </ClCompile>
     <ClCompile Include="kheap.cpp">
       <Filter>Memory</Filter>
     </ClCompile>
@@ -181,18 +169,6 @@
     </ClInclude>
     <ClInclude Include="RTC.H">
       <Filter>Hal</Filter>
-    </ClInclude>
-    <ClInclude Include="mmngr_phys.h">
-      <Filter>Memory</Filter>
-    </ClInclude>
-    <ClInclude Include="mmngr_virtual.h">
-      <Filter>Memory</Filter>
-    </ClInclude>
-    <ClInclude Include="vmmngr_pde.h">
-      <Filter>Memory</Filter>
-    </ClInclude>
-    <ClInclude Include="vmmngr_pte.h">
-      <Filter>Memory</Filter>
     </ClInclude>
     <ClInclude Include="kheap.h">
       <Filter>Memory</Filter>

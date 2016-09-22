@@ -10,8 +10,8 @@
 #include "PIT.h"
 #include "PIC.h"
 #include "exception.h"
-#include "mmngr_phys.h"
-#include "mmngr_virtual.h"
+#include "PhysicalMemoryManager.h"
+#include "VirtualMemoryManager.h"
 #include "kheap.h"
 #include "../Mint64/HardDisk.h"
 #include "flpydsk.h"
@@ -76,7 +76,7 @@ void VbeBochsSetMode(uint16_t xres, uint16_t yres, uint16_t bpp) {
 void* VbeBochsMapLFB() {
 	int pfcount = WIDTH*HEIGHT*BYTES_PER_PIXEL / PAGE_SIZE;
 	for (int c = 0; c <= pfcount; c++)
-		vmmngr_mapPhysicalAddress(vmmngr_get_directory(), LFB_VIRTUAL + c * PAGE_SIZE, LFB_PHYSICAL + c * PAGE_SIZE, 7);
+		VirtualMemoryManager::GetInstance()->MapPhysicalAddressToVirtualAddresss(VirtualMemoryManager::GetInstance()->GetCurPageDirectory(), LFB_VIRTUAL + c * PAGE_SIZE, LFB_PHYSICAL + c * PAGE_SIZE, 7);
 	return (void*)LFB_VIRTUAL;
 }
 
@@ -118,7 +118,7 @@ int _cdecl kmain(multiboot_info* bootinfo)
 	//커널사이즈에 512를 곱하면 바이트로 환산된다.
 	//현재 커널의 사이즈는 4096바이트다.
 	g_kernelSize *= 512;
-	InitializeMemorySystem(bootinfo, g_kernelSize);
+	InitializeMemorySystem(bootinfo, g_kernelSize);	
 
 	//i86_install_ir(SYSTEM_TMR_INT_NUMBER, I86_IDT_DESC_PRESENT | I86_IDT_DESC_BIT32 | 0x0500, 0x8, (I86_IRQ_HANDLER)TMR_TSS_SEG);
 	i86_pit_start_counter(100, I86_PIT_OCW_COUNTER_0, I86_PIT_OCW_MODE_SQUAREWAVEGEN);
@@ -158,7 +158,7 @@ int _cdecl kmain(multiboot_info* bootinfo)
 
 	//console.Print("HardDisk Count : %d\n", hardHandler.GetTotalDevices());
 	console.Print("Orange OS Console System Initialize\n");
-	console.Print("KernelSize : %d Bytes\n", g_kernelSize);
+	console.Print("KernelSize : %d Bytes\n", g_kernelSize);	
 
 	//헥사를 표시할 때 %X는 integer, %x는 unsigned integer의 헥사값을 표시한다.
 	//주소값을 표기해야 하므로 %x를 사용한다.
@@ -243,8 +243,9 @@ void SetInterruptVector()
 }
 
 bool InitializeMemorySystem(multiboot_info* bootinfo, uint32_t kernelSize)
-{	
-	pmmngr_init(bootinfo->m_memorySize * 1024, 0xC0000000 + g_kernelSize);
+{		
+	console.Print("KernelSize : %d Bytes\n", kernelSize);
+	PhysicalMemoryManager::GetInstance()->Initialize(bootinfo->m_memorySize * 1024, KERNEL_VIRTUAL_BASE_ADDRESS + kernelSize);
 
 	memory_region*	region = (memory_region*)0x1000;
 
@@ -256,19 +257,20 @@ bool InitializeMemorySystem(multiboot_info* bootinfo, uint32_t kernelSize)
 		if (i>0 && region[i].startLo == 0)
 			break;
 
-		pmmngr_init_region(region[i].startLo, region[i].sizeLo);
+		PhysicalMemoryManager::GetInstance()->InitMemoryRegion(region[i].startLo, region[i].sizeLo);		
 	}
-	pmmngr_deinit_region(0x100000, kernelSize + 4096 * 1024 + 4096 * 1024);
-	/*
-	kernel stack location
-	*/
-	pmmngr_deinit_region(0x0, 0x10000);
+	PhysicalMemoryManager::GetInstance()->DeinitMemoryRegion(0x100000, kernelSize + 4096 * 1024 + 4096 * 1024);
+	
+	//kernel stack location	
+	PhysicalMemoryManager::GetInstance()->DeinitMemoryRegion(0x0, 0x10000);
 
+	PhysicalMemoryManager::GetInstance()->Dump();
+	
 	//! initialize our vmm
-	vmmngr_initialize();
-
+	VirtualMemoryManager::GetInstance()->Initialize();
+	
 	CreateKernelHeap(kernelSize);
-
+	
 	return true;
 }
 
@@ -279,11 +281,12 @@ void CreateKernelHeap(int kernelSize)
 	void* pHeap =
 		(void*)(0xC0000000 + 409600 + 1024 * 4096);
 
-	pHeapPhys = (void*)pmmngr_alloc_blocks(1000);
+	pHeapPhys = PhysicalMemoryManager::GetInstance()->AllocBlocks(1000);
 
 	for (int i = 0; i < 1000; i++)
 	{
-		vmmngr_mapPhysicalAddress(vmmngr_get_directory(),
+		
+		VirtualMemoryManager::GetInstance()->MapPhysicalAddressToVirtualAddresss(VirtualMemoryManager::GetInstance()->GetCurPageDirectory(),
 			(uint32_t)pHeap + i * 4096,
 			(uint32_t)pHeapPhys + i * 4096,
 			I86_PTE_PRESENT | I86_PTE_WRITABLE);

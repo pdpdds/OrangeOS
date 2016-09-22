@@ -1,6 +1,6 @@
 #pragma once
 #include "header.h"
-#include "mmngr_virtual.h"
+#include "VirtualMemoryManager.h"
 
 
 extern int createThread    (int (*entry) (void), uint32_t stackBase);
@@ -20,5 +20,5 @@ extern "C" void TerminateMemoryProcess();
 extern "C" uint32_t GetSysytemTickCount();
 
 
-void mapKernelSpace(pdirectory* addressSpace);
+void mapKernelSpace(PageDirectory* addressSpace);
 int validateImage(void* image);

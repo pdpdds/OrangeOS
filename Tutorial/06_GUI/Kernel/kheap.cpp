@@ -4,14 +4,13 @@
 //            Written for JamesM's kernel development tutorials.
 
 #include "kheap.h"
-#include "vmmngr_pde.h"
-#include "vmmngr_pte.h"
-#include "mmngr_virtual.h"
+#include "PageDirectoryEntry.h"
+#include "PageTableEntry.h"
+#include "VirtualMemoryManager.h"
 
 // end is defined in the linker script.
 //extern u32int end;
 //u32int placement_address = (u32int)&end;
-extern pdirectory *_cur_directory;
 heap_t kheap;
 
 #define ASSERT(a)
@@ -22,10 +21,8 @@ u32int kmalloc_int(u32int sz, int align, u32int *phys)
         void *addr = alloc(sz, (u8int)align, &kheap);
         if (phys != 0)
         {
-			phys = (u32int*)vmmngr_getPhysicalAddress(_cur_directory, (uint32_t)addr);
+			phys = (u32int*)VirtualMemoryManager::GetInstance()->GetPhysicalAddressFromVirtualAddress(VirtualMemoryManager::GetInstance()->GetCurPageDirectory(), (uint32_t)addr);			
         }
-
-
 
         return (u32int)addr;
    

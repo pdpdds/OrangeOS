@@ -1,5 +1,5 @@
 #pragma once
-#include "mmngr_virtual.h"
+#include "VirtualMemoryManager.h"
 #include "task.h"
 #include "List.h"
 #include "image.h"

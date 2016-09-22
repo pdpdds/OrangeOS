@@ -1,10 +1,17 @@
 #include "PhysicalMemoryManager.h"
 #include "string.h"
+#include "Console.h"
+
+#ifdef _ORANGE_DEBUG
+extern Console console;
+#endif // ORANGE_DEBUG
 
 PhysicalMemoryManager PhysicalMemoryManager::m_physicsMemoryManager;
 
 PhysicalMemoryManager::PhysicalMemoryManager()
+	: m_usedBlocks(0)
 {
+	
 }
 
 
@@ -23,10 +30,11 @@ void PhysicalMemoryManager::Initialize(size_t memorySize, uint32_t bitmapAddr)
 	m_maxBlocks = m_memorySize / PMM_BLOCK_SIZE;
 
 	//블럭들의 최대 수는 8의 배수로 맞추고 나머지는 버린다
-	m_maxBlocks = m_maxBlocks - (m_maxBlocks % PMM_BLOCKS_PER_BYTE);
+	//m_maxBlocks = m_maxBlocks - (m_maxBlocks % PMM_BLOCKS_PER_BYTE);
 
 	//메모리맵의 바이트크기
 	m_memoryMapSize = m_maxBlocks / PMM_BLOCKS_PER_BYTE;
+	m_usedBlocks = GetTotalBlockCount();
 	
 	//모든 메모리 블럭들이 사용중에 있다고 설정한다.	
 	memset((char*)m_pMemoryMap, 0xFF, m_memoryMapSize);
@@ -259,11 +267,41 @@ int PhysicalMemoryManager::GetFreeFrames(size_t size)
 	return -1;
 }
 
-void PhysicalMemoryManager::InitMemoryRegion(uint32_t, size_t)
+void PhysicalMemoryManager::InitMemoryRegion(uint32_t base, size_t size)
 {
+	int align = base / PMM_BLOCK_SIZE;
+	int blocks = size / PMM_BLOCK_SIZE;
+
+	for (; blocks>0; blocks--) {
+		UnsetBit(align++);
+		m_usedBlocks--;
+	}
+
+	SetBit(0);	//first block is always set. This insures allocs cant be 0
+}
+void PhysicalMemoryManager::DeinitMemoryRegion(uint32_t base, size_t size)
+{
+	int align = base / PMM_BLOCK_SIZE;
+	int blocks = size / PMM_BLOCK_SIZE;
+
+	for (; blocks>0; blocks--) {
+		SetBit(align++);
+		m_usedBlocks++;
+	}
+
+	SetBit(0);	//first block is always set. This insures allocs cant be 0
 
 }
-void PhysicalMemoryManager::DeinitMemoryRegion(uint32_t base, size_t)
-{
 
+void PhysicalMemoryManager::Dump()
+{
+#ifdef _ORANGE_DEBUG
+	console.Print("Physical Memory Manager Init..\n");
+	console.Print("Memory Size : 0x%x\n", m_memorySize);
+	console.Print("Memory Map Address : 0x%x\n", m_pMemoryMap);
+	console.Print("Memory Map Size : 0x%x\n", m_memoryMapSize);
+	console.Print("Max Block Count : 0x%x\n", m_maxBlocks);
+
+	console.Print("Used Block Count : 0x%x\n", m_usedBlocks);	
+#endif // _ORANGE_DEBUG
 }

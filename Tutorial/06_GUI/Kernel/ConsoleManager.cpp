@@ -1,8 +1,8 @@
 #include "ConsoleManager.h"
 #include "string.h"
 #include "Console.h"
-#include "mmngr_phys.h"
-#include "mmngr_virtual.h"
+#include "PhysicalMemoryManager.h"
+#include "VirtualMemoryManager.h"
 #include "task.h"
 #include "DebugDisplay.h"
 #include "ProcessManager.h"
@@ -166,7 +166,7 @@ void cmd_memtask()
 
 		/* switch to process address space */
 		__asm cli
-		pmmngr_load_PDBR((physical_addr)pProcess->pPageDirectory);
+		PhysicalMemoryManager::GetInstance()->LoadPDBR((uint32_t)pProcess->pPageDirectory);		
 
 		/* execute process in user mode */
 		__asm {
@@ -192,8 +192,9 @@ void cmd_memtask()
 }
 
 void cmd_memstate() {
-	DebugPrintf("\nfree block count %d", pmmngr_get_free_block_count());
-	DebugPrintf("\ntotal block count %d", pmmngr_get_block_count());
+		
+	DebugPrintf("\nfree block count %d", PhysicalMemoryManager::GetInstance()->GetFreeBlockCount());
+	DebugPrintf("\ntotal block count %d", PhysicalMemoryManager::GetInstance()->GetTotalBlockCount());
 	DebugPrintf("\n");
 	DebugPrintf("\n");
 	DebugPrintf("\n");

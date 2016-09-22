@@ -1,6 +1,15 @@
 #include "VirtualMemoryManager.h"
 #include "PhysicalMemoryManager.h"
 #include "string.h"
+#include "Console.h"
+
+VirtualMemoryManager VirtualMemoryManager::m_virtualMemoryManager;
+
+
+#ifdef _ORANGE_DEBUG
+extern Console console;
+#endif // ORANGE_DEBUG
+
 
 VirtualMemoryManager::VirtualMemoryManager()
 {
@@ -159,6 +168,11 @@ bool VirtualMemoryManager::Initialize()
 	if (identityPageTable == NULL)
 		return false;
 
+#ifdef _ORANGE_DEBUG
+	console.Print("Identity Page Table Alloc : 0x%x\n", identityPageTable);
+#endif // _ORANGE_DEBUG
+	
+
 //0-4MB 의 물리 주소를 가상 주소와 동일하게 매핑시킨다
 	for (int i = 0, frame = 0x0, virt = 0x00000000; i<PAGES_PER_TABLE; i++, frame += PAGE_SIZE, virt += PAGE_SIZE)
 	{
@@ -174,6 +188,10 @@ bool VirtualMemoryManager::Initialize()
 
 	if (dir == NULL)
 		return false;
+
+#ifdef _ORANGE_DEBUG
+	console.Print("Page Directory Alloc : 0x%x\n", dir);
+#endif // _ORANGE_DEBUG
 	
 	memset(dir, 0, sizeof(PageDirectory));
 	
@@ -184,6 +202,10 @@ bool VirtualMemoryManager::Initialize()
 		PageTable* pTable = (PageTable*)PhysicalMemoryManager::GetInstance()->AllocBlock();
 		if (!pTable)
 			return false;
+
+#ifdef _ORANGE_DEBUG
+		console.Print("Page Table For Kernel Mapping: 0x%x\n", pTable);
+#endif // _ORANGE_DEBUG
 
 		//! clear page table
 		memset(pTable, 0, sizeof(PageTable));
@@ -201,7 +223,7 @@ bool VirtualMemoryManager::Initialize()
 		}
 
 		//! get first entry in dir table and set it up to point to our table
-		PDE* entry = &dir->m_entries[PAGE_DIRECTORY_INDEX(virt)];
+		PDE* entry = &dir->m_entries[PAGE_DIRECTORY_INDEX(KERNEL_VIRTUAL_BASE_ADDRESS + y * PAGES_PER_TABLE * PAGE_SIZE)];
 		PageDirectoryEntry::AddAttribute(entry, I86_PDE_PRESENT);
 		PageDirectoryEntry::AddAttribute(entry, I86_PDE_WRITABLE);
 		PageDirectoryEntry::SetFrame(entry, (uint32_t)pTable);
@@ -211,11 +233,15 @@ bool VirtualMemoryManager::Initialize()
 	PageDirectoryEntry::AddAttribute(identityEntry, I86_PDE_PRESENT);
 	PageDirectoryEntry::AddAttribute(identityEntry, I86_PDE_WRITABLE);
 	PageDirectoryEntry::SetFrame(identityEntry, (uint32_t)identityPageTable);
-	
+		
 	_cur_pdbr = (uint32_t)&dir->m_entries;
+
+#ifdef _ORANGE_DEBUG
+	console.Print("Current Page Directory Base Register : 0x%x\n", _cur_pdbr);
+#endif // _ORANGE_DEBUG	
 	
 	if (false == SwitchPageDirectory(dir))
-		return false;
+		return false;	
 	
 	PhysicalMemoryManager::GetInstance()->EnablePaging(true);
 

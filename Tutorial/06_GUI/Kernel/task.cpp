@@ -11,7 +11,8 @@
 #include <string.h>
 #include "fsys.h"
 #include "image.h"
-#include "mmngr_virtual.h"
+#include "VirtualMemoryManager.h"
+#include "PhysicalMemoryManager.h"
 #include "task.h"
 #include "Console.h"
 #include "ProcessManager.h"
@@ -48,7 +49,7 @@ extern Console console;
 */
 extern void* pHeapPhys;
 
-void mapKernelSpace (pdirectory* addressSpace) 
+void mapKernelSpace (PageDirectory* addressSpace)
 {
 	uint32_t virtualAddr;
 	uint32_t physAddr;
@@ -59,15 +60,16 @@ void mapKernelSpace (pdirectory* addressSpace)
 	/*
 		map kernel stack space (at idenitity mapped 0x8000-0x9fff)
 	*/
-	vmmngr_mapPhysicalAddress (addressSpace, 0x8000, 0x8000, flags);
-	vmmngr_mapPhysicalAddress (addressSpace, 0x9000, 0x9000, flags);
+	
+	VirtualMemoryManager::GetInstance()->MapPhysicalAddressToVirtualAddresss(addressSpace, 0x8000, 0x8000, flags);
+	VirtualMemoryManager::GetInstance()->MapPhysicalAddressToVirtualAddresss(addressSpace, 0x9000, 0x9000, flags);
 	/*
 		map kernel image (7 pages at physical 1MB, virtual 3GB)
 	*/
 	virtualAddr = 0xc0000000;
 	physAddr    = 0x100000;
 	for (uint32_t i=0; i<10; i++) {
-		vmmngr_mapPhysicalAddress (addressSpace,
+		VirtualMemoryManager::GetInstance()->MapPhysicalAddressToVirtualAddresss(addressSpace,
 			virtualAddr+(i*PAGE_SIZE),
 			physAddr+(i*PAGE_SIZE),
 			flags);
@@ -83,7 +85,7 @@ void mapKernelSpace (pdirectory* addressSpace)
 	virtualAddr = 0xa0000;
 	physAddr = 0xa0000;
 	for (uint32_t i=0; i<31; i++) {
-		vmmngr_mapPhysicalAddress (addressSpace,
+		VirtualMemoryManager::GetInstance()->MapPhysicalAddressToVirtualAddresss(addressSpace,
 			virtualAddr+(i*PAGE_SIZE),
 			physAddr+(i*PAGE_SIZE),
 			flags);
@@ -93,14 +95,14 @@ void mapKernelSpace (pdirectory* addressSpace)
 		
 	for (int i = 0; i < 1000; i++)
 	{
-		vmmngr_mapPhysicalAddress(addressSpace,
+		VirtualMemoryManager::GetInstance()->MapPhysicalAddressToVirtualAddresss(addressSpace,
 			(uint32_t)pHeap + i * PAGE_SIZE,
 			(uint32_t)pHeapPhys + i * PAGE_SIZE,
 			I86_PTE_PRESENT | I86_PTE_WRITABLE | I86_PTE_USER);
 	}
 
 	/* map page directory itself into its address space */
-	vmmngr_mapPhysicalAddress (addressSpace, (uint32_t) addressSpace,
+	VirtualMemoryManager::GetInstance()->MapPhysicalAddressToVirtualAddresss(addressSpace, (uint32_t) addressSpace,
 			(uint32_t) addressSpace, I86_PTE_PRESENT|I86_PTE_WRITABLE);
 }
 
@@ -192,12 +194,9 @@ void TerminateProcess () {
 
 		/* get virtual address of page */
 		virt = heapAddess + (i * PAGE_SIZE);
-
-		/* get physical address of page */
-		phys = (uint32_t)vmmngr_getPhysicalAddress(cur->pPageDirectory, virt);
-
+		
 		/* unmap and release page */
-		vmmngr_unmapPhysicalAddress(cur->pPageDirectory, virt);
+		VirtualMemoryManager::GetInstance()->UnmapPhysicalAddress(cur->pPageDirectory, virt);		
 	}
 
 	/* unmap and release image memory */
@@ -209,22 +208,22 @@ void TerminateProcess () {
 		virt = pThread->imageBase + (page * PAGE_SIZE);
 
 		/* get physical address of page */
-		phys = (uint32_t)vmmngr_getPhysicalAddress(cur->pPageDirectory, virt);
+		phys = (uint32_t)VirtualMemoryManager::GetInstance()->GetPhysicalAddressFromVirtualAddress(cur->pPageDirectory, virt);
 
 		/* unmap and release page */
-		vmmngr_unmapPhysicalAddress(cur->pPageDirectory, virt);
+		VirtualMemoryManager::GetInstance()->UnmapPhysicalAddress(cur->pPageDirectory, virt);
 		//pmmngr_free_block ((void*)phys);
 	}
 
 	/* get physical address of stack */
-	void* stackFrame = vmmngr_getPhysicalAddress(cur->pPageDirectory,
+	void* stackFrame = VirtualMemoryManager::GetInstance()->GetPhysicalAddressFromVirtualAddress(cur->pPageDirectory,
 		(uint32_t)pThread->initialStack);
 
 	/* unmap and release stack memory */
-	vmmngr_unmapPhysicalAddress(cur->pPageDirectory, (uint32_t)pThread->initialStack);
+	VirtualMemoryManager::GetInstance()->UnmapPhysicalAddress(cur->pPageDirectory, (uint32_t)pThread->initialStack);
 	//pmmngr_free_block(stackFrame);
 
-	pmmngr_free_block(cur->pPageDirectory);	
+	PhysicalMemoryManager::GetInstance()->FreeBlock(cur->pPageDirectory);	
 
 	Orange::LinkedList *pProcessList = ProcessManager::GetInstance()->GetProcessList();
 	
@@ -287,12 +286,14 @@ extern "C" {
 		Thread* pThread = pProcess->GetThread(0);
 		
 		/* get physical address of stack */
-		void* stackFrame = vmmngr_getPhysicalAddress(pProcess->pPageDirectory,
+		
+		void* stackFrame = VirtualMemoryManager::GetInstance()->GetPhysicalAddressFromVirtualAddress(pProcess->pPageDirectory,
 			(uint32_t)pThread->initialStack);
 
 		console.Print("Plane X : %d, Plane Y : %d\n", 1, 1);
 		/* unmap and release stack memory */
-		vmmngr_unmapPhysicalAddress(pProcess->pPageDirectory, (uint32_t)pThread->initialStack);
+		
+		VirtualMemoryManager::GetInstance()->UnmapPhysicalAddress(pProcess->pPageDirectory, (uint32_t)pThread->initialStack);
 		//pmmngr_free_block(stackFrame);
 
 		/* unmap and release image memory */
@@ -304,10 +305,10 @@ extern "C" {
 			virt = pThread->imageBase + (page * PAGE_SIZE);
 
 			/* get physical address of page */
-			phys = (uint32_t)vmmngr_getPhysicalAddress(pProcess->pPageDirectory, virt);
+			phys = (uint32_t)VirtualMemoryManager::GetInstance()->GetPhysicalAddressFromVirtualAddress(pProcess->pPageDirectory, virt);
 
 			/* unmap and release page */
-			vmmngr_unmapPhysicalAddress(pProcess->pPageDirectory, virt);
+			VirtualMemoryManager::GetInstance()->UnmapPhysicalAddress(pProcess->pPageDirectory, virt);
 			//pmmngr_free_block((void*)phys);
 		}		
 
@@ -321,8 +322,8 @@ extern "C" {
 				mov gs, ax
 				sti
 		}
-
-		pmmngr_load_PDBR((physical_addr)vmmngr_get_directory());
+		
+		PhysicalMemoryManager::GetInstance()->LoadPDBR((uint32_t)pProcess->pPageDirectory);
 
 		/* return to kernel command shell */
 		run();
@@ -365,8 +366,8 @@ extern "C" {
 		
 		Process* pProcess = ProcessManager::GetInstance()->GetCurrentProcess();
 		Thread* pThread = pProcess->GetThread(0);
-		//Thread* pThread = ProcessManager::GetInstance()->g_pThread;
-		void* pHeapaaPhys = (void*)pmmngr_alloc_blocks(300);
+		//Thread* pThread = ProcessManager::GetInstance()->g_pThread;		
+		PhysicalMemoryManager::GetInstance()->AllocBlocks(300);
 		
 		u32int heapAddess = pThread->imageBase + pThread->imageSize + PAGE_SIZE + PAGE_SIZE * 2;
 		heapAddess = heapAddess - (heapAddess % PAGE_SIZE);
@@ -375,9 +376,9 @@ extern "C" {
 		
 		for (int i = 0; i < 300; i++)
 		{
-			vmmngr_mapPhysicalAddress(pProcess->pPageDirectory,
+			VirtualMemoryManager::GetInstance()->MapPhysicalAddressToVirtualAddresss(pProcess->pPageDirectory,
 				(uint32_t)heapAddess + i * PAGE_SIZE,
-				(uint32_t)pHeapaaPhys + i * PAGE_SIZE,
+				(uint32_t)pHeapPhys + i * PAGE_SIZE,
 				I86_PTE_PRESENT | I86_PTE_WRITABLE | I86_PTE_USER);
 		}
 		//pmmngr_load_PDBR((physical_addr)pProcezss->pPageDirectory);

@@ -58,7 +58,7 @@
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
       <AdditionalIncludeDirectories>../mint64;../commonlib;./;../hal;..\Include\;..\Keyboard;..\FloppyDisk;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>ARCH_X86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_ORANGE_DEBUG;ARCH_X86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <IgnoreStandardIncludePath>true</IgnoreStandardIncludePath>
       <StringPooling>false</StringPooling>
       <ExceptionHandling />
@@ -126,8 +126,6 @@
     <ClCompile Include="kybrd.cpp" />
     <ClCompile Include="List.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="mmngr_phys.cpp" />
-    <ClCompile Include="mmngr_virtual.cpp" />
     <ClCompile Include="ordered_array.cpp" />
     <ClCompile Include="PageDirectoryEntry.cpp" />
     <ClCompile Include="PageTableEntry.cpp" />
@@ -145,8 +143,6 @@
     <ClCompile Include="tss.cpp" />
     <ClCompile Include="user.cpp" />
     <ClCompile Include="VirtualMemoryManager.cpp" />
-    <ClCompile Include="vmmngr_pde.cpp" />
-    <ClCompile Include="vmmngr_pte.cpp" />
     <ClCompile Include="ZetPlane.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -176,8 +172,6 @@
     <ClInclude Include="kheap.h" />
     <ClInclude Include="kybrd.h" />
     <ClInclude Include="List.h" />
-    <ClInclude Include="mmngr_phys.h" />
-    <ClInclude Include="mmngr_virtual.h" />
     <ClInclude Include="ordered_array.h" />
     <ClInclude Include="PageDirectoryEntry.h" />
     <ClInclude Include="PageTableEntry.h" />
@@ -195,8 +189,6 @@
     <ClInclude Include="Thread.h" />
     <ClInclude Include="tss.h" />
     <ClInclude Include="VirtualMemoryManager.h" />
-    <ClInclude Include="vmmngr_pde.h" />
-    <ClInclude Include="vmmngr_pte.h" />
     <ClInclude Include="ZetPlane.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

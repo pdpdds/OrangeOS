@@ -7,6 +7,7 @@
 #include "Console.h"
 #include "Process.h"
 #include "task.h"
+#include "PhysicalMemoryManager.h"
 
 ProcessManager* ProcessManager::m_pProcessManager = 0;
 extern Console console;
@@ -25,7 +26,7 @@ Process* ProcessManager::CreateProcess(LPTHREAD_START_ROUTINE lpStartAddress)
 {
 	Process* pProcess = new Process();
 	pProcess->m_taskId = GetNextProcessId();
-	pProcess->pPageDirectory = vmmngr_createAddressSpace();
+	pProcess->pPageDirectory = VirtualMemoryManager::GetInstance()->CreateAddressSpace();		
 	mapKernelSpace(pProcess->pPageDirectory);
 
 	pProcess->dwPriority = 1;
@@ -77,13 +78,13 @@ Thread* ProcessManager::CreateThread(Process* pProcess, FILE* file)
 		pageRest = 1;
 
 	pProcess->dwPageCount = (pThread->imageSize / 4096) + pageRest;
-
-	memory = (unsigned char*)pmmngr_alloc_blocks(pProcess->dwPageCount);
+	 
+	 memory = (unsigned char*)PhysicalMemoryManager::GetInstance()->AllocBlocks(pProcess->dwPageCount);
 	
 	/* map page into address space */
 	for (int i = 0; i <pProcess->dwPageCount; i++)
 	{		
-		vmmngr_mapPhysicalAddress(pProcess->pPageDirectory,
+		VirtualMemoryManager::GetInstance()->MapPhysicalAddressToVirtualAddresss(pProcess->pPageDirectory,
 			ntHeaders->OptionalHeader.ImageBase + i * 4096,
 			(uint32_t)memory + i * 4096,
 			I86_PTE_PRESENT | I86_PTE_WRITABLE | I86_PTE_USER);
@@ -109,10 +110,10 @@ Thread* ProcessManager::CreateThread(Process* pProcess, FILE* file)
 
 	/* Create userspace stack (process esp=0x100000) */
 	void* stack = (void*)(ntHeaders->OptionalHeader.ImageBase + ntHeaders->OptionalHeader.SizeOfImage + PAGE_SIZE);
-	void* stackPhys = (void*)pmmngr_alloc_block();
-
+	void* stackPhys = (void*)PhysicalMemoryManager::GetInstance()->AllocBlock();
+	
 	/* map user process stack space */
-	vmmngr_mapPhysicalAddress(pProcess->pPageDirectory,
+	VirtualMemoryManager::GetInstance()->MapPhysicalAddressToVirtualAddresss(pProcess->pPageDirectory,
 		(uint32_t)stack,
 		(uint32_t)stackPhys,
 		I86_PTE_PRESENT | I86_PTE_WRITABLE | I86_PTE_USER);
@@ -158,10 +159,10 @@ Thread* ProcessManager::CreateThread(Process* pProcess, LPTHREAD_START_ROUTINE l
 
 	/* Create userspace stack (process esp=0x100000) */
 	void* stack = (void*)0x200000;
-	void* stackPhys = (void*)pmmngr_alloc_block();
+	void* stackPhys = (void*)PhysicalMemoryManager::GetInstance()->AllocBlock();
 
 	/* map user process stack space */
-	vmmngr_mapPhysicalAddress(pProcess->pPageDirectory,
+	VirtualMemoryManager::GetInstance()->MapPhysicalAddressToVirtualAddresss(pProcess->pPageDirectory,
 		(uint32_t)stack,
 		(uint32_t)stackPhys,
 		I86_PTE_PRESENT | I86_PTE_WRITABLE);
@@ -187,9 +188,8 @@ Process* ProcessManager::CreateProcess(char* appName, UINT32 processType)
 	if ((file.flags & FS_DIRECTORY) == FS_DIRECTORY)
 		return 0;
 
-	pdirectory* addressSpace = 0;
-
-	addressSpace = vmmngr_createAddressSpace();
+	PageDirectory* addressSpace = 0;	
+	addressSpace = VirtualMemoryManager::GetInstance()->CreateAddressSpace();
 
 	if (!addressSpace) 
 	{		
@@ -259,7 +259,7 @@ Process* ProcessManager::CreateSystemProcess()
 {
 	Process* pProcess = new Process();
 	pProcess->m_taskId = GetNextProcessId();
-	pProcess->pPageDirectory = vmmngr_get_directory();
+	pProcess->pPageDirectory = VirtualMemoryManager::GetInstance()->GetCurPageDirectory();
 	pProcess->dwProcessType = PROCESS_KERNEL;
 	mapKernelSpace(pProcess->pPageDirectory);
 

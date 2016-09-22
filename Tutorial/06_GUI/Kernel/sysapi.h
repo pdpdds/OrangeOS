@@ -1,7 +1,7 @@
 #pragma once
 #include <hal.h>
 #include "DebugDisplay.h"
-#include "mmngr_virtual.h"
+#include "VirtualMemoryManager.h"
 #include "task.h"
 
 #define MAX_SYSCALL 7

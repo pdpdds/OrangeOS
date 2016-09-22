@@ -57,12 +57,12 @@ typedef struct _thread {
 }thread;
 
 
-struct pdirectory;
+#include "VirtualMemoryManager.h"
 
 typedef struct _process {
    int            id;
    int            priority;
-   pdirectory*    pageDirectory;
+   PageDirectory*    pageDirectory;
    int            state;
 	/* threadCount will always be 1 */
    int threadCount;

@@ -6,7 +6,7 @@
 
 
 #define KERNEL_VIRTUAL_BASE_ADDRESS 0xC0000000
-#define KERNEL_PHYSICAL_BASE_ADDRESS 0x400000
+#define KERNEL_PHYSICAL_BASE_ADDRESS 0x100000
 
 using namespace PageTableEntry;
 using namespace PageDirectoryEntry;

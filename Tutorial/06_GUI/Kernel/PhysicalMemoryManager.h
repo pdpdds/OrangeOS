@@ -49,6 +49,8 @@ public:
 	{
 		return &m_physicsMemoryManager;
 	}
+//Debug
+	void Dump();
 
 private:
 	static PhysicalMemoryManager m_physicsMemoryManager;
