@@ -242,6 +242,11 @@ void SetInterruptVector()
 	//i86_install_ir(SYSTEM_TMR_INT_NUMBER, I86_IDT_DESC_PRESENT | I86_IDT_DESC_BIT32 | 0x0500, 0x8, (I86_IRQ_HANDLER)TMR_TSS_SEG);
 }
 
+// where the kernel is to be loaded to in protected mode
+// define IMAGE_PMODE_BASE 0xC0000000; 0x100000
+//  where the kernel is to be loaded to in real mode
+//  define IMAGE_RMODE_BASE 0x3000
+
 bool InitializeMemorySystem(multiboot_info* bootinfo, uint32_t kernelSize)
 {		
 	console.Print("KernelSize : %d Bytes\n", kernelSize);
