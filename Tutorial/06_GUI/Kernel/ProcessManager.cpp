@@ -8,6 +8,7 @@
 #include "Process.h"
 #include "task.h"
 #include "PhysicalMemoryManager.h"
+#include "KernelProcedure.h"
 
 ProcessManager* ProcessManager::m_pProcessManager = 0;
 extern Console console;
@@ -20,24 +21,6 @@ ProcessManager::ProcessManager()
 
 ProcessManager::~ProcessManager()
 {
-}
-
-Process* ProcessManager::CreateProcess(LPTHREAD_START_ROUTINE lpStartAddress)
-{
-	Process* pProcess = new Process();
-	pProcess->m_taskId = GetNextProcessId();
-	pProcess->pPageDirectory = VirtualMemoryManager::GetInstance()->CreateAddressSpace();		
-	mapKernelSpace(pProcess->pPageDirectory);
-
-	pProcess->dwPriority = 1;
-	pProcess->dwRunState = PROCESS_STATE_INIT;
-	
-	Thread* pThread = CreateThread(pProcess, lpStartAddress);
-	pProcess->AddThread(pThread);
-	
-	console.Print("Create Success Task %d\n", pProcess->m_taskId);
-
-	return pProcess;
 }
 
 Thread* ProcessManager::CreateThread(Process* pProcess, FILE* file)
@@ -243,33 +226,36 @@ bool ProcessManager::AddProcess(Process* pProcess)
 	return true;
 }
 
-extern void run();
-DWORD WINAPI StartRoutine(LPVOID parameter)
-{
-	while (1) {
-		run();
-	}	
-
-	for (;;);
-
-	return 0;
-}
-
-Process* ProcessManager::CreateSystemProcess()
+//firstProcess가 true일 경우 커널의 최초 프로세스를 생성한다.
+//이 시점에서만 이전에 커널힙이 생성되었다고 가정한다.
+//이후 프로세스는 여기서 힙을 별도로 생성한다.
+Process* ProcessManager::CreateProcess(LPTHREAD_START_ROUTINE lpStartAddress, bool firstProcess)
 {
 	Process* pProcess = new Process();
 	pProcess->m_taskId = GetNextProcessId();
-	pProcess->pPageDirectory = VirtualMemoryManager::GetInstance()->GetCurPageDirectory();
-	pProcess->dwProcessType = PROCESS_KERNEL;
+
+	if (firstProcess == true)
+	{
+		pProcess->pPageDirectory = VirtualMemoryManager::GetInstance()->GetCurPageDirectory();
+		pProcess->dwRunState = PROCESS_STATE_RUNNING;
+	}
+	else
+	{
+		pProcess->pPageDirectory = VirtualMemoryManager::GetInstance()->CreateAddressSpace();
+		pProcess->dwRunState = PROCESS_STATE_INIT;
+	}
+
 	mapKernelSpace(pProcess->pPageDirectory);
 
+	pProcess->dwProcessType = PROCESS_KERNEL;	
 	pProcess->dwPriority = 1;
-	pProcess->dwRunState = PROCESS_STATE_RUNNING;
-
-	Thread* pThread = CreateThread(pProcess, StartRoutine);
+	
+	Thread* pThread = CreateThread(pProcess, lpStartAddress);
 	
 	pProcess->AddThread(pThread);
 	AddProcess(pProcess);	
+
+	console.Print("Create Success Task %d\n", pProcess->m_taskId);
 
 	return pProcess;
 }

@@ -326,7 +326,7 @@ extern "C" {
 		PhysicalMemoryManager::GetInstance()->LoadPDBR((uint32_t)pProcess->pPageDirectory);
 
 		/* return to kernel command shell */
-		run();
+		//run();
 
 		console.Print("Exit command recieved; demo halted\n");
 		for (;;);

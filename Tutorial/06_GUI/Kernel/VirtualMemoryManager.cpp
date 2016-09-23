@@ -195,7 +195,9 @@ bool VirtualMemoryManager::Initialize()
 	
 	memset(dir, 0, sizeof(PageDirectory));
 	
-//물리 공간 4MB 이후의 공간을 가상주소 공간 0XC0000000(3GB) 이후의 공간과 매핑시킨다
+//물리 공간 1MB 이후의 공간을 가상주소 공간 0XC0000000(3GB) 이후의 공간과 매핑시킨다
+//커널이 로드된 물리 어드레스 주소 0x100000
+// 가상주소 0XC0000000, 0X100000는 물리주소 0x100000에 매핑된다
 //최초 커널을 위한 PDE, PTE
 	for (int y = 0; y < 1; y++)
 	{

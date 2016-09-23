@@ -24,6 +24,7 @@
 #include "List.h"
 #include "kybrd.h"
 #include "Keyboard.h"
+#include "KernelProcedure.h"
 
 
 bool systemOn = false;
@@ -99,7 +100,9 @@ void fillScreen32() {
 #define VBE_DISPI_ENABLED               0x01
 #define VBE_DISPI_LFB_ENABLED           0x40
 
+extern BYTE kGetCh();
 extern void _cdecl kKeyboardHandler();
+
 int _cdecl kmain(multiboot_info* bootinfo) 
 {
 
@@ -146,7 +149,9 @@ int _cdecl kmain(multiboot_info* bootinfo)
 	fillScreen32();
 
 	//HardDiskHandler hardHandler;
-	//hardHandler.Initialize();	
+	//hardHandler.Initialize();		
+
+	kGetCh();
 	
 	console.SetBackColor(ConsoleColor::Blue);
 	console.Clear();
@@ -181,8 +186,7 @@ int _cdecl kmain(multiboot_info* bootinfo)
 	pZetPlane->m_rotation = 50;
 	console.Print("ZetPlane's Rotation is %d\n", pZetPlane->m_rotation);	
 
-
-	Process* pProcess = ProcessManager::GetInstance()->CreateSystemProcess();
+	Process* pProcess = ProcessManager::GetInstance()->CreateProcess(SystemEntry, true);
 
 	if(pProcess)	
 		console.Print("Create Success System Process\n");
@@ -194,7 +198,8 @@ int _cdecl kmain(multiboot_info* bootinfo)
 	int entryPoint = (int)pThread->frame.eip;
 	unsigned int procStack = pThread->frame.esp;
 
-	__asm {
+	__asm 
+	{
 		mov     ax, 0x10;
 		mov     ds, ax
 			mov     es, ax
@@ -315,36 +320,4 @@ void InitializeFloppyDrive()
 
 
 
-void run() 
-{
-	ConsoleManager manager;
-	
-	char	commandBuffer[MAXPATH];
 
-	while (1) 
-	{
-		console.Print("Command> ");
-		memset(commandBuffer, 0, MAXPATH);		
-		//console.Print("commandBuffer Address : 0x%x\n", &commandBuffer);	
-		
-		console.GetCommand(commandBuffer, MAXPATH-2);
-		console.Print("\n");
-		
-		if (manager.RunCommand(commandBuffer) == true)
-			break;
-
-		/*int first = GetTickCount();
-		int count = 4;
-		while (count != 0)
-		{
-
-			int second = GetTickCount();
-			if (second - first > 100)
-			{
-				console.Print("%d\n", second);
-
-				first = GetTickCount();				
-			}
-		}*/
-	}
-}
