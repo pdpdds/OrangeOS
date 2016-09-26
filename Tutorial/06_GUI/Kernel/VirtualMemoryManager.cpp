@@ -31,7 +31,7 @@ void* VirtualMemoryManager::GetPhysicalAddressFromVirtualAddress(PageDirectory* 
 	return (void*)((uint32_t*)(pagedir[virtualAddress >> 22] & ~0xfff))[virtualAddress << 10 >> 10 >> 12];
 }
 
-//페이지 테이블 엔트리 인덱스가 0이 아니면 이미 페이지 테이블이 존재한다는 의미
+//페이지 디렉토리 엔트리 인덱스가 0이 아니면 이미 페이지 테이블이 존재한다는 의미
 bool VirtualMemoryManager::CreatePageTable(PageDirectory* dir, uint32_t virt, uint32_t flags)
 {
 	PDE* pageDirectory = dir->m_entries;
