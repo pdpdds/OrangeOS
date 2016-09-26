@@ -51,51 +51,8 @@ void isr_handler(registers_t regs)
 }
 
 //!	pit timer interrupt handler
-__declspec(naked) void _cdecl i86_pit_irq() {
-	/*_asm {
-		cli
-		pushad
-	}
-	
-	_pit_ticks++;
-	SwitchTask(_pit_ticks, 0x9000);
-	_asm {
-		mov al, 0x20
-			out 0x20, al
-			popad
-			iretd
-	}*/
-
-	/*_asm {
-
-		cli
-		pushad
-
-		push ds
-		push es
-		push fs
-		push gs
-	}
-		_pit_ticks++;
-		_asm 
-		{
-		mov ax, 0x10
-        mov ds, ax
-		mov es, ax
-		mov fs, ax
-		mov gs, ax
-					
-		pop gs
-		pop fs
-		pop es
-		pop ds
-		
-		mov al, 0x20
-		out 0x20, al
-		popad
-		iretd
-	}*/
-
+__declspec(naked) void _cdecl i86_pit_irq() 
+{	
 	_asm
 	{
 		cli
@@ -105,16 +62,17 @@ __declspec(naked) void _cdecl i86_pit_irq() {
 		push eax;
 
 		mov ax, 0x10; load the kernel data segment descriptor
-			mov ds, ax
-			mov es, ax
-			mov fs, ax
-			mov gs, ax
+		mov ds, ax
+		mov es, ax
+		mov fs, ax
+		mov gs, ax
 	}
 	_pit_ticks++;
+
 	_asm
 	{
 		call isr_handler
-	}	
+	}
 
 	__asm
 	{

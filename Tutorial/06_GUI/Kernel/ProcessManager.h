@@ -41,6 +41,9 @@ public:
 
 	bool AddProcess(Process* pProces);	
 
+//Page Directory Mapping
+	bool MapKernelSpace(PageDirectory* addressSpace);
+
 private:	
 
 private:

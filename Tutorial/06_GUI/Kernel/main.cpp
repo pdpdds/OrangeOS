@@ -33,7 +33,6 @@ extern uint32_t g_kernelSize;
 
 void SetInterruptVector();
 bool InitializeMemorySystem(multiboot_info* bootinfo, uint32_t kernelSize);
-void CreateKernelHeap(int kernelSize);
 void InitializeFloppyDrive();
 
 /* Definitions for BGA. Reference Graphics 1. */
@@ -211,7 +210,7 @@ int _cdecl kmain(multiboot_info* bootinfo)
 		push   0x10;
 		push[procStack]; stack
 			push    0x200; EFLAGS
-			push    0x08;
+			push    0x08; CS
 		push[entryPoint]; EIP
 			iretd
 	}
@@ -255,7 +254,8 @@ void SetInterruptVector()
 bool InitializeMemorySystem(multiboot_info* bootinfo, uint32_t kernelSize)
 {		
 	console.Print("KernelSize : %d Bytes\n", kernelSize);
-	PhysicalMemoryManager::GetInstance()->Initialize(bootinfo->m_memorySize * 1024, KERNEL_VIRTUAL_BASE_ADDRESS + kernelSize);
+	console.Print("TotalMemorySize : %d Bytes\n", bootinfo->m_memoryLo * 1024);		
+	PhysicalMemoryManager::GetInstance()->Initialize(bootinfo->m_memoryLo * 1024, KERNEL_VIRTUAL_BASE_ADDRESS + kernelSize);
 
 	memory_region*	region = (memory_region*)0x1000;
 
@@ -279,32 +279,9 @@ bool InitializeMemorySystem(multiboot_info* bootinfo, uint32_t kernelSize)
 	//! initialize our vmm
 	VirtualMemoryManager::GetInstance()->Initialize();
 	
-	CreateKernelHeap(kernelSize);
 	
 	return true;
 }
-
-void* pHeapPhys = 0;
-
-void CreateKernelHeap(int kernelSize)
-{
-	void* pHeap =
-		(void*)(0xC0000000 + 409600 + 1024 * 4096);
-
-	pHeapPhys = PhysicalMemoryManager::GetInstance()->AllocBlocks(1000);
-
-	for (int i = 0; i < 1000; i++)
-	{
-		
-		VirtualMemoryManager::GetInstance()->MapPhysicalAddressToVirtualAddresss(VirtualMemoryManager::GetInstance()->GetCurPageDirectory(),
-			(uint32_t)pHeap + i * 4096,
-			(uint32_t)pHeapPhys + i * 4096,
-			I86_PTE_PRESENT | I86_PTE_WRITABLE);
-	}
-
-	create_kernel_heap((u32int)pHeap, (uint32_t)pHeap + 1000 * 4096, (uint32_t)pHeap + 1000 * 4096, 0, 0);
-}
-
 
 void InitializeFloppyDrive()
 {

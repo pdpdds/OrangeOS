@@ -20,5 +20,4 @@ extern "C" void TerminateMemoryProcess();
 extern "C" uint32_t GetSysytemTickCount();
 
 
-void mapKernelSpace(PageDirectory* addressSpace);
 int validateImage(void* image);

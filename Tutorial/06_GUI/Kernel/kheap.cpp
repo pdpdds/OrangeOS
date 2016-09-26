@@ -198,7 +198,7 @@ heap_t *create_kernel_heap(u32int start, u32int end_addr, u32int max, u8int supe
 
 	return heap;
 }
-#include "DebugDisplay.h"
+
 heap_t *create_heap(u32int start, u32int end_addr, u32int max, u8int supervisor, u8int readonly)
 {
     heap_t *heap = (heap_t*)kmalloc(sizeof(heap_t));

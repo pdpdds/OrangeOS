@@ -44,69 +44,6 @@ extern Console console;
 
 
 /**
-* Map kernel space into address space
-* \param addressSpace Page directory
-*/
-extern void* pHeapPhys;
-
-void mapKernelSpace (PageDirectory* addressSpace)
-{
-	uint32_t virtualAddr;
-	uint32_t physAddr;
-	/*
-		default flags. Note USER bit not set to prevent user mode access
-	*/
-	int flags = I86_PTE_PRESENT|I86_PTE_WRITABLE;
-	/*
-		map kernel stack space (at idenitity mapped 0x8000-0x9fff)
-	*/
-	
-	VirtualMemoryManager::GetInstance()->MapPhysicalAddressToVirtualAddresss(addressSpace, 0x8000, 0x8000, flags);
-	VirtualMemoryManager::GetInstance()->MapPhysicalAddressToVirtualAddresss(addressSpace, 0x9000, 0x9000, flags);
-	/*
-		map kernel image (7 pages at physical 1MB, virtual 3GB)
-	*/
-	virtualAddr = 0xc0000000;
-	physAddr    = 0x100000;
-	for (uint32_t i=0; i<10; i++) {
-		VirtualMemoryManager::GetInstance()->MapPhysicalAddressToVirtualAddresss(addressSpace,
-			virtualAddr+(i*PAGE_SIZE),
-			physAddr+(i*PAGE_SIZE),
-			flags);
-	}
-	/*
-		map display memory for debug minidriver
-		idenitity mapped 0xa0000-0xBF000.
-		Note:
-			A better alternative is to have a driver associated
-			with the physical memory range map it. This should be automatic;
-			through an IO manager or driver manager.
-	*/
-	virtualAddr = 0xa0000;
-	physAddr = 0xa0000;
-	for (uint32_t i=0; i<31; i++) {
-		VirtualMemoryManager::GetInstance()->MapPhysicalAddressToVirtualAddresss(addressSpace,
-			virtualAddr+(i*PAGE_SIZE),
-			physAddr+(i*PAGE_SIZE),
-			flags);
-	}
-
-	void* pHeap = (void*)(0xC0000000 + 409600 + 1024 * 4096);
-		
-	for (int i = 0; i < 1000; i++)
-	{
-		VirtualMemoryManager::GetInstance()->MapPhysicalAddressToVirtualAddresss(addressSpace,
-			(uint32_t)pHeap + i * PAGE_SIZE,
-			(uint32_t)pHeapPhys + i * PAGE_SIZE,
-			I86_PTE_PRESENT | I86_PTE_WRITABLE | I86_PTE_USER);
-	}
-
-	/* map page directory itself into its address space */
-	VirtualMemoryManager::GetInstance()->MapPhysicalAddressToVirtualAddresss(addressSpace, (uint32_t) addressSpace,
-			(uint32_t) addressSpace, I86_PTE_PRESENT|I86_PTE_WRITABLE);
-}
-
-/**
 * Validate image
 * \param image Base of image
 * \ret Status code
@@ -363,11 +300,13 @@ extern "C" {
 
 extern "C" {
 	void CreateDefaultHeap() {
+
+		InterruptDisable();
 		
 		Process* pProcess = ProcessManager::GetInstance()->GetCurrentProcess();
 		Thread* pThread = pProcess->GetThread(0);
-		//Thread* pThread = ProcessManager::GetInstance()->g_pThread;		
-		PhysicalMemoryManager::GetInstance()->AllocBlocks(300);
+		
+		void* pHeapPhys = PhysicalMemoryManager::GetInstance()->AllocBlocks(256);
 		
 		u32int heapAddess = pThread->imageBase + pThread->imageSize + PAGE_SIZE + PAGE_SIZE * 2;
 		heapAddess = heapAddess - (heapAddess % PAGE_SIZE);
@@ -381,10 +320,12 @@ extern "C" {
 				(uint32_t)pHeapPhys + i * PAGE_SIZE,
 				I86_PTE_PRESENT | I86_PTE_WRITABLE | I86_PTE_USER);
 		}
-		//pmmngr_load_PDBR((physical_addr)pProcezss->pPageDirectory);
+		
 		memset((void*)heapAddess, 0, 300 * PAGE_SIZE);
 		console.Print("imageSize %x\n", pThread->imageSize);
-		pThread->lpHeap = create_heap((u32int)heapAddess, (uint32_t)heapAddess + 300 * 4096, (uint32_t)heapAddess + 300 * 4096, 0, 0);
-		//DebugPrintf("\nThread Creation Success %x", pThread->lpHeap);		
+		pThread->lpHeap = create_heap((u32int)heapAddess, (uint32_t)heapAddess + 256 * 4096, (uint32_t)heapAddess + 256 * 4096, 0, 0);
+
+		InterruptEnable();
+		
 	}
 } // extern "C"

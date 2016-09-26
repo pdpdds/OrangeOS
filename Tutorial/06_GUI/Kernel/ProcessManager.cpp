@@ -68,8 +68,8 @@ Thread* ProcessManager::CreateThread(Process* pProcess, FILE* file)
 	for (int i = 0; i <pProcess->dwPageCount; i++)
 	{		
 		VirtualMemoryManager::GetInstance()->MapPhysicalAddressToVirtualAddresss(pProcess->pPageDirectory,
-			ntHeaders->OptionalHeader.ImageBase + i * 4096,
-			(uint32_t)memory + i * 4096,
+			ntHeaders->OptionalHeader.ImageBase + i * PAGE_SIZE,
+			(uint32_t)memory + i * PAGE_SIZE,
 			I86_PTE_PRESENT | I86_PTE_WRITABLE | I86_PTE_USER);
 	}
 	memset(memory, 0, pThread->imageSize);
@@ -128,30 +128,28 @@ Thread* ProcessManager::CreateThread(Process* pProcess, LPTHREAD_START_ROUTINE l
 {
 	Thread* pThread = new Thread();
 	pThread->pParent = pProcess;
-
-	pThread->kernelStack = 0;
+	
 	pThread->priority = 1;
-	pThread->state = PROCESS_STATE_INIT;
-	pThread->initialStack = 0;
-	pThread->stackLimit = (void*)((uint32_t)pThread->initialStack + 4096);
+	pThread->state = PROCESS_STATE_INIT;	
+	pThread->stackLimit = (void*)(PAGE_SIZE);
 	pThread->imageBase = 0;
 	pThread->imageSize = 0;
 	memset(&pThread->frame, 0, sizeof(trapFrame));
 	pThread->frame.eip = (uint32_t)lpStartAddress;
 	pThread->frame.flags = 0x200;
-
-	/* Create userspace stack (process esp=0x100000) */
-	void* stack = (void*)0x200000;
+	
+//스택을 생성하고 주소공간에 매핑한다.
+	void* stackVirtual = (void*)(KERNEL_VIRTUAL_HEAP_ADDRESS - PAGE_SIZE);
 	void* stackPhys = (void*)PhysicalMemoryManager::GetInstance()->AllocBlock();
 
+	console.Print("Virtual Stack : %x\n", stackVirtual);
+	console.Print("Physical Stack : %x\n", stackPhys);
+
 	/* map user process stack space */
-	VirtualMemoryManager::GetInstance()->MapPhysicalAddressToVirtualAddresss(pProcess->pPageDirectory,
-		(uint32_t)stack,
-		(uint32_t)stackPhys,
-		I86_PTE_PRESENT | I86_PTE_WRITABLE);
+	VirtualMemoryManager::GetInstance()->MapPhysicalAddressToVirtualAddresss(pProcess->pPageDirectory, (uint32_t)stackVirtual, (uint32_t)stackPhys, I86_PTE_PRESENT | I86_PTE_WRITABLE);
 
 	/* final initialization */
-	pThread->initialStack = stack;
+	pThread->initialStack = stackVirtual;
 	pThread->frame.esp = (uint32_t)pThread->initialStack;
 	pThread->frame.ebp = pThread->frame.esp;
 
@@ -180,7 +178,7 @@ Process* ProcessManager::CreateProcess(char* appName, UINT32 processType)
 		return NULL;
 	}
 
-	mapKernelSpace(addressSpace);
+	MapKernelSpace(addressSpace);
 
 	Process* pProcess = new Process();
 
@@ -245,7 +243,7 @@ Process* ProcessManager::CreateProcess(LPTHREAD_START_ROUTINE lpStartAddress, bo
 		pProcess->dwRunState = PROCESS_STATE_INIT;
 	}
 
-	mapKernelSpace(pProcess->pPageDirectory);
+	MapKernelSpace(pProcess->pPageDirectory);
 
 	pProcess->dwProcessType = PROCESS_KERNEL;	
 	pProcess->dwPriority = 1;
@@ -258,4 +256,45 @@ Process* ProcessManager::CreateProcess(LPTHREAD_START_ROUTINE lpStartAddress, bo
 	console.Print("Create Success Task %d\n", pProcess->m_taskId);
 
 	return pProcess;
+}
+
+bool ProcessManager::MapKernelSpace(PageDirectory* addressSpace)
+{
+	uint32_t virtualAddr;
+	uint32_t physAddr;
+	
+	int flags = I86_PTE_PRESENT | I86_PTE_WRITABLE;
+	
+//커널 이미지를 주소공간에 매핑. 커널 크기는 4메가가 넘지 않는다고 가정한다
+//1024 * PAGE_SIZE = 4MB
+	virtualAddr = KERNEL_VIRTUAL_BASE_ADDRESS;
+	physAddr = KERNEL_PHYSICAL_BASE_ADDRESS;
+	
+	for (uint32_t i = 0; i < 1024; i++) 
+	{
+		VirtualMemoryManager::GetInstance()->MapPhysicalAddressToVirtualAddresss(addressSpace, virtualAddr + (i*PAGE_SIZE), physAddr + (i*PAGE_SIZE), flags);
+	}
+
+	/*
+	map display memory for debug minidriver
+	idenitity mapped 0xa0000-0xBF000.
+	Note:
+	A better alternative is to have a driver associated
+	with the physical memory range map it. This should be automatic;
+	through an IO manager or driver manager.
+	*/
+	virtualAddr = 0xa0000;
+	physAddr = 0xa0000;
+	for (uint32_t i = 0; i<31; i++) 
+	{
+		VirtualMemoryManager::GetInstance()->MapPhysicalAddressToVirtualAddresss(addressSpace, virtualAddr + (i*PAGE_SIZE), physAddr + (i*PAGE_SIZE), flags);
+	}	
+
+	//페이지 디렉토리 자체를 주소공간에 매핑
+	VirtualMemoryManager::GetInstance()->MapPhysicalAddressToVirtualAddresss(addressSpace, (uint32_t)addressSpace, (uint32_t)addressSpace, I86_PTE_PRESENT | I86_PTE_WRITABLE);	
+
+	//커널 힙을 메모리에 매핑
+	VirtualMemoryManager::GetInstance()->MapHeapSpace(addressSpace);
+
+	return true;
 }

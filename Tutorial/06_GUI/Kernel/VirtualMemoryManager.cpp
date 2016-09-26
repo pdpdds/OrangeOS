@@ -2,6 +2,7 @@
 #include "PhysicalMemoryManager.h"
 #include "string.h"
 #include "Console.h"
+#include "kheap.h"
 
 VirtualMemoryManager VirtualMemoryManager::m_virtualMemoryManager;
 
@@ -213,6 +214,8 @@ bool VirtualMemoryManager::Initialize()
 		memset(pTable, 0, sizeof(PageTable));
 
 		int virt = KERNEL_VIRTUAL_BASE_ADDRESS + y * PAGES_PER_TABLE * PAGE_SIZE;
+
+//커널의 사이즈는 4메가가 넘지 않는다고 가정한다
 		int frame = KERNEL_PHYSICAL_BASE_ADDRESS;
 
 		for (int i = 0; i < PAGES_PER_TABLE; i++, frame += PAGE_SIZE, virt += PAGE_SIZE)
@@ -244,8 +247,11 @@ bool VirtualMemoryManager::Initialize()
 	
 	if (false == SwitchPageDirectory(dir))
 		return false;	
+
+	CreateKernelHeap();
 	
 	PhysicalMemoryManager::GetInstance()->EnablePaging(true);
+
 
 	return true;
 }
@@ -276,4 +282,43 @@ void VirtualMemoryManager::FlushTranslationLockBufferEntry(uint32_t addr)
 		sti
 	}
 #endif
+}
+
+//256 * 4096 = 1MB, 1MB의 힙을 할당한다
+
+bool VirtualMemoryManager::CreateKernelHeap()
+{	
+	//Virtual Heap Address
+	void* pVirtualHeap = (void*)(KERNEL_VIRTUAL_HEAP_ADDRESS);
+
+	m_pKernelHeapPhysicalMemory = PhysicalMemoryManager::GetInstance()->AllocBlocks(256);
+
+	if (m_pKernelHeapPhysicalMemory == NULL)
+		return false;
+
+	for (int i = 0; i < 256; i++)
+	{
+		VirtualMemoryManager::GetInstance()->MapPhysicalAddressToVirtualAddresss(GetCurPageDirectory(), (uint32_t)pVirtualHeap + i * PAGE_SIZE, (uint32_t)m_pKernelHeapPhysicalMemory + i * PAGE_SIZE, I86_PTE_PRESENT | I86_PTE_WRITABLE);
+	}
+
+	create_kernel_heap((u32int)pVirtualHeap, (uint32_t)pVirtualHeap + 256 * PAGE_SIZE, (uint32_t)pVirtualHeap + 256 * PAGE_SIZE, 0, 0);	
+
+	return true;
+}
+
+bool VirtualMemoryManager::MapHeapSpace(PageDirectory* pDir)
+{
+
+		//Virtual Heap Address
+		void* pVirtualHeap = (void*)(KERNEL_VIRTUAL_HEAP_ADDRESS);		
+
+		if (m_pKernelHeapPhysicalMemory == NULL)
+			return false;
+
+		for (int i = 0; i < 256; i++)
+		{
+			VirtualMemoryManager::GetInstance()->MapPhysicalAddressToVirtualAddresss(pDir, (uint32_t)pVirtualHeap + i * PAGE_SIZE, (uint32_t)m_pKernelHeapPhysicalMemory + i * PAGE_SIZE, I86_PTE_PRESENT | I86_PTE_WRITABLE);
+		}		
+
+		return true;	
 }

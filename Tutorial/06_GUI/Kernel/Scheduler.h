@@ -14,8 +14,7 @@ public:
 		return m_pScheduler;
 	}
 
-	bool  DoSchedule(int tick, uint32_t registers);
-	bool  DoScheduleA(int tick, registers_t regs);
+	bool  DoSchedule(int tick, registers_t registers);
 
 private:
 	Scheduler();

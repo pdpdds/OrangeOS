@@ -106,6 +106,7 @@ main:
 	call		LoadFile		; load our file
    	mov   		dword [ImageSize], ecx
 	cmp		ax, 0
+	
 	je		EnterStage3
 	mov		si, msgFailure
 	call   		Puts16

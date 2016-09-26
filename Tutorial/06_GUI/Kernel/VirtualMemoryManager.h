@@ -6,6 +6,7 @@
 
 
 #define KERNEL_VIRTUAL_BASE_ADDRESS 0xC0000000
+#define KERNEL_VIRTUAL_HEAP_ADDRESS 0xD0000000
 #define KERNEL_PHYSICAL_BASE_ADDRESS 0x100000
 
 using namespace PageTableEntry;
@@ -80,6 +81,11 @@ public:
 	void UnmapPhysicalAddress(PageDirectory* dir, uint32_t virt);
 	PageDirectory* CreateAddressSpace();
 
+//Create Kernel Heap Physical Memory
+	bool CreateKernelHeap();
+
+	bool MapHeapSpace(PageDirectory* pDir);
+
 	static VirtualMemoryManager* GetInstance()
 	{
 		return &m_virtualMemoryManager;
@@ -93,5 +99,8 @@ private:
 
 	//! current page directory base register
 	uint32_t	_cur_pdbr = 0;
+
+	//Physical Heap Address
+	void* m_pKernelHeapPhysicalMemory = 0;
 };
 
