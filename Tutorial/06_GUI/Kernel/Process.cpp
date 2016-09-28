@@ -1,9 +1,12 @@
 #include "Process.h"
+#include "Thread.h"
 
 Process::Process()
 {
 	m_taskId = -1;
 	dwTickCount = 0;
+	m_kernelStackIndex = 0;
+	dwWaitingTime = 2;
 }
 
 
@@ -31,6 +34,18 @@ extern void install_pagedirectory(void* pPageDirectory);
 void Process::SetPDBR()
 {
 	install_pagedirectory(pPageDirectory);
+}
+
+Thread* Process::GetRunningThread()
+{
+	for (int index = 0; index < GetThreadCount(); index++)
+	{
+		Thread* pThread = GetThread(index);
+		if (pThread->state == PROCESS_STATE_RUNNING)
+			return pThread;
+	}
+
+	return NULL;
 }
 
 

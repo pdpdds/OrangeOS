@@ -25,7 +25,7 @@ public:
 	UINT32 m_taskId;
 	UINT32 dwRunState;
 	UINT32 dwPriority;
-	UINT32 dwWaitingTime;
+	int dwWaitingTime;
 	UINT32 dwPageCount;
 	UINT32 dwProcessType;
 	UINT32 dwTickCount;
@@ -35,8 +35,11 @@ public:
 	TaskStateSegment* pTSS;
 	heap_t* pHeap;
 
-private:
-	Orange::LinkedList m_threadList;
+	int GetThreadCount() { return m_threadList.Count(); }
+	Thread* GetRunningThread();
+	int m_kernelStackIndex;
 
+private:
+	Orange::LinkedList m_threadList;	
 };
 

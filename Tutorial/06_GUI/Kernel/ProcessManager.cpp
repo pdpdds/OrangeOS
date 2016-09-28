@@ -139,17 +139,17 @@ Thread* ProcessManager::CreateThread(Process* pProcess, LPTHREAD_START_ROUTINE l
 	pThread->frame.flags = 0x200;
 	
 //스택을 생성하고 주소공간에 매핑한다.
-	void* stackVirtual = (void*)(KERNEL_VIRTUAL_HEAP_ADDRESS - PAGE_SIZE);
+	void* stackVirtual = (void*)(KERNEL_VIRTUAL_STACK_ADDRESS + PAGE_SIZE * pProcess->m_kernelStackIndex);
 	void* stackPhys = (void*)PhysicalMemoryManager::GetInstance()->AllocBlock();
+	pProcess->m_kernelStackIndex++;
 
 	console.Print("Virtual Stack : %x\n", stackVirtual);
 	console.Print("Physical Stack : %x\n", stackPhys);
 
 	/* map user process stack space */
 	VirtualMemoryManager::GetInstance()->MapPhysicalAddressToVirtualAddresss(pProcess->pPageDirectory, (uint32_t)stackVirtual, (uint32_t)stackPhys, I86_PTE_PRESENT | I86_PTE_WRITABLE);
-
-	/* final initialization */
-	pThread->initialStack = stackVirtual;
+	
+	pThread->initialStack = (void*)((uint32_t)stackVirtual + PAGE_SIZE);
 	pThread->frame.esp = (uint32_t)pThread->initialStack;
 	pThread->frame.ebp = pThread->frame.esp;
 
@@ -216,6 +216,7 @@ bool ProcessManager::AddProcess(Process* pProcess)
 
 	console.Print("eip : %x\n", pThread->frame.eip);
 	console.Print("page directory : %x\n", pProcess->pPageDirectory);	
+	console.Print("procStack : %x\n", procStack);
 
 	Lock();	
 	m_processList.Add(pProcess);

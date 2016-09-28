@@ -42,7 +42,7 @@ public:
 	bool AddProcess(Process* pProces);	
 
 //Page Directory Mapping
-	bool MapKernelSpace(PageDirectory* addressSpace);
+	bool MapKernelSpace(PageDirectory* addressSpace);	
 
 private:	
 
@@ -51,5 +51,5 @@ private:
 
 	int m_nextProcessId;
 	Process* m_pCurrentProcess;
-	Orange::LinkedList m_processList;
+	Orange::LinkedList m_processList;	
 };

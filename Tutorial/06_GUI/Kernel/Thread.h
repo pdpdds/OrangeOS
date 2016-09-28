@@ -64,7 +64,7 @@ public:
 	UINT32 dwRunState;
 
 	UINT32 dwPriority;
-	UINT32 dwWaitingTime;
+	int dwWaitingTime;
 	ThreadStackInfo StackInfo;
 
 	Process* pParent;

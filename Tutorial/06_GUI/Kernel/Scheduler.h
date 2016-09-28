@@ -14,7 +14,7 @@ public:
 		return m_pScheduler;
 	}
 
-	bool  DoSchedule(int tick, registers_t registers);
+	bool  DoSchedule(int tick, registers_t& registers);
 
 private:
 	Scheduler();

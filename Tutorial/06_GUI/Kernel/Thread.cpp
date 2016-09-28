@@ -3,6 +3,7 @@
 
 Thread::Thread()
 {
+	dwWaitingTime = 2;
 }
 
 

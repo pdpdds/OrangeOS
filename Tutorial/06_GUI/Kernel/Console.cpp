@@ -427,6 +427,7 @@ void Console::GetCommand(char* commandBuffer, int bufSize)
 		//! grab next char		
 		
 		BYTE key = kGetCh();
+		//BYTE key = GetChar();
 
 		//! end of command if enter is pressed
 		if (key == KEY_ENTER)
@@ -473,7 +474,7 @@ void Console::GetCommand(char* commandBuffer, int bufSize)
 		}
 
 		//! wait for next key. You may need to adjust this to suite your needs
-		SimpleSleep(10);
+		//SimpleSleep(10);
 	}
 
 	//! null terminate the string

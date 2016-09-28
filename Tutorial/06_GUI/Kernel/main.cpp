@@ -140,7 +140,7 @@ int _cdecl kmain(multiboot_info* bootinfo)
 	InitializeSysCall();
 
 	//! initialize TSS
-	install_tss(5, 0x10, 0x9000);
+	install_tss(5, 0x10, 0);
 
 	/* set video mode and map framebuffer. */
 	VbeBochsSetMode(WIDTH, HEIGHT, BPP);
@@ -190,10 +190,16 @@ int _cdecl kmain(multiboot_info* bootinfo)
 	if(pProcess)	
 		console.Print("Create Success System Process\n");
 
+	
+	Thread* newThread = ProcessManager::GetInstance()->CreateThread(pProcess, SampleLoop);
+	pProcess->AddThread(newThread);
+
 	ProcessManager::GetInstance()->SetCurrentProcess(pProcess);
 	systemOn = true;
 
 	Thread* pThread = pProcess->GetThread(0);
+	pThread->state = PROCESS_STATE_RUNNING;
+
 	int entryPoint = (int)pThread->frame.eip;
 	unsigned int procStack = pThread->frame.esp;
 
@@ -201,17 +207,18 @@ int _cdecl kmain(multiboot_info* bootinfo)
 	{
 		mov     ax, 0x10;
 		mov     ds, ax
-			mov     es, ax
-			mov     fs, ax
+		mov     es, ax
+		mov     fs, ax
 			mov     gs, ax
 			;
 		; create stack frame
 			;
-		push   0x10;
-		push[procStack]; stack
-			push    0x200; EFLAGS
-			push    0x08; CS
-		push[entryPoint]; EIP
+		; push   0x10;
+		; push procStack; stack
+			mov esp, procStack
+		push    0x200; EFLAGS
+		push    0x08; CS
+		push entryPoint; EIP
 			iretd
 	}
 

@@ -36,57 +36,6 @@ void cmd_alloc()
 	}
 }
 
-int kkk = 0;
-void SampleLoop()
-{
-	char* str = "\n\rHello world2!";
-
-	int first = GetSysytemTickCount();
-	while (1)
-	{
-		static int count = 0;
-		int second = GetSysytemTickCount();
-		if (second - first > 100)
-		{
-			DebugPrintf("%s", str);
-
-			first = GetSysytemTickCount();
-			count++;
-		}
-
-		if (count > 5)
-		{
-			kkk = 1;
-			/*int entryPoint = (int)SampleLoop2;
-			unsigned int procStack = 0;
-
-			__asm {
-			mov     ax, 0x10; user mode data selector is 0x20 (GDT entry 3).Also sets RPL to 3
-			mov     ds, ax
-			mov     es, ax
-			mov     fs, ax
-			mov     gs, ax
-			;
-			; create stack frame
-			;
-			push   0x10; SS, notice it uses same selector as above
-			push[procStack]; stack
-			push    0x200; EFLAGS
-			push    0x08; CS, user mode code selector is 0x18.With RPL 3 this is 0x1b
-			push[entryPoint]; EIP
-			iretd
-			}*/
-		}
-
-	}
-
-	//Process* pProcess = (Process*)List_GetData(manager.pProcessQueue, "", 0);
-
-	//TerminateMemoryProcess();
-
-	for (;;);
-}
-
 /* video mode info. */
 #define WIDTH           800
 #define HEIGHT          600

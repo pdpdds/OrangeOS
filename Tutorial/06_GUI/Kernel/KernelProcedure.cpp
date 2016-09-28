@@ -4,6 +4,7 @@
 #include "string.h"
 
 extern Console console;
+extern "C" uint32_t GetSysytemTickCount();
 
 void NativeConsole()
 {
@@ -46,6 +47,29 @@ DWORD WINAPI SystemEntry(LPVOID parameter)
 	}
 
 	for (;;);
+
+	return 0;
+}
+
+DWORD WINAPI SampleLoop(LPVOID parameter)
+{
+	char* str = "Sample Loop!!\n";
+	console.Print("%s", str);
+	int first = GetSysytemTickCount();
+	bool bExit = false;
+	console.Print("%s", str);
+	while (bExit == false)
+	{
+		static int count = 0;
+		int second = GetSysytemTickCount();
+		if (second - first > 100)
+		{
+		//	console.Print("%s", str);
+
+			first = GetSysytemTickCount();
+			count++;
+		}
+	}
 
 	return 0;
 }
