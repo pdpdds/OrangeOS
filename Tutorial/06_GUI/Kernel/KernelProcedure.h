@@ -4,3 +4,4 @@
 void NativeConsole();
 DWORD WINAPI SystemEntry(LPVOID parameter);
 DWORD WINAPI SampleLoop(LPVOID parameter);
+DWORD WINAPI TaskHandler(LPVOID parameter);

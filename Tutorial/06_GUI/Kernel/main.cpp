@@ -194,6 +194,9 @@ int _cdecl kmain(multiboot_info* bootinfo)
 	Thread* newThread = ProcessManager::GetInstance()->CreateThread(pProcess, SampleLoop);
 	pProcess->AddThread(newThread);
 
+	Thread* newThread2 = ProcessManager::GetInstance()->CreateThread(pProcess, SampleLoop3);
+	pProcess->AddThread(newThread2);
+
 	ProcessManager::GetInstance()->SetCurrentProcess(pProcess);
 	systemOn = true;
 

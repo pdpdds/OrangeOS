@@ -2,6 +2,8 @@
 #include "ConsoleManager.h"
 #include "Console.h"
 #include "string.h"
+#include "Hal.h"
+#include "PIT.h"
 
 extern Console console;
 extern "C" uint32_t GetSysytemTickCount();
@@ -64,11 +66,21 @@ DWORD WINAPI SampleLoop(LPVOID parameter)
 		int second = GetSysytemTickCount();
 		if (second - first > 100)
 		{
-		//	console.Print("%s", str);
+			console.Print("%s", str);
 
 			first = GetSysytemTickCount();
 			count++;
 		}
+	}
+
+	return 0;
+}
+
+DWORD WINAPI TaskHandler(LPVOID parameter)
+{
+	while (true)
+	{
+		simpl
 	}
 
 	return 0;
