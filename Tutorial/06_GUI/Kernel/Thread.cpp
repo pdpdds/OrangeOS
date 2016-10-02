@@ -3,7 +3,8 @@
 
 Thread::Thread()
 {
-	dwWaitingTime = 2;
+	m_waitingTime = 2;
+	m_pParent = NULL;
 }
 
 

@@ -19,8 +19,7 @@ public:
 	virtual ~ProcessManager();
 
 		
-	Process* GetCurrentProcess() { return m_pCurrentProcess; }
-	void SetCurrentProcess(Process* pProcess) { m_pCurrentProcess = pProcess; }
+	Process* GetCurrentProcess();	
 
 
 	Orange::LinkedList* GetProcessList() { return &m_processList;}
@@ -36,10 +35,17 @@ public:
 	
 	Process* CreateProcess(LPTHREAD_START_ROUTINE lpStartAddress, bool firstProcess = false);
 	Process* CreateProcess(char* appName, UINT32 processType);	
-	Thread* CreateThread(Process* pProcess, FILE* pFile);
-	Thread* CreateThread(Process* pProcess, LPTHREAD_START_ROUTINE lpStartAddress);
+	Thread* CreateThread(Process* pProcess, FILE* pFile, LPVOID param);
+	Thread* CreateThread(Process* pProcess, LPTHREAD_START_ROUTINE lpStartAddress, LPVOID param);
 
-	bool AddProcess(Process* pProces);	
+	bool AddProcess(Process* pProces);
+	bool RemoveFromTaskList(Process* pProces);
+
+	bool DestroyProcess(Process* pProces);	
+	bool ReleaseHeap(Process* pProces);
+	bool ReleaseThreadContext(Process* pProces);
+
+	DoubleLinkedList* GetTaskList() { return &m_taskList; }
 
 //Page Directory Mapping
 	bool MapKernelSpace(PageDirectory* addressSpace);	
@@ -49,7 +55,7 @@ private:
 private:
 	static ProcessManager* m_pProcessManager;
 
-	int m_nextProcessId;
-	Process* m_pCurrentProcess;
-	Orange::LinkedList m_processList;	
+	int m_nextProcessId;	
+	Orange::LinkedList m_processList;
+	DoubleLinkedList m_taskList;
 };

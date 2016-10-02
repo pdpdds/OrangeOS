@@ -3,7 +3,7 @@
 #include "VirtualMemoryManager.h"
 #include "TaskStateSegment.h"
 #include "kheap.h"
-#include "List.h"
+#include "DoubleLinkedList.h"
 
 #define PROCESS_USER 0
 #define PROCESS_KERNEL 1
@@ -18,11 +18,10 @@ public:
 
 	BOOL AddThread(Thread* pThread);
 	Thread* GetThread(int index);
-	BOOL DelThread(void* ptr);
 
 	void SetPDBR();
 
-	UINT32 m_taskId;
+	UINT32 m_processId;
 	UINT32 dwRunState;
 	UINT32 dwPriority;
 	int dwWaitingTime;
@@ -31,15 +30,19 @@ public:
 	UINT32 dwTickCount;
 	char processName[256];
 
-	PageDirectory* pPageDirectory;
-	TaskStateSegment* pTSS;
-	heap_t* pHeap;
-
-	int GetThreadCount() { return m_threadList.Count(); }
-	Thread* GetRunningThread();
+	PageDirectory* pPageDirectory;	
+	heap_t* lpHeap;
+		
 	int m_kernelStackIndex;
+	DoubleLinkedList m_threadList;
+
+	uint32_t  imageBase;
+	uint32_t  imageSize;
+
+//Deprecated
+	TaskStateSegment* pTSS;
 
 private:
-	Orange::LinkedList m_threadList;	
+	
 };
 

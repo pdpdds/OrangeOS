@@ -15,15 +15,14 @@ extern Console console;
 
 ProcessManager::ProcessManager()
 {
-	m_nextProcessId = 1;
-	m_pCurrentProcess = 0;
+	m_nextProcessId = 1;	
 }
 
 ProcessManager::~ProcessManager()
 {
 }
 
-Thread* ProcessManager::CreateThread(Process* pProcess, FILE* file)
+Thread* ProcessManager::CreateThread(Process* pProcess, FILE* file, LPVOID param)
 {
 	unsigned char buf[512];
 	IMAGE_DOS_HEADER* dosHeader = 0;
@@ -41,8 +40,9 @@ Thread* ProcessManager::CreateThread(Process* pProcess, FILE* file)
 	ntHeaders = (IMAGE_NT_HEADERS*)(dosHeader->e_lfanew + (uint32_t)buf);
 
 	Thread* pThread = new Thread();
-	pThread->pParent = pProcess;
-
+	pThread->m_pParent = pProcess;
+	pProcess->imageBase = ntHeaders->OptionalHeader.ImageBase;
+	pProcess->imageSize = ntHeaders->OptionalHeader.SizeOfImage;
 	pThread->kernelStack = 0;
 	pThread->priority = 1;
 	pThread->state = PROCESS_STATE_INIT;
@@ -106,12 +106,7 @@ Thread* ProcessManager::CreateThread(Process* pProcess, FILE* file)
 	/* final initialization */
 	pThread->initialStack = stack;
 	pThread->frame.esp = (uint32_t)pThread->initialStack;
-	pThread->frame.ebp = pThread->frame.esp;	
-
-	pThread->curEip = pThread->frame.eip;
-	pThread->curCS = pThread->curEip;
-	pThread->curESP = pThread->frame.esp;
-	pThread->curFlags = pThread->frame.flags;	
+	pThread->frame.ebp = pThread->frame.esp;		
 
 	pThread->frame.eax = 0;
 	pThread->frame.ecx = 0;
@@ -124,10 +119,10 @@ Thread* ProcessManager::CreateThread(Process* pProcess, FILE* file)
 
 }
 
-Thread* ProcessManager::CreateThread(Process* pProcess, LPTHREAD_START_ROUTINE lpStartAddress)
+Thread* ProcessManager::CreateThread(Process* pProcess, LPTHREAD_START_ROUTINE lpStartAddress, LPVOID param)
 {
 	Thread* pThread = new Thread();
-	pThread->pParent = pProcess;
+	pThread->m_pParent = pProcess;
 	
 	pThread->priority = 1;
 	pThread->state = PROCESS_STATE_INIT;	
@@ -137,6 +132,7 @@ Thread* ProcessManager::CreateThread(Process* pProcess, LPTHREAD_START_ROUTINE l
 	memset(&pThread->frame, 0, sizeof(trapFrame));
 	pThread->frame.eip = (uint32_t)lpStartAddress;
 	pThread->frame.flags = 0x200;
+	pThread->startParam = param;
 	
 //스택을 생성하고 주소공간에 매핑한다.
 	void* stackVirtual = (void*)(KERNEL_VIRTUAL_STACK_ADDRESS + PAGE_SIZE * pProcess->m_kernelStackIndex);
@@ -151,7 +147,13 @@ Thread* ProcessManager::CreateThread(Process* pProcess, LPTHREAD_START_ROUTINE l
 	
 	pThread->initialStack = (void*)((uint32_t)stackVirtual + PAGE_SIZE);
 	pThread->frame.esp = (uint32_t)pThread->initialStack;
-	pThread->frame.ebp = pThread->frame.esp;
+	pThread->frame.ebp = pThread->frame.esp;	
+
+	pProcess->AddThread(pThread);
+
+	ListNode* node = new ListNode();
+	node->_data = pThread;
+	m_taskList.AddToTail(node);
 
 	return pThread;
 }
@@ -182,13 +184,13 @@ Process* ProcessManager::CreateProcess(char* appName, UINT32 processType)
 
 	Process* pProcess = new Process();
 
-	pProcess->m_taskId = ProcessManager::GetInstance()->GetNextProcessId();
+	pProcess->m_processId = ProcessManager::GetInstance()->GetNextProcessId();
 	pProcess->pPageDirectory = addressSpace;
 	pProcess->dwPriority = 1;
 	pProcess->dwRunState = PROCESS_STATE_INIT;
 	strcpy(pProcess->processName, appName);
 
-	Thread* pThread = CreateThread(pProcess, &file);
+	Thread* pThread = CreateThread(pProcess, &file, NULL);
 	pProcess->AddThread(pThread);
 	
 	return pProcess;
@@ -202,7 +204,7 @@ bool ProcessManager::AddProcess(Process* pProcess)
 	int entryPoint = 0;
 	unsigned int procStack = 0;
 
-	if (pProcess->m_taskId == PROC_INVALID_ID)
+	if (pProcess->m_processId == PROC_INVALID_ID)
 		return false;
 
 	if (!pProcess->pPageDirectory)
@@ -231,7 +233,7 @@ bool ProcessManager::AddProcess(Process* pProcess)
 Process* ProcessManager::CreateProcess(LPTHREAD_START_ROUTINE lpStartAddress, bool firstProcess)
 {
 	Process* pProcess = new Process();
-	pProcess->m_taskId = GetNextProcessId();
+	pProcess->m_processId = GetNextProcessId();
 
 	if (firstProcess == true)
 	{
@@ -249,12 +251,12 @@ Process* ProcessManager::CreateProcess(LPTHREAD_START_ROUTINE lpStartAddress, bo
 	pProcess->dwProcessType = PROCESS_KERNEL;	
 	pProcess->dwPriority = 1;
 	
-	Thread* pThread = CreateThread(pProcess, lpStartAddress);
+	Thread* pThread = CreateThread(pProcess, lpStartAddress, NULL);
 	
 	pProcess->AddThread(pThread);
 	AddProcess(pProcess);	
 
-	console.Print("Create Success Task %d\n", pProcess->m_taskId);
+	console.Print("Create Success Task %d\n", pProcess->m_processId);
 
 	return pProcess;
 }
@@ -296,6 +298,91 @@ bool ProcessManager::MapKernelSpace(PageDirectory* addressSpace)
 
 	//커널 힙을 메모리에 매핑
 	VirtualMemoryManager::GetInstance()->MapHeapSpace(addressSpace);
+
+	return true;
+}
+
+Process* ProcessManager::GetCurrentProcess()
+{
+	ListNode* pNode = m_taskList.GetHead();
+	if (pNode == NULL)
+		return NULL;
+
+	Thread* pThread = (Thread*)pNode->_data;
+
+	return pThread->m_pParent;
+}
+
+bool ProcessManager::RemoveFromTaskList(Process* pProces)
+{
+	int threadCount = pProces->m_threadList.CountItems();
+
+	for (int i = 0; i < threadCount; i++)
+	{
+		Thread* pThread = pProces->GetThread(i);
+		ListNode* pNode = m_taskList.Remove(pThread);
+
+		if (pNode)
+		{
+			delete pNode;
+		}
+		else
+		{
+			console.Print("task delete fail %d\n", pProces->m_processId);
+		}
+	}
+
+	return true;
+}
+
+bool ProcessManager::DestroyProcess(Process* pProces)
+{
+	//태스크 목록에서 프로세스의 태스크들을 제거한다.
+	RemoveFromTaskList(pProces);
+
+	//스레드 관련 Context 자원을 해제한다.
+	//가상 주소를 운영하기 위해 할당했던 페이지 테이블을 회수 등등
+	ReleaseThreadContext(pProces);
+
+	for (uint32_t page = 0; page < pProces->dwPageCount; page++) 
+	{					
+		uint32_t virt = pProces->imageBase + (page * PAGE_SIZE);
+
+		VirtualMemoryManager::GetInstance()->UnmapPhysicalAddress(pProces->pPageDirectory, virt);
+	}
+
+// 힙 메모리 회수
+	u32int heapAddess = (u32int)pProces->lpHeap;
+	heapAddess = heapAddess - (heapAddess % PAGE_SIZE);
+	for (int i = 0; i < 300; i++)
+	{
+		uint32_t virt = heapAddess + (i * PAGE_SIZE);
+		VirtualMemoryManager::GetInstance()->UnmapPhysicalAddress(pProces->pPageDirectory, virt);
+	}
+
+	//페이지 디렉토리 회수
+	PhysicalMemoryManager::GetInstance()->FreeBlock(pProces->pPageDirectory);	
+	
+	//프로세스 객체 완전히 제거
+	m_processList.Delete(pProces);
+	console.Print("terminate %s\n", pProces->processName);
+	delete pProces;
+
+	return true;
+}
+
+bool ProcessManager::ReleaseThreadContext(Process* pProces)
+{
+	int threadCount = pProces->m_threadList.CountItems();
+
+	for (int i = 0; i < threadCount; i++)
+	{
+		Thread* pThread = pProces->GetThread(i);
+		//스택 페이지 회수
+		VirtualMemoryManager::GetInstance()->UnmapPhysicalAddress(pProces->pPageDirectory, (uint32_t)pThread->initialStack);
+
+		// TLS 등등을 회수		
+	}
 
 	return true;
 }

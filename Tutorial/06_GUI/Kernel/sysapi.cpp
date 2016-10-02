@@ -95,27 +95,23 @@ int printf(const char* str, ...)
 	return 0;
 }
 
-
-
 HANDLE CreateThread(SIZE_T dwStackSize, LPTHREAD_START_ROUTINE lpStartAddress, LPVOID lpParameter, DWORD dwCreateionFlags, LPDWORD lpThreadId)
 {
 	Process* cur = ProcessManager::GetInstance()->GetCurrentProcess();
 
-	if (cur->m_taskId == PROC_INVALID_ID)
+	if (cur->m_processId == PROC_INVALID_ID)
 	{
 		console.Print("Invailid Process Id\n");
 		return 0;
 	}
 
-	Thread* newThread = ProcessManager::GetInstance()->CreateThread(cur, lpStartAddress);
+	Thread* newThread = ProcessManager::GetInstance()->CreateThread(cur, lpStartAddress, lpParameter);
 
 	if(newThread == NULL)
 	{
 		console.Print("Thread Create Fail!!\n");
 		return 0;
-	}
-
-	cur->AddThread(newThread);	
+	}	
 	
 	return (HANDLE)newThread;
 }

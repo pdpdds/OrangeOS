@@ -4,6 +4,7 @@
 #include "string.h"
 #include "Hal.h"
 #include "PIT.h"
+#include "Process.h"
 
 extern Console console;
 extern "C" uint32_t GetSysytemTickCount();
@@ -59,7 +60,11 @@ DWORD WINAPI SampleLoop(LPVOID parameter)
 	console.Print("%s", str);
 	int first = GetSysytemTickCount();
 	bool bExit = false;
-	console.Print("%s", str);
+	console.Print("%s", str);	
+
+	Process* pProcess = (Process*)parameter;
+	console.Print("Thread Routine Process Address %d\n", pProcess);
+
 	while (bExit == false)
 	{
 		static int count = 0;
@@ -76,11 +81,14 @@ DWORD WINAPI SampleLoop(LPVOID parameter)
 	return 0;
 }
 
-DWORD WINAPI TaskHandler(LPVOID parameter)
+DWORD WINAPI TaskProcessor(LPVOID parameter)
 {
+	Process* pProcess = (Process*)parameter;
+	console.Print("TaskProcessor Thread Parent Process Address %d\n", pProcess);
+
 	while (true)
 	{
-		simpl
+	//	simpl
 	}
 
 	return 0;

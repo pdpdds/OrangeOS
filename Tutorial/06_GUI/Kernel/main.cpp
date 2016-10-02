@@ -34,6 +34,7 @@ extern uint32_t g_kernelSize;
 void SetInterruptVector();
 bool InitializeMemorySystem(multiboot_info* bootinfo, uint32_t kernelSize);
 void InitializeFloppyDrive();
+void CreateCentralSystem();
 
 /* Definitions for BGA. Reference Graphics 1. */
 #define VBE_DISPI_IOPORT_INDEX          0x01CE
@@ -84,7 +85,7 @@ void* VbeBochsMapLFB() {
 void fillScreen32() {
 	uint32_t* lfb = (uint32_t*)LFB_VIRTUAL;
 	for (uint32_t c = 0; c<WIDTH*HEIGHT; c++)
-		lfb[c] = 0xffffffff;
+		lfb[c] = 0x00000000;
 }
 
 
@@ -185,49 +186,7 @@ int _cdecl kmain(multiboot_info* bootinfo)
 	pZetPlane->m_rotation = 50;
 	console.Print("ZetPlane's Rotation is %d\n", pZetPlane->m_rotation);	
 
-	Process* pProcess = ProcessManager::GetInstance()->CreateProcess(SystemEntry, true);
-
-	if(pProcess)	
-		console.Print("Create Success System Process\n");
-
-	
-	Thread* newThread = ProcessManager::GetInstance()->CreateThread(pProcess, SampleLoop);
-	pProcess->AddThread(newThread);
-
-	Thread* newThread2 = ProcessManager::GetInstance()->CreateThread(pProcess, SampleLoop3);
-	pProcess->AddThread(newThread2);
-
-	ProcessManager::GetInstance()->SetCurrentProcess(pProcess);
-	systemOn = true;
-
-	Thread* pThread = pProcess->GetThread(0);
-	pThread->state = PROCESS_STATE_RUNNING;
-
-	int entryPoint = (int)pThread->frame.eip;
-	unsigned int procStack = pThread->frame.esp;
-
-	__asm 
-	{
-		mov     ax, 0x10;
-		mov     ds, ax
-		mov     es, ax
-		mov     fs, ax
-			mov     gs, ax
-			;
-		; create stack frame
-			;
-		; push   0x10;
-		; push procStack; stack
-			mov esp, procStack
-		push    0x200; EFLAGS
-		push    0x08; CS
-		push entryPoint; EIP
-			iretd
-	}
-
-
-	//int j = 0;
-	//int k = 50  j;
+	CreateCentralSystem();
 
 	return 0;
 }
@@ -262,34 +221,34 @@ void SetInterruptVector()
 //  define IMAGE_RMODE_BASE 0x3000
 
 bool InitializeMemorySystem(multiboot_info* bootinfo, uint32_t kernelSize)
-{		
+{
 	console.Print("KernelSize : %d Bytes\n", kernelSize);
-	console.Print("TotalMemorySize : %d Bytes\n", bootinfo->m_memoryLo * 1024);		
+	console.Print("TotalMemorySize : %d Bytes\n", bootinfo->m_memoryLo * 1024);
 	PhysicalMemoryManager::GetInstance()->Initialize(bootinfo->m_memoryLo * 1024, KERNEL_VIRTUAL_BASE_ADDRESS + kernelSize);
 
 	memory_region*	region = (memory_region*)0x1000;
 
-	for (int i = 0; i<10; ++i) {
+	for (int i = 0; i < 10; ++i) {
 
-		if (region[i].type>4)
+		if (region[i].type > 4)
 			break;
 
-		if (i>0 && region[i].startLo == 0)
+		if (i > 0 && region[i].startLo == 0)
 			break;
 
-		PhysicalMemoryManager::GetInstance()->InitMemoryRegion(region[i].startLo, region[i].sizeLo);		
+		PhysicalMemoryManager::GetInstance()->InitMemoryRegion(region[i].startLo, region[i].sizeLo);
 	}
 	PhysicalMemoryManager::GetInstance()->DeinitMemoryRegion(0x100000, kernelSize + 4096 * 1024 + 4096 * 1024);
-	
+
 	//kernel stack location	
 	PhysicalMemoryManager::GetInstance()->DeinitMemoryRegion(0x0, 0x10000);
 
 	PhysicalMemoryManager::GetInstance()->Dump();
-	
+
 	//! initialize our vmm
 	VirtualMemoryManager::GetInstance()->Initialize();
-	
-	
+
+
 	return true;
 }
 
@@ -303,6 +262,45 @@ void InitializeFloppyDrive()
 
 	//! initialize FAT12 filesystem
 	fsysFatInitialize();
+}
+
+void CreateCentralSystem()
+{
+	Process* pProcess = ProcessManager::GetInstance()->CreateProcess(SystemEntry, true);
+
+	if (pProcess)
+		console.Print("Create Success System Process\n");
+
+	Thread* newThread = ProcessManager::GetInstance()->CreateThread(pProcess, SampleLoop, pProcess);
+	Thread* newThread2 = ProcessManager::GetInstance()->CreateThread(pProcess, TaskProcessor, pProcess);	
+	
+	systemOn = true;
+
+	Thread* pThread = pProcess->GetThread(0);
+	pThread->state = PROCESS_STATE_RUNNING;
+
+	int entryPoint = (int)pThread->frame.eip;
+	unsigned int procStack = pThread->frame.esp;
+
+	__asm
+	{
+		mov     ax, 0x10;
+		mov     ds, ax
+			mov     es, ax
+			mov     fs, ax
+			mov     gs, ax
+			;
+		; create stack frame
+			;
+		; push   0x10;
+		; push procStack; stack
+			mov esp, procStack
+			push    0x200; EFLAGS
+			push    0x08; CS
+			push entryPoint; EIP
+			iretd
+	}
+
 }
 
 

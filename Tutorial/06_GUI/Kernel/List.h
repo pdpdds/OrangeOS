@@ -1,14 +1,14 @@
 #pragma once
 #include "windef.h"
             
-struct ListNode
-{
-    void* ptrData;    
-    struct ListNode* Next;
-};
-
 namespace Orange
 {
+	struct ListNode
+	{
+		void* ptrData;
+		struct ListNode* Next;
+	};
+
 	class LinkedList
 	{
 	public:

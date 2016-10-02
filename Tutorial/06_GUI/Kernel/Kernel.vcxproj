@@ -158,6 +158,7 @@
     <ClInclude Include="ConsoleManager.h" />
     <ClInclude Include="DebugDisplay.h" />
     <ClInclude Include="dma.h" />
+    <ClInclude Include="DoubleLinkedList.h" />
     <ClInclude Include="exception.h" />
     <ClInclude Include="fat12.h" />
     <ClInclude Include="flpydsk.h" />
@@ -172,6 +173,7 @@
     <ClInclude Include="kheap.h" />
     <ClInclude Include="kybrd.h" />
     <ClInclude Include="List.h" />
+    <ClInclude Include="OrangeQueue.h" />
     <ClInclude Include="ordered_array.h" />
     <ClInclude Include="PageDirectoryEntry.h" />
     <ClInclude Include="PageTableEntry.h" />

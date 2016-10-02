@@ -261,5 +261,7 @@
     <ClInclude Include="PageDirectoryEntry.h">
       <Filter>Memory</Filter>
     </ClInclude>
+    <ClInclude Include="DoubleLinkedList.h" />
+    <ClInclude Include="OrangeQueue.h" />
   </ItemGroup>
 </Project>

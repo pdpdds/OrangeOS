@@ -59,16 +59,20 @@ public:
 	BYTE * IOBASE;
 
 	UINT32 * lpStack;
-	void* lpHeap;
+
+//Thread Local Storage
+	void* lpTLS = NULL;
 
 	UINT32 dwRunState;
 
 	UINT32 dwPriority;
-	int dwWaitingTime;
+	int m_waitingTime;
 	ThreadStackInfo StackInfo;
 
-	Process* pParent;
+	Process* m_pParent;
 
+
+	LPVOID	startParam;
 	void*     initialStack; /* virtual address */
 	void*     stackLimit;
 	void*     kernelStack;
@@ -76,19 +80,9 @@ public:
 	int       state;
 	trapFrame frame;
 	uint32_t  imageBase;
-	uint32_t  imageSize;
+	uint32_t  imageSize;	
 
-	uint16_t curgs;
-	uint16_t curfs;
-	uint16_t curEs;
-	uint16_t curds;
-	uint16_t ss;
-
-	uint32_t curEip;
-	uint32_t curCS;
-	uint32_t curFlags;
 	uint32_t curESP;
 	
 	registers_t m_regs;
 };
-
