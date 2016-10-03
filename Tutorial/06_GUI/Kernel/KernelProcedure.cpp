@@ -6,6 +6,7 @@
 #include "PIT.h"
 #include "Process.h"
 
+bool systemOn = false;
 extern Console console;
 extern "C" uint32_t GetSysytemTickCount();
 
@@ -45,6 +46,8 @@ void NativeConsole()
 
 DWORD WINAPI SystemEntry(LPVOID parameter)
 {
+	systemOn = true;
+
 	while (1) {
 		NativeConsole();
 	}
@@ -63,7 +66,7 @@ DWORD WINAPI SampleLoop(LPVOID parameter)
 	console.Print("%s", str);	
 
 	Process* pProcess = (Process*)parameter;
-	console.Print("Thread Routine Process Address %d\n", pProcess);
+	console.Print("Thread Routine Process Address %x\n", pProcess);
 
 	while (bExit == false)
 	{
@@ -84,7 +87,7 @@ DWORD WINAPI SampleLoop(LPVOID parameter)
 DWORD WINAPI TaskProcessor(LPVOID parameter)
 {
 	Process* pProcess = (Process*)parameter;
-	console.Print("TaskProcessor Thread Parent Process Address %d\n", pProcess);
+	console.Print("TaskProcessor Thread Parent Process Address %x\n", pProcess);
 
 	while (true)
 	{

@@ -26,8 +26,6 @@
 #include "Keyboard.h"
 #include "KernelProcedure.h"
 
-
-bool systemOn = false;
 Console console;
 extern uint32_t g_kernelSize;
 
@@ -165,9 +163,7 @@ int _cdecl kmain(multiboot_info* bootinfo)
 	console.Print("Orange OS Console System Initialize\n");
 	console.Print("KernelSize : %d Bytes\n", g_kernelSize);	
 
-	//헥사를 표시할 때 %X는 integer, %x는 unsigned integer의 헥사값을 표시한다.
-	//주소값을 표기해야 하므로 %x를 사용한다.
-	console.Print("systemOn Variable Address : 0x%x\n", &systemOn);
+	//헥사를 표시할 때 %X는 integer, %x는 unsigned integer의 헥사값을 표시한다.	
 
 	char str[256];
 	memset(str, 0, 256);
@@ -264,6 +260,29 @@ void InitializeFloppyDrive()
 	fsysFatInitialize();
 }
 
+/* render rectangle in 32 bpp modes. */
+extern void rect32(int x, int y, int w, int h, int col);
+
+
+DWORD WINAPI RectGenerate(LPVOID parameter)
+{
+	int col = 0;
+	bool dir = true;
+	console.Print("RectGenerate\n");
+	while (1) {
+		rect32(200, 250, 100, 100, col << 16);
+		if (dir) {
+			if (col++ == 0xfe)
+				dir = false;
+		}
+		else
+			if (col-- == 1)
+				dir = true;
+	}
+
+	return 0;
+}
+
 void CreateCentralSystem()
 {
 	Process* pProcess = ProcessManager::GetInstance()->CreateProcess(SystemEntry, true);
@@ -273,8 +292,7 @@ void CreateCentralSystem()
 
 	Thread* newThread = ProcessManager::GetInstance()->CreateThread(pProcess, SampleLoop, pProcess);
 	Thread* newThread2 = ProcessManager::GetInstance()->CreateThread(pProcess, TaskProcessor, pProcess);	
-	
-	systemOn = true;
+	Thread* newThread3 = ProcessManager::GetInstance()->CreateThread(pProcess, RectGenerate, pProcess);	
 
 	Thread* pThread = pProcess->GetThread(0);
 	pThread->state = PROCESS_STATE_RUNNING;
