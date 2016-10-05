@@ -17,7 +17,6 @@ class ProcessManager
 public:
 	ProcessManager();
 	virtual ~ProcessManager();
-
 		
 	Process* GetCurrentProcess();	
 
@@ -48,7 +47,7 @@ public:
 	DoubleLinkedList* GetTaskList() { return &m_taskList; }
 
 //Page Directory Mapping
-	bool MapKernelSpace(PageDirectory* addressSpace);	
+	bool MapKernelSpace(PageDirectory* addressSpace);
 
 private:	
 
