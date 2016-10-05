@@ -33,6 +33,7 @@ void SetInterruptVector();
 bool InitializeMemorySystem(multiboot_info* bootinfo, uint32_t kernelSize);
 void InitializeFloppyDrive();
 void CreateCentralSystem();
+void CreateTestKernelProcess();
 
 /* Definitions for BGA. Reference Graphics 1. */
 #define VBE_DISPI_IOPORT_INDEX          0x01CE
@@ -182,7 +183,7 @@ int _cdecl kmain(multiboot_info* bootinfo)
 	pZetPlane->m_rotation = 50;
 	console.Print("ZetPlane's Rotation is %d\n", pZetPlane->m_rotation);	
 
-	CreateCentralSystem();
+	CreateCentralSystem();	
 
 	return 0;
 }
@@ -285,6 +286,8 @@ DWORD WINAPI RectGenerate(LPVOID parameter)
 
 void CreateCentralSystem()
 {
+	CreateTestKernelProcess();	
+
 	Process* pProcess = ProcessManager::GetInstance()->CreateProcess(SystemEntry, true);
 
 	if (pProcess)
@@ -292,10 +295,8 @@ void CreateCentralSystem()
 
 	Thread* newThread = ProcessManager::GetInstance()->CreateThread(pProcess, SampleLoop, pProcess);
 	Thread* newThread2 = ProcessManager::GetInstance()->CreateThread(pProcess, TaskProcessor, pProcess);	
-	Thread* newThread3 = ProcessManager::GetInstance()->CreateThread(pProcess, RectGenerate, pProcess);	
-
 	Thread* pThread = pProcess->GetThread(0);
-	pThread->state = PROCESS_STATE_RUNNING;
+	pThread->state = PROCESS_STATE_RUNNING;	
 
 	int entryPoint = (int)pThread->frame.eip;
 	unsigned int procStack = pThread->frame.esp;
@@ -319,6 +320,14 @@ void CreateCentralSystem()
 			iretd
 	}
 
+}
+
+void CreateTestKernelProcess()
+{
+	Process* pProcess = ProcessManager::GetInstance()->CreateProcess(TestKernelProcess);
+
+	if (pProcess)
+		console.Print("Create Success System Process\n");	
 }
 
 

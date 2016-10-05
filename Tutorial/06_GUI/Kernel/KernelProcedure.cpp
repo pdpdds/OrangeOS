@@ -96,3 +96,27 @@ DWORD WINAPI TaskProcessor(LPVOID parameter)
 
 	return 0;
 }
+
+DWORD WINAPI TestKernelProcess(LPVOID parameter)
+{	
+	Process* pProcess = (Process*)parameter;
+	console.Print("Test Second Kernel Process %x\n", pProcess);
+	BOOL bExit = false;
+	int first = GetSysytemTickCount();
+
+	while (bExit == false)
+	{
+		static int count = 0;
+		
+		int second = GetSysytemTickCount();
+		if (second - first > 100)
+		{
+			console.Print("Test Second Kernel Process %d\n", pProcess);
+
+			first = GetSysytemTickCount();
+			count++;
+		}
+	}
+
+	return 0;
+}

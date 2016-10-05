@@ -239,7 +239,6 @@ bool VirtualMemoryManager::Initialize()
 	PageDirectoryEntry::AddAttribute(identityEntry, I86_PDE_WRITABLE);
 	PageDirectoryEntry::SetFrame(identityEntry, (uint32_t)identityPageTable);
 		
-	_cur_pdbr = (uint32_t)&dir->m_entries;
 
 #ifdef _ORANGE_DEBUG
 	console.Print("Current Page Directory Base Register : 0x%x\n", _cur_pdbr);
@@ -262,6 +261,7 @@ bool VirtualMemoryManager::SwitchPageDirectory(PageDirectory* dir)
 		return false;
 
 	_cur_directory = dir;
+	_cur_pdbr = (uint32_t)&dir->m_entries;
 
 	PhysicalMemoryManager::GetInstance()->LoadPDBR(_cur_pdbr);
 	

@@ -95,6 +95,8 @@ bool  Scheduler::DoSchedule(int tick, registers_t& registers)
 		int entryPoint = (int)pNextThread->frame.eip;
 		unsigned int procStack = pNextThread->frame.esp;
 		LPVOID param = pNextThread->startParam;
+		
+		VirtualMemoryManager::GetInstance()->SwitchPageDirectory(pNextThread->m_pParent->m_pPageDirectory);
 
 		__asm
 		{
@@ -144,6 +146,8 @@ bool  Scheduler::DoSchedule(int tick, registers_t& registers)
 #endif		
 		pNextThread->m_waitingTime = 2;
 		pNextThread->state = PROCESS_STATE_RUNNING;
+		
+		VirtualMemoryManager::GetInstance()->SwitchPageDirectory(pNextThread->m_pParent->m_pPageDirectory);
 
 		g_esp = pNextThread->curESP;
 	}

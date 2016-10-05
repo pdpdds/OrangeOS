@@ -115,7 +115,7 @@ void cmd_memtask()
 
 		/* switch to process address space */
 		__asm cli
-		PhysicalMemoryManager::GetInstance()->LoadPDBR((uint32_t)pProcess->pPageDirectory);		
+		PhysicalMemoryManager::GetInstance()->LoadPDBR((uint32_t)pProcess->m_pPageDirectory);
 
 		/* execute process in user mode */
 		__asm {

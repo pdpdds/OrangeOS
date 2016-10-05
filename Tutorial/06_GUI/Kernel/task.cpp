@@ -148,13 +148,13 @@ extern "C" {
 		
 		/* get physical address of stack */
 		
-		void* stackFrame = VirtualMemoryManager::GetInstance()->GetPhysicalAddressFromVirtualAddress(pProcess->pPageDirectory,
+		void* stackFrame = VirtualMemoryManager::GetInstance()->GetPhysicalAddressFromVirtualAddress(pProcess->m_pPageDirectory,
 			(uint32_t)pThread->initialStack);
 
 		console.Print("Plane X : %d, Plane Y : %d\n", 1, 1);
 		/* unmap and release stack memory */
 		
-		VirtualMemoryManager::GetInstance()->UnmapPhysicalAddress(pProcess->pPageDirectory, (uint32_t)pThread->initialStack);
+		VirtualMemoryManager::GetInstance()->UnmapPhysicalAddress(pProcess->m_pPageDirectory, (uint32_t)pThread->initialStack);
 		//pmmngr_free_block(stackFrame);
 
 		/* unmap and release image memory */
@@ -166,10 +166,10 @@ extern "C" {
 			virt = pThread->imageBase + (page * PAGE_SIZE);
 
 			/* get physical address of page */
-			phys = (uint32_t)VirtualMemoryManager::GetInstance()->GetPhysicalAddressFromVirtualAddress(pProcess->pPageDirectory, virt);
+			phys = (uint32_t)VirtualMemoryManager::GetInstance()->GetPhysicalAddressFromVirtualAddress(pProcess->m_pPageDirectory, virt);
 
 			/* unmap and release page */
-			VirtualMemoryManager::GetInstance()->UnmapPhysicalAddress(pProcess->pPageDirectory, virt);
+			VirtualMemoryManager::GetInstance()->UnmapPhysicalAddress(pProcess->m_pPageDirectory, virt);
 			//pmmngr_free_block((void*)phys);
 		}		
 
@@ -184,7 +184,7 @@ extern "C" {
 				sti
 		}
 		
-		PhysicalMemoryManager::GetInstance()->LoadPDBR((uint32_t)pProcess->pPageDirectory);
+		PhysicalMemoryManager::GetInstance()->LoadPDBR((uint32_t)pProcess->m_pPageDirectory);
 
 		/* return to kernel command shell */
 		//run();
@@ -237,7 +237,7 @@ extern "C" {
 		
 		for (int i = 0; i < 300; i++)
 		{
-			VirtualMemoryManager::GetInstance()->MapPhysicalAddressToVirtualAddresss(pProcess->pPageDirectory,
+			VirtualMemoryManager::GetInstance()->MapPhysicalAddressToVirtualAddresss(pProcess->m_pPageDirectory,
 				(uint32_t)heapAddess + i * PAGE_SIZE,
 				(uint32_t)pHeapPhys + i * PAGE_SIZE,
 				I86_PTE_PRESENT | I86_PTE_WRITABLE | I86_PTE_USER);

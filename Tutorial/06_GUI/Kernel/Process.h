@@ -30,7 +30,7 @@ public:
 	UINT32 dwTickCount;
 	char processName[256];
 
-	PageDirectory* pPageDirectory;	
+	PageDirectory* m_pPageDirectory;	
 	heap_t* lpHeap;
 		
 	int m_kernelStackIndex;

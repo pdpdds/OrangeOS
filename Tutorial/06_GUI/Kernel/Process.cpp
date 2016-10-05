@@ -7,6 +7,7 @@ Process::Process()
 	dwTickCount = 0;
 	m_kernelStackIndex = 0;
 	dwWaitingTime = 2;	
+	m_pPageDirectory = NULL;
 }
 
 
@@ -46,5 +47,5 @@ extern void install_pagedirectory(void* pPageDirectory);
 
 void Process::SetPDBR()
 {
-	install_pagedirectory(pPageDirectory);
+	install_pagedirectory(m_pPageDirectory);
 }
