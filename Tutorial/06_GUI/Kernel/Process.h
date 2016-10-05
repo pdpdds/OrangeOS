@@ -33,7 +33,7 @@ public:
 	PageDirectory* m_pPageDirectory;	
 	void* lpHeap;
 		
-	static int m_kernelStackIndex;
+	int m_kernelStackIndex;
 	DoubleLinkedList m_threadList;
 
 	uint32_t  imageBase;

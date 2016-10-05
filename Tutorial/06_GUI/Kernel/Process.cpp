@@ -1,8 +1,6 @@
 #include "Process.h"
 #include "Thread.h"
 
-int Process::m_kernelStackIndex = 0;
-
 Process::Process()
 {
 	m_processId = -1;
@@ -10,6 +8,7 @@ Process::Process()
 
 	dwWaitingTime = 2;	
 	m_pPageDirectory = NULL;
+	m_kernelStackIndex = 0;
 }
 
 
