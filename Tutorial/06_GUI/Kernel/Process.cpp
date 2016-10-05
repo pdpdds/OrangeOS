@@ -1,11 +1,13 @@
 #include "Process.h"
 #include "Thread.h"
 
+int Process::m_kernelStackIndex = 0;
+
 Process::Process()
 {
 	m_processId = -1;
 	dwTickCount = 0;
-	m_kernelStackIndex = 0;
+
 	dwWaitingTime = 2;	
 	m_pPageDirectory = NULL;
 }

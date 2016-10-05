@@ -83,9 +83,8 @@ public:
 	PageDirectory* CreateAddressSpace();
 
 //Create Kernel Heap Physical Memory
-	bool CreateKernelHeap();
-
-	bool MapHeapSpace(PageDirectory* pDir);
+	bool CreateKernelHeap(PageDirectory* dir);
+	bool MapHeap(PageDirectory* dir);
 
 	static VirtualMemoryManager* GetInstance()
 	{
@@ -101,7 +100,7 @@ private:
 	//! current page directory base register
 	uint32_t	_cur_pdbr = 0;
 
-	//Physical Heap Address
+	//Physical Heap Address	
 	void* m_pKernelHeapPhysicalMemory = 0;
 };
 

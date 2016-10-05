@@ -25,11 +25,8 @@ public:
 	int GetNextProcessId() { return m_nextProcessId++; }
 
 	static ProcessManager* GetInstance()
-	{
-		if (m_pProcessManager == 0)
-			m_pProcessManager = new ProcessManager();
-
-		return m_pProcessManager;
+	{		
+		return &m_processManager;
 	}
 	
 	Process* CreateProcess(LPTHREAD_START_ROUTINE lpStartAddress, bool firstProcess = false);
@@ -40,8 +37,7 @@ public:
 	bool AddProcess(Process* pProces);
 	bool RemoveFromTaskList(Process* pProces);
 
-	bool DestroyProcess(Process* pProces);	
-	bool ReleaseHeap(Process* pProces);
+	bool DestroyProcess(Process* pProces);		
 	bool ReleaseThreadContext(Process* pProces);
 
 	DoubleLinkedList* GetTaskList() { return &m_taskList; }
@@ -52,7 +48,7 @@ public:
 private:	
 
 private:
-	static ProcessManager* m_pProcessManager;
+	static ProcessManager m_processManager;
 
 	int m_nextProcessId;	
 	Orange::LinkedList m_processList;

@@ -45,9 +45,7 @@ void NativeConsole()
 }
 
 DWORD WINAPI SystemEntry(LPVOID parameter)
-{
-	systemOn = true;
-
+{	
 	while (1) {
 		NativeConsole();
 	}
@@ -98,7 +96,7 @@ DWORD WINAPI TaskProcessor(LPVOID parameter)
 }
 
 DWORD WINAPI TestKernelProcess(LPVOID parameter)
-{	
+{		
 	Process* pProcess = (Process*)parameter;
 	console.Print("Test Second Kernel Process %x\n", pProcess);
 	BOOL bExit = false;
@@ -111,7 +109,7 @@ DWORD WINAPI TestKernelProcess(LPVOID parameter)
 		int second = GetSysytemTickCount();
 		if (second - first > 100)
 		{
-			console.Print("Test Second Kernel Process %d\n", pProcess);
+			console.Print("Test Second Kernel Process %x\n", pProcess);
 
 			first = GetSysytemTickCount();
 			count++;

@@ -284,23 +284,31 @@ DWORD WINAPI RectGenerate(LPVOID parameter)
 	return 0;
 }
 
-void CreateCentralSystem()
-{
-	CreateTestKernelProcess();	
+extern bool systemOn;
 
+void CreateCentralSystem()
+{	
+	
 	Process* pProcess = ProcessManager::GetInstance()->CreateProcess(SystemEntry, true);
 
 	if (pProcess)
 		console.Print("Create Success System Process\n");
 
 	Thread* newThread = ProcessManager::GetInstance()->CreateThread(pProcess, SampleLoop, pProcess);
-	Thread* newThread2 = ProcessManager::GetInstance()->CreateThread(pProcess, TaskProcessor, pProcess);	
+	Thread* newThread2 = ProcessManager::GetInstance()->CreateThread(pProcess, TaskProcessor, pProcess);
+	
 	Thread* pThread = pProcess->GetThread(0);
-	pThread->state = PROCESS_STATE_RUNNING;	
+	pThread->state = PROCESS_STATE_RUNNING;		
+
+	CreateTestKernelProcess();
 
 	int entryPoint = (int)pThread->frame.eip;
 	unsigned int procStack = pThread->frame.esp;
 
+	InterruptDisable();
+
+	systemOn = true;
+	
 	__asm
 	{
 		mov     ax, 0x10;

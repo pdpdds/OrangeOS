@@ -31,9 +31,9 @@ public:
 	char processName[256];
 
 	PageDirectory* m_pPageDirectory;	
-	heap_t* lpHeap;
+	void* lpHeap;
 		
-	int m_kernelStackIndex;
+	static int m_kernelStackIndex;
 	DoubleLinkedList m_threadList;
 
 	uint32_t  imageBase;

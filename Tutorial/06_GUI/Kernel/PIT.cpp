@@ -43,6 +43,7 @@ void PIT::Disable()
 
 static volatile uint32_t			_pit_ticks = 0;
 int g_esp = 0;
+uint32_t g_pageDirectory = 0;
 
 void isr_handler(registers_t regs)
 {	
@@ -79,10 +80,15 @@ __declspec(naked) void _cdecl i86_pit_irq()
 	{
 		call isr_handler		
 	}
-
-	
+		
 	__asm
 	{
+		cmp g_pageDirectory, 0
+		jz pass
+		mov	eax, [g_pageDirectory]
+		mov	cr3, eax		// PDBR is cr3 register in i86
+		pass:
+
 		mov eax, g_esp
 		mov esp, eax
 

@@ -237,17 +237,23 @@ bool VirtualMemoryManager::Initialize()
 	PDE* identityEntry = &dir->m_entries[PAGE_DIRECTORY_INDEX(0x00000000)];
 	PageDirectoryEntry::AddAttribute(identityEntry, I86_PDE_PRESENT);
 	PageDirectoryEntry::AddAttribute(identityEntry, I86_PDE_WRITABLE);
-	PageDirectoryEntry::SetFrame(identityEntry, (uint32_t)identityPageTable);
-		
+	PageDirectoryEntry::SetFrame(identityEntry, (uint32_t)identityPageTable);	
+
+	if (false == SwitchPageDirectory(dir))
+		return false;
+
+	_asm
+	{
+		mov	eax, [dir]
+		mov	cr3, eax		// PDBR is cr3 register in i86
+	}
 
 #ifdef _ORANGE_DEBUG
 	console.Print("Current Page Directory Base Register : 0x%x\n", _cur_pdbr);
 #endif // _ORANGE_DEBUG	
-	
-	if (false == SwitchPageDirectory(dir))
-		return false;	
 
-	CreateKernelHeap();
+	CreateKernelHeap(GetCurPageDirectory());
+	
 	
 	PhysicalMemoryManager::GetInstance()->EnablePaging(true);
 
@@ -263,7 +269,7 @@ bool VirtualMemoryManager::SwitchPageDirectory(PageDirectory* dir)
 	_cur_directory = dir;
 	_cur_pdbr = (uint32_t)&dir->m_entries;
 
-	PhysicalMemoryManager::GetInstance()->LoadPDBR(_cur_pdbr);
+	//PhysicalMemoryManager::GetInstance()->LoadPDBR(_cur_pdbr);
 	
 	return true;
 }
@@ -286,7 +292,7 @@ void VirtualMemoryManager::FlushTranslationLockBufferEntry(uint32_t addr)
 
 //256 * 4096 = 1MB, 1MB의 힙을 할당한다
 
-bool VirtualMemoryManager::CreateKernelHeap()
+bool VirtualMemoryManager::CreateKernelHeap(PageDirectory* dir)
 {	
 	//Virtual Heap Address
 	void* pVirtualHeap = (void*)(KERNEL_VIRTUAL_HEAP_ADDRESS);
@@ -296,29 +302,22 @@ bool VirtualMemoryManager::CreateKernelHeap()
 	if (m_pKernelHeapPhysicalMemory == NULL)
 		return false;
 
-	for (int i = 0; i < 256; i++)
-	{
-		VirtualMemoryManager::GetInstance()->MapPhysicalAddressToVirtualAddresss(GetCurPageDirectory(), (uint32_t)pVirtualHeap + i * PAGE_SIZE, (uint32_t)m_pKernelHeapPhysicalMemory + i * PAGE_SIZE, I86_PTE_PRESENT | I86_PTE_WRITABLE);
-	}
-
-	create_kernel_heap((u32int)pVirtualHeap, (uint32_t)pVirtualHeap + 256 * PAGE_SIZE, (uint32_t)pVirtualHeap + 256 * PAGE_SIZE, 0, 0);	
+	MapHeap(dir);
+			
+	create_kernel_heap((u32int)pVirtualHeap, (uint32_t)pVirtualHeap + 256 * PAGE_SIZE, (uint32_t)pVirtualHeap + 256 * PAGE_SIZE, 0, 0);		
 
 	return true;
 }
 
-bool VirtualMemoryManager::MapHeapSpace(PageDirectory* pDir)
+bool VirtualMemoryManager::MapHeap(PageDirectory* dir)
 {
+	//Virtual Heap Address
+	void* pVirtualHeap = (void*)(KERNEL_VIRTUAL_HEAP_ADDRESS);
 
-		//Virtual Heap Address
-		void* pVirtualHeap = (void*)(KERNEL_VIRTUAL_HEAP_ADDRESS);		
+	for (int i = 0; i < 256; i++)
+	{
+		VirtualMemoryManager::GetInstance()->MapPhysicalAddressToVirtualAddresss(dir, (uint32_t)pVirtualHeap + i * PAGE_SIZE, (uint32_t)m_pKernelHeapPhysicalMemory + i * PAGE_SIZE, I86_PTE_PRESENT | I86_PTE_WRITABLE);
+	}
 
-		if (m_pKernelHeapPhysicalMemory == NULL)
-			return false;
-
-		for (int i = 0; i < 256; i++)
-		{
-			VirtualMemoryManager::GetInstance()->MapPhysicalAddressToVirtualAddresss(pDir, (uint32_t)pVirtualHeap + i * PAGE_SIZE, (uint32_t)m_pKernelHeapPhysicalMemory + i * PAGE_SIZE, I86_PTE_PRESENT | I86_PTE_WRITABLE);
-		}		
-
-		return true;	
+	return true;
 }

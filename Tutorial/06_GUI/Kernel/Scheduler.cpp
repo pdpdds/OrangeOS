@@ -29,6 +29,7 @@ Scheduler::~Scheduler()
 extern bool systemOn;
 uint32_t lastTickCount = 0;
 extern int g_esp;
+extern uint32_t g_pageDirectory;
 
 bool  Scheduler::DoSchedule(int tick, registers_t& registers)
 {
@@ -92,11 +93,22 @@ bool  Scheduler::DoSchedule(int tick, registers_t& registers)
 		pNextThread->m_waitingTime = 2;
 		pNextThread->state = PROCESS_STATE_RUNNING;
 
+
 		int entryPoint = (int)pNextThread->frame.eip;
 		unsigned int procStack = pNextThread->frame.esp;
-		LPVOID param = pNextThread->startParam;
-		
+		LPVOID param = pNextThread->startParam;			
+	
+		uint32_t physicalAddr = (uint32_t)pNextThread->m_pParent->m_pPageDirectory;
 		VirtualMemoryManager::GetInstance()->SwitchPageDirectory(pNextThread->m_pParent->m_pPageDirectory);
+		_asm
+		{
+			mov ecx, [entryPoint]
+			mov esp, procStack			
+			mov ebx, [param]
+
+			mov	eax, [physicalAddr]
+			mov	cr3, eax	 	// PDBR is cr3 register in i86
+		}
 
 		__asm
 		{
@@ -106,13 +118,13 @@ bool  Scheduler::DoSchedule(int tick, registers_t& registers)
 			mov     fs, ax
 			mov     gs, ax
 			
-			mov esp, procStack
+			//mov esp, procStack
 
-			push   param;
+			push   ebx;
 			push    0x10;
 			push    0x200; EFLAGS
 			push    0x08; CS
-			push entryPoint; EIP
+			push ecx; EIP
 
 			sti
 			mov al, 0x20
@@ -145,11 +157,11 @@ bool  Scheduler::DoSchedule(int tick, registers_t& registers)
 		console.Print("fs : %x\n", pNextThread->m_regs.fs);*/
 #endif		
 		pNextThread->m_waitingTime = 2;
-		pNextThread->state = PROCESS_STATE_RUNNING;
-		
-		VirtualMemoryManager::GetInstance()->SwitchPageDirectory(pNextThread->m_pParent->m_pPageDirectory);
+		pNextThread->state = PROCESS_STATE_RUNNING;			
 
 		g_esp = pNextThread->curESP;
+		g_pageDirectory = (uint32_t)pNextThread->m_pParent->m_pPageDirectory;
+		VirtualMemoryManager::GetInstance()->SwitchPageDirectory(pNextThread->m_pParent->m_pPageDirectory);		
 	}
 
 
