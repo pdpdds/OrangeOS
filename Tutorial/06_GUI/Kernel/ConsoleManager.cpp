@@ -1,5 +1,6 @@
 #include "ConsoleManager.h"
 #include "string.h"
+#include "stdio.h"
 #include "Console.h"
 #include "PhysicalMemoryManager.h"
 #include "VirtualMemoryManager.h"
@@ -7,6 +8,7 @@
 #include "DebugDisplay.h"
 #include "ProcessManager.h"
 #include "ZetPlane.h"
+#include "PIT.h"
 
 extern Console console;
 extern void enter_usermode();
@@ -75,18 +77,18 @@ DWORD WINAPI kthread_1(LPVOID parameter) {
 
 DWORD WINAPI SampleLoop2(LPVOID parameter) 
 {
-	char* str = "\n\rHello world3!";
+	char* str = "Hello world3!";
 
-	int first = GetSysytemTickCount();
+	int first = GetTickCount();
 	while (1)
 	{
 
-		int second = GetSysytemTickCount();
+		int second = GetTickCount();
 		if (second - first > 100)
 		{
-			DebugPrintf("%s", str);
+			console.Print("%s\n", str);
 
-			first = GetSysytemTickCount();
+			first = GetTickCount();
 		}
 
 
@@ -98,56 +100,53 @@ DWORD WINAPI SampleLoop2(LPVOID parameter)
 
 void cmd_memtask()
 {
+	EnterCriticalSection();
 
+	Process* pProcess = ProcessManager::GetInstance()->CreateProcess(SampleLoop2);
+	
+	LeaveCriticalSection();
+}
 
-	Process* pProcess = ProcessManager::GetInstance()->CreateProcess(kthread_1);
+void cmd_killtask(int processId)
+{
+	EnterCriticalSection();
 
-	if (pProcess)
+	Process* pProcess = ProcessManager::GetInstance()->FindProcess(processId);
+
+	if (pProcess != NULL)
 	{
-
-		int entryPoint = 0;
-		unsigned int procStack = 0;
-		Thread* pThread = pProcess->GetThread(0);
-
-		/* get esp and eip of main thread */
-		entryPoint = pThread->frame.eip;
-		procStack = pThread->frame.esp;
-
-		/* switch to process address space */
-		__asm cli
-		PhysicalMemoryManager::GetInstance()->LoadPDBR((uint32_t)pProcess->m_pPageDirectory);
-
-		/* execute process in user mode */
-		__asm {
-			mov     ax, 0x10; user mode data selector is 0x20 (GDT entry 3).Also sets RPL to 3
-				mov     ds, ax
-				mov     es, ax
-				mov     fs, ax
-				mov     gs, ax
-				;
-			; create stack frame
-				;
-			push   0x10; SS, notice it uses same selector as above
-				push[procStack]; stack
-				push    0x200; EFLAGS
-				push    0x08; CS, user mode code selector is 0x18.With RPL 3 this is 0x1b
-				push[entryPoint]; EIP
-				iretd
-		}
+		console.Print("Destroy Kernel Process : %s, ID : %d\n", pProcess->m_processName, pProcess->m_processId);
+		ProcessManager::GetInstance()->DestroyKernelProcess(pProcess);		
 	}
 
-	ProcessManager::GetInstance()->CreateProcess(SampleLoop2);
-
+	LeaveCriticalSection();
 }
+
+
+
+void cmd_list() {
+
+	EnterCriticalSection();
+	console.Print("Process List\n");
+
+	Orange::LinkedList* processlist = ProcessManager::GetInstance()->GetProcessList();
+
+	for (int i = 0; i < processlist->Count(); i++)
+	{
+		Process* pProcess = (Process*)processlist->Get(i);
+
+		console.Print("Process Name : %s, ID : %d\n", pProcess->m_processName, pProcess->m_processId);
+	}
+
+	LeaveCriticalSection();
+}
+
 
 void cmd_memstate() {
 		
-	DebugPrintf("\nfree block count %d", PhysicalMemoryManager::GetInstance()->GetFreeBlockCount());
-	DebugPrintf("\ntotal block count %d", PhysicalMemoryManager::GetInstance()->GetTotalBlockCount());
-	DebugPrintf("\n");
-	DebugPrintf("\n");
-	DebugPrintf("\n");
-	DebugPrintf("\n");
+	console.Print("free block count %d\n", PhysicalMemoryManager::GetInstance()->GetFreeBlockCount());
+	console.Print("total block count %d\n", PhysicalMemoryManager::GetInstance()->GetTotalBlockCount());
+	console.Print("\n");	
 }
 
 
@@ -264,6 +263,7 @@ bool ConsoleManager::RunCommand(char* buf)
 
 		console.Print("Orange OS Console Help\n");		
 		console.Print(" - exit: quits and halts the system\n");
+		console.Print(" - list: displays process list\n");
 		console.Print(" - cls: clears the display\n");
 		console.Print(" - help: displays this message\n");
 		console.Print(" - read: reads a file\n");
@@ -284,14 +284,31 @@ bool ConsoleManager::RunCommand(char* buf)
 	else if (strcmp(buf, "memtask") == 0) {
 		cmd_memtask();
 	}
-
+	else if (strcmp(buf, "list") == 0) {
+		cmd_list();
+	}
 	//! run process
 	else if (strstr(buf, ".exe") > 0) {
 		cmd_proc(buf);
-	}
+	}	
 	else
-	{
-		console.Print("Unknown Command\n");
+	{			
+		char* directive = strtok(buf, " ");		
+
+		if (directive != NULL && strcmp(directive, "kill") == 0)
+		{
+			char* processId = strtok(NULL, " ");
+
+			if(processId == NULL)
+				console.Print("Argument insufficient\n", processId);
+			else
+			{
+				int id = atoi(processId);
+				cmd_killtask(id);
+			}
+		}
+		else
+			console.Print("Unknown Command\n");		
 	}
 
 	return false;

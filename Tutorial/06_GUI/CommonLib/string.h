@@ -14,3 +14,7 @@ unsigned short* memsetw(unsigned short *dest, unsigned short val, size_t count);
 
 char* strchr (char * str, int character );
 int stricmp(const char *s1, const char *s2);
+
+char *strpbrk(const char *strSrc, const char *str);
+char * strtok(char *s1, const char *delimit);
+int strspn(const char *strSrc, const char *str);

@@ -7,6 +7,7 @@
 #include "PageDirectoryEntry.h"
 #include "PageTableEntry.h"
 #include "VirtualMemoryManager.h"
+#include "Hal.h"
 
 // end is defined in the linker script.
 //extern u32int end;
@@ -47,7 +48,9 @@ u32int kmalloc_int(u32int sz, int align, u32int *phys)
 
 void kfree(void *p)
 {
+	EnterCriticalSection();
 	free(p, &kheap);
+	LeaveCriticalSection();
 }
 
 u32int kmalloc_a(u32int sz)
@@ -67,7 +70,10 @@ u32int kmalloc_ap(u32int sz, u32int *phys)
 
 u32int kmalloc(u32int sz)
 {
-    return kmalloc_int(sz, 0, 0);
+	EnterCriticalSection();	
+	u32int buffer = kmalloc_int(sz, 0, 0);
+	LeaveCriticalSection();
+	return buffer;
 }
 
 static void expand(u32int new_size, heap_t *heap)

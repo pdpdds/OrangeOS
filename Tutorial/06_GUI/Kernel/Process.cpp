@@ -3,14 +3,12 @@
 
 Process::Process()
 {
-	m_processId = -1;
-	dwTickCount = 0;
+	m_processId = -1;	
 
-	dwWaitingTime = 2;	
+	m_dwRunningTime = TASK_RUNNING_TIME;	
 	m_pPageDirectory = NULL;
 	m_kernelStackIndex = 0;
 }
-
 
 Process::~Process()
 {

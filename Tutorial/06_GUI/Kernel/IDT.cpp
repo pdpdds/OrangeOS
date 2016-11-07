@@ -88,7 +88,7 @@ static void idt_install () {
 static void i86_default_handler () {
 
 	//! clear interrupts to prevent double fault
-	InterruptDisable ();
+	EnterCriticalSection ();
 
 	//! print debug message and halt
 #ifdef _DEBUG

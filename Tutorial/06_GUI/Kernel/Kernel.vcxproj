@@ -58,7 +58,7 @@
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
       <AdditionalIncludeDirectories>../mint64;../commonlib;./;../hal;..\Include\;..\Keyboard;..\FloppyDisk;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_ORANGE_DEBUG;ARCH_X86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ARCH_X86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <IgnoreStandardIncludePath>true</IgnoreStandardIncludePath>
       <StringPooling>false</StringPooling>
       <ExceptionHandling />
@@ -187,7 +187,6 @@
     <ClInclude Include="Scheduler.h" />
     <ClInclude Include="sysapi.h" />
     <ClInclude Include="task.h" />
-    <ClInclude Include="TaskStateSegment.h" />
     <ClInclude Include="Thread.h" />
     <ClInclude Include="tss.h" />
     <ClInclude Include="VirtualMemoryManager.h" />

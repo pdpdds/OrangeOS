@@ -3,6 +3,7 @@
 #include "DebugDisplay.h"
 #include "VirtualMemoryManager.h"
 #include "task.h"
+#include "PIT.h"
 
 #define MAX_SYSCALL 7
 int printf(const char* str, ...);
@@ -15,7 +16,7 @@ static void* _syscalls[] = {
 	MemoryAlloc,
 	MemoryFree,
 	CreateDefaultHeap,
-	GetSysytemTickCount,
+	GetTickCount,
 	CreateThread,
 };
 

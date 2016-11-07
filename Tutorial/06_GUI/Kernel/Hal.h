@@ -23,7 +23,7 @@ void OutPortWord(ushort port, ushort value);
 uchar InPortByte(ushort port);
 ushort InPortWord(ushort port);
 
-inline static void InterruptEnable()
+inline static void LeaveCriticalSection()
 {
 	__asm
 	{
@@ -31,7 +31,7 @@ inline static void InterruptEnable()
 	}
 }
 
-inline static void InterruptDisable()
+inline static void EnterCriticalSection()
 {
 	__asm
 	{

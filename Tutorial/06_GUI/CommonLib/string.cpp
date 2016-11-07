@@ -130,3 +130,70 @@ int stricmp(const char *s1, const char *s2)
 		s1++, s2++;
 	return (int)(TOUPPER(*s1) - TOUPPER(*s2));
 }
+
+char *strpbrk(const char *strSrc, const char *str)
+{	
+	const char *s;
+	while (*strSrc != '\0')
+	{
+		s = str;
+		while (*s != '\0')
+		{
+			if (*strSrc == *s)
+				return (char *)strSrc;
+			++s;
+		}
+		++strSrc;
+	}
+	return 0;
+}
+
+char * strtok(char *s1, const char *delimit)
+{
+	static char *lastToken = 0; /* UNSAFE SHARED STATE! */
+	char *tmp;
+
+	/* Skip leading delimiters if new string. */
+	if (s1 == 0) {
+		s1 = lastToken;
+		if (s1 == 0)         /* End of story? */
+			return 0;
+	}
+	else {
+		s1 += strspn(s1, delimit);
+	}
+
+	/* Find end of segment */
+	tmp = strpbrk(s1, delimit);
+	if (tmp) {
+		/* Found another delimiter, split string and save state. */
+		*tmp = '\0';
+		lastToken = tmp + 1;
+	}
+	else {
+		/* Last segment, remember that. */
+		lastToken = 0;
+	}
+
+	return s1;
+}
+
+int strspn(const char *strSrc, const char *str)
+{	
+	const char *s;
+	const char *t = strSrc;
+	while (*t != '\0')
+	{
+		s = str;
+		while (*s != '\0')
+		{
+			if (*t == *s)
+				break;
+			++s;
+		}
+		if (*s == '\0')
+			return t - strSrc;
+		++t;
+	}
+	return 0;
+}

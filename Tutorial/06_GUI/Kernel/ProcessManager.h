@@ -34,11 +34,13 @@ public:
 	Thread* CreateThread(Process* pProcess, FILE* pFile, LPVOID param);
 	Thread* CreateThread(Process* pProcess, LPTHREAD_START_ROUTINE lpStartAddress, LPVOID param);
 
-	bool AddProcess(Process* pProces);
-	bool RemoveFromTaskList(Process* pProces);
+	bool AddProcess(Process* pProcess);
+	Process* FindProcess(int processId);
+	bool RemoveFromTaskList(Process* pProcess);
 
-	bool DestroyProcess(Process* pProces);		
-	bool ReleaseThreadContext(Process* pProces);
+	bool DestroyProcess(Process* pProcess);
+	bool DestroyKernelProcess(Process* pProcess);
+	bool ReleaseThreadContext(Process* pProcess);
 
 	DoubleLinkedList* GetTaskList() { return &m_taskList; }
 

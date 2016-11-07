@@ -8,7 +8,6 @@
 
 bool systemOn = false;
 extern Console console;
-extern "C" uint32_t GetSysytemTickCount();
 
 void NativeConsole()
 {
@@ -59,7 +58,7 @@ DWORD WINAPI SampleLoop(LPVOID parameter)
 {
 	char* str = "Sample Loop!!\n";
 	console.Print("%s", str);
-	int first = GetSysytemTickCount();
+	int first = GetTickCount();
 	bool bExit = false;
 	console.Print("%s", str);	
 
@@ -69,12 +68,12 @@ DWORD WINAPI SampleLoop(LPVOID parameter)
 	while (bExit == false)
 	{
 		static int count = 0;
-		int second = GetSysytemTickCount();
+		int second = GetTickCount();
 		if (second - first > 100)
 		{
 			console.Print("%s", str);
 
-			first = GetSysytemTickCount();
+			first = GetTickCount();
 			count++;
 		}
 	}
@@ -100,18 +99,18 @@ DWORD WINAPI TestKernelProcess(LPVOID parameter)
 	Process* pProcess = (Process*)parameter;
 	console.Print("Test Second Kernel Process %x\n", pProcess);
 	BOOL bExit = false;
-	int first = GetSysytemTickCount();
+	int first = GetTickCount();
 
 	while (bExit == false)
 	{
 		static int count = 0;
 		
-		int second = GetSysytemTickCount();
+		int second = GetTickCount();
 		if (second - first > 100)
 		{
 			console.Print("Test Second Kernel Process %x\n", pProcess);
 
-			first = GetSysytemTickCount();
+			first = GetTickCount();
 			count++;
 		}
 	}

@@ -63,12 +63,12 @@ void DebugUpdateCur(int x, int y) {
 	uint16_t cursorLocation = y * 80 + x;
 
 	// send location to vga controller to set cursor
-	InterruptDisable();
+	EnterCriticalSection();
 	OutPortByte(0x3D4, 14);
 	OutPortByte(0x3D5, cursorLocation >> 8); // Send the high byte.
 	OutPortByte(0x3D4, 15);
 	OutPortByte(0x3D5, cursorLocation);      // Send the low byte.
-	InterruptEnable();
+	LeaveCriticalSection();
 }
 
 void scroll() {
@@ -321,7 +321,7 @@ static char* sickpc = " \
 
 void _cdecl kernel_panic(const char* fmt, ...) {
 
-	InterruptDisable();
+	EnterCriticalSection();
 
 	va_list		args;
 	static char buf[1024];

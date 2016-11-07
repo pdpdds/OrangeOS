@@ -31,7 +31,7 @@ Thread* ProcessManager::CreateThread(Process* pProcess, FILE* file, LPVOID param
 
 	/* read 512 bytes into buffer */
 	volReadFile(file, buf, 512);
-	if (!validateImage(buf)) {
+	if (!ValidatePEImage(buf)) {
 		volCloseFile(file);
 		return 0;
 	}
@@ -41,15 +41,15 @@ Thread* ProcessManager::CreateThread(Process* pProcess, FILE* file, LPVOID param
 
 	Thread* pThread = new Thread();
 	pThread->m_pParent = pProcess;
-	pProcess->imageBase = ntHeaders->OptionalHeader.ImageBase;
-	pProcess->imageSize = ntHeaders->OptionalHeader.SizeOfImage;
+	pProcess->m_imageBase = ntHeaders->OptionalHeader.ImageBase;
+	pProcess->m_imageSize = ntHeaders->OptionalHeader.SizeOfImage;
 	pThread->kernelStack = 0;
-	pThread->priority = 1;
-	pThread->state = PROCESS_STATE_INIT;
-	pThread->initialStack = 0;
-	pThread->stackLimit = (void*)((uint32_t)pThread->initialStack + 4096);
-	pThread->imageBase = ntHeaders->OptionalHeader.ImageBase;
-	pThread->imageSize = ntHeaders->OptionalHeader.SizeOfImage;
+	pThread->m_dwPriority = 1;
+	pThread->m_taskState = TASK_STATE_INIT;
+	pThread->m_initialStack = 0;
+	pThread->m_stackLimit = PAGE_SIZE;
+	pThread->m_imageBase = ntHeaders->OptionalHeader.ImageBase;
+	pThread->m_imageSize = ntHeaders->OptionalHeader.SizeOfImage;
 	memset(&pThread->frame, 0, sizeof(trapFrame));
 	pThread->frame.eip = (uint32_t)ntHeaders->OptionalHeader.AddressOfEntryPoint + ntHeaders->OptionalHeader.ImageBase;
 	pThread->frame.flags = 0x200;
@@ -57,31 +57,31 @@ Thread* ProcessManager::CreateThread(Process* pProcess, FILE* file, LPVOID param
 
 	int pageRest = 0;
 
-	if ((pThread->imageSize % 4096) > 0)
+	if ((pThread->m_imageSize % 4096) > 0)
 		pageRest = 1;
 
-	pProcess->dwPageCount = (pThread->imageSize / 4096) + pageRest;
+	pProcess->m_dwPageCount = (pThread->m_imageSize / 4096) + pageRest;
 	 
-	 memory = (unsigned char*)PhysicalMemoryManager::GetInstance()->AllocBlocks(pProcess->dwPageCount);
+	 memory = (unsigned char*)PhysicalMemoryManager::GetInstance()->AllocBlocks(pProcess->m_dwPageCount);
 	
 	/* map page into address space */
-	for (int i = 0; i <pProcess->dwPageCount; i++)
+	for (int i = 0; i <pProcess->m_dwPageCount; i++)
 	{		
 		VirtualMemoryManager::GetInstance()->MapPhysicalAddressToVirtualAddresss(pProcess->m_pPageDirectory,
 			ntHeaders->OptionalHeader.ImageBase + i * PAGE_SIZE,
 			(uint32_t)memory + i * PAGE_SIZE,
 			I86_PTE_PRESENT | I86_PTE_WRITABLE | I86_PTE_USER);
 	}
-	memset(memory, 0, pThread->imageSize);
+	memset(memory, 0, pThread->m_imageSize);
 	memcpy(memory, buf, 512);
 
 	/* load image into memory */
 
 	int fileRest = 0;
-	if ((pThread->imageSize % 512) != 0)
+	if ((pThread->m_imageSize % 512) != 0)
 		fileRest = 1;
 
-	int readCount = (pThread->imageSize / 512) + fileRest;
+	int readCount = (pThread->m_imageSize / 512) + fileRest;
 	for (int i = 1; i < readCount; i++) {
 		if (file->eof == 1)
 			break;
@@ -104,8 +104,8 @@ Thread* ProcessManager::CreateThread(Process* pProcess, FILE* file, LPVOID param
 	/* Create Heap*/
 	
 	/* final initialization */
-	pThread->initialStack = stack;
-	pThread->frame.esp = (uint32_t)pThread->initialStack;
+	pThread->m_initialStack = stack;
+	pThread->frame.esp = (uint32_t)pThread->m_initialStack;
 	pThread->frame.ebp = pThread->frame.esp;		
 
 	pThread->frame.eax = 0;
@@ -124,15 +124,15 @@ Thread* ProcessManager::CreateThread(Process* pProcess, LPTHREAD_START_ROUTINE l
 	Thread* pThread = new Thread();
 	pThread->m_pParent = pProcess;
 	
-	pThread->priority = 1;
-	pThread->state = PROCESS_STATE_INIT;	
-	pThread->stackLimit = (void*)(PAGE_SIZE);
-	pThread->imageBase = 0;
-	pThread->imageSize = 0;
+	pThread->m_dwPriority = 1;
+	pThread->m_taskState = TASK_STATE_INIT;
+	pThread->m_stackLimit = PAGE_SIZE;
+	pThread->m_imageBase = 0;
+	pThread->m_imageSize = 0;
 	memset(&pThread->frame, 0, sizeof(trapFrame));
 	pThread->frame.eip = (uint32_t)lpStartAddress;
 	pThread->frame.flags = 0x200;
-	pThread->startParam = param;
+	pThread->m_startParam = param;
 	
 //스택을 생성하고 주소공간에 매핑한다.
 	void* stackVirtual = (void*)(KERNEL_VIRTUAL_STACK_ADDRESS + PAGE_SIZE * pProcess->m_kernelStackIndex++);
@@ -144,8 +144,8 @@ Thread* ProcessManager::CreateThread(Process* pProcess, LPTHREAD_START_ROUTINE l
 	/* map user process stack space */
 	VirtualMemoryManager::GetInstance()->MapPhysicalAddressToVirtualAddresss(pProcess->m_pPageDirectory, (uint32_t)stackVirtual, (uint32_t)stackPhys, I86_PTE_PRESENT | I86_PTE_WRITABLE);
 	
-	pThread->initialStack = (void*)((uint32_t)stackVirtual + PAGE_SIZE);
-	pThread->frame.esp = (uint32_t)pThread->initialStack;
+	pThread->m_initialStack = (void*)((uint32_t)stackVirtual + PAGE_SIZE);
+	pThread->frame.esp = (uint32_t)pThread->m_initialStack;
 	pThread->frame.ebp = pThread->frame.esp;	
 
 	pProcess->AddThread(pThread);
@@ -185,14 +185,27 @@ Process* ProcessManager::CreateProcess(char* appName, UINT32 processType)
 
 	pProcess->m_processId = ProcessManager::GetInstance()->GetNextProcessId();
 	pProcess->m_pPageDirectory = addressSpace;
-	pProcess->dwPriority = 1;
-	pProcess->dwRunState = PROCESS_STATE_INIT;
-	strcpy(pProcess->processName, appName);
+	pProcess->m_dwPriority = 1;
+	pProcess->m_dwRunState = TASK_STATE_INIT;
+	strcpy(pProcess->m_processName, appName);
 
 	Thread* pThread = CreateThread(pProcess, &file, NULL);
 	pProcess->AddThread(pThread);
 	
 	return pProcess;
+}
+
+Process* ProcessManager::FindProcess(int processId)
+{
+	for (int i = 0; i < m_processList.Count(); i++)
+	{
+		Process* pProcess = (Process*)m_processList.Get(i);
+
+		if (pProcess->m_processId == processId)
+			return pProcess;
+	}
+
+	return NULL;
 }
 
 bool ProcessManager::AddProcess(Process* pProcess)
@@ -237,12 +250,14 @@ Process* ProcessManager::CreateProcess(LPTHREAD_START_ROUTINE lpStartAddress, bo
 	if (firstProcess == true)
 	{
 		pProcess->m_pPageDirectory = VirtualMemoryManager::GetInstance()->GetCurPageDirectory();
-		pProcess->dwRunState = PROCESS_STATE_RUNNING;
+		pProcess->m_dwRunState = TASK_STATE_RUNNING;
+		strcpy(pProcess->m_processName, "System");
 	}
 	else
 	{
 		pProcess->m_pPageDirectory = VirtualMemoryManager::GetInstance()->CreateAddressSpace();
-		pProcess->dwRunState = PROCESS_STATE_INIT;
+		pProcess->m_dwRunState = TASK_STATE_INIT;
+		strcpy(pProcess->m_processName, "System");
 		
 			PageTable* identityPageTable = (PageTable*)PhysicalMemoryManager::GetInstance()->AllocBlock();
 		if (identityPageTable == NULL)
@@ -313,10 +328,10 @@ Process* ProcessManager::CreateProcess(LPTHREAD_START_ROUTINE lpStartAddress, bo
 		VirtualMemoryManager::GetInstance()->MapHeap(pProcess->m_pPageDirectory);
 	}
 
-	pProcess->lpHeap = (void*)(KERNEL_VIRTUAL_HEAP_ADDRESS);
+	pProcess->m_lpHeap = (void*)(KERNEL_VIRTUAL_HEAP_ADDRESS);
 
-	pProcess->dwProcessType = PROCESS_KERNEL;	
-	pProcess->dwPriority = 1;
+	pProcess->m_dwProcessType = PROCESS_KERNEL;
+	pProcess->m_dwPriority = 1;
 	
 	Thread* pThread = CreateThread(pProcess, lpStartAddress, pProcess);
 	
@@ -377,13 +392,14 @@ Process* ProcessManager::GetCurrentProcess()
 	return pThread->m_pParent;
 }
 
-bool ProcessManager::RemoveFromTaskList(Process* pProces)
+bool ProcessManager::RemoveFromTaskList(Process* pProcess)
 {
-	int threadCount = pProces->m_threadList.CountItems();
+	int threadCount = pProcess->m_threadList.CountItems();
 
 	for (int i = 0; i < threadCount; i++)
 	{
-		Thread* pThread = pProces->GetThread(i);
+		Thread* pThread = pProcess->GetThread(i);	
+
 		ListNode* pNode = m_taskList.Remove(pThread);
 
 		if (pNode)
@@ -392,45 +408,72 @@ bool ProcessManager::RemoveFromTaskList(Process* pProces)
 		}
 		else
 		{
-			console.Print("task delete fail %d\n", pProces->m_processId);
+			console.Print("task delete fail %d\n", pProcess->m_processId);
 		}
 	}
 
 	return true;
 }
 
-bool ProcessManager::DestroyProcess(Process* pProces)
+bool ProcessManager::DestroyProcess(Process* pProcess)
 {
 	//태스크 목록에서 프로세스의 태스크들을 제거한다.
-	RemoveFromTaskList(pProces);
+	RemoveFromTaskList(pProcess);
 
 	//스레드 관련 Context 자원을 해제한다.
-	//가상 주소를 운영하기 위해 할당했던 페이지 테이블을 회수 등등
-	ReleaseThreadContext(pProces);
+	//가상 주소를 운영하기 위해 할당했던 페이지 테이블, 스택 등을 회수 등등
+	ReleaseThreadContext(pProcess);
 
-	for (uint32_t page = 0; page < pProces->dwPageCount; page++) 
+	for (uint32_t page = 0; page < pProcess->m_dwPageCount; page++)
 	{					
-		uint32_t virt = pProces->imageBase + (page * PAGE_SIZE);
+		uint32_t virt = pProcess->m_imageBase + (page * PAGE_SIZE);
 
-		VirtualMemoryManager::GetInstance()->UnmapPhysicalAddress(pProces->m_pPageDirectory, virt);
+		VirtualMemoryManager::GetInstance()->UnmapPhysicalAddress(pProcess->m_pPageDirectory, virt);
 	}
 
 // 힙 메모리 회수
-	u32int heapAddess = (u32int)pProces->lpHeap;
+	u32int heapAddess = (u32int)pProcess->m_lpHeap;
 	heapAddess = heapAddess - (heapAddess % PAGE_SIZE);
-	for (int i = 0; i < 300; i++)
+	for (int i = 0; i < DEFAULT_HEAP_PAGE_COUNT; i++)
 	{
 		uint32_t virt = heapAddess + (i * PAGE_SIZE);
-		VirtualMemoryManager::GetInstance()->UnmapPhysicalAddress(pProces->m_pPageDirectory, virt);
+		VirtualMemoryManager::GetInstance()->UnmapPhysicalAddress(pProcess->m_pPageDirectory, virt);
 	}
 
 	//페이지 디렉토리 회수
-	PhysicalMemoryManager::GetInstance()->FreeBlock(pProces->m_pPageDirectory);
+	//페이지 디렉토리는 물리 주소임
+	PhysicalMemoryManager::GetInstance()->FreeBlock(pProcess->m_pPageDirectory);	
+	m_processList.Delete(pProcess);
+	//프로세스 객체 완전히 제거	
+#ifdef _ORANGE_DEBUG
+	console.Print("terminate %s\n", pProces->m_processName);
+#endif // _ORANGE_DEBUG
+
+	delete pProcess;
+
+	return true;
+}
+
+//커널 프로세스를 종료한다.
+bool ProcessManager::DestroyKernelProcess(Process* pProcess)
+{
+	//태스크 목록에서 프로세스의 태스크들을 제거한다.
+	RemoveFromTaskList(pProcess);
+
+	//스레드 관련 Context 자원을 해제한다.
+	//가상 주소를 운영하기 위해 할당했던 페이지 테이블, 스택 등을 회수 등등
+	ReleaseThreadContext(pProcess);
 	
-	//프로세스 객체 완전히 제거
-	m_processList.Delete(pProces);
-	console.Print("terminate %s\n", pProces->processName);
-	delete pProces;
+	//페이지 디렉토리 회수
+	//페이지 디렉토리는 물리 주소임
+	PhysicalMemoryManager::GetInstance()->FreeBlock(pProcess->m_pPageDirectory);
+	m_processList.Delete(pProcess);
+	//프로세스 객체 완전히 제거	
+#ifdef _ORANGE_DEBUG
+	console.Print("terminate %s\n", pProces->m_processName);
+#endif // _ORANGE_DEBUG
+
+	delete pProcess;
 
 	return true;
 }
@@ -443,7 +486,7 @@ bool ProcessManager::ReleaseThreadContext(Process* pProces)
 	{
 		Thread* pThread = pProces->GetThread(i);
 		//스택 페이지 회수
-		VirtualMemoryManager::GetInstance()->UnmapPhysicalAddress(pProces->m_pPageDirectory, (uint32_t)pThread->initialStack);
+		VirtualMemoryManager::GetInstance()->UnmapPhysicalAddress(pProces->m_pPageDirectory, (uint32_t)pThread->m_initialStack);
 
 		// TLS 등등을 회수		
 	}

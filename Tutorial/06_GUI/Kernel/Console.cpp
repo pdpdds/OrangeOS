@@ -225,12 +225,12 @@ void Console::MoveCursor(unsigned int  X,unsigned int  Y)
 		X = 0;
 	unsigned short Offset = (unsigned short)((Y*m_ScreenWidth) + (X - 1));
 
-	InterruptDisable();
+	EnterCriticalSection();
 	OutPortByte(m_VideoCardType,VGA_CRT_CURSOR_H_LOCATION);
 	OutPortByte(m_VideoCardType+1,Offset>>8);
 	OutPortByte(m_VideoCardType,VGA_CRT_CURSOR_L_LOCATION);
 	OutPortByte(m_VideoCardType+1,(Offset<<8)>>8);	
-	InterruptEnable();
+	LeaveCriticalSection();
 
 	if(X > 0)
 		m_xPos = X - 1;

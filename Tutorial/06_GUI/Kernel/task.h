@@ -8,16 +8,13 @@ extern int terminateThread (thread* handle);
 
 class Process;
 
-extern "C" void TerminateProcess ();
+extern "C"
+{
+	void TerminateProcess();
+	uint32_t MemoryAlloc(size_t size);
+	void MemoryFree(void* p);
+	void CreateDefaultHeap();
+	void TerminateMemoryProcess();	
+}
 
-extern "C" uint32_t MemoryAlloc(size_t size);
-extern "C" void MemoryFree(void* p);
-
-extern "C" void CreateDefaultHeap();
-
-extern "C" void TerminateMemoryProcess();
-
-extern "C" uint32_t GetSysytemTickCount();
-
-
-int validateImage(void* image);
+bool ValidatePEImage(void* image);

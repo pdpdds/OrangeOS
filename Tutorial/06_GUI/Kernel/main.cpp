@@ -105,14 +105,14 @@ extern void _cdecl kKeyboardHandler();
 int _cdecl kmain(multiboot_info* bootinfo) 
 {
 
-	InterruptDisable();
+	EnterCriticalSection();
 
 	i86_gdt_initialize();
 	i86_idt_initialize(0x8);
 	i86_pic_initialize(0x20, 0x28);
 	i86_pit_initialize();	
 	
-	InterruptEnable();
+	LeaveCriticalSection();
 
 	SetInterruptVector();
 	//setvect(32, scheduler_isr, 0x80);
@@ -287,25 +287,24 @@ DWORD WINAPI RectGenerate(LPVOID parameter)
 extern bool systemOn;
 
 void CreateCentralSystem()
-{	
-	
+{		
 	Process* pProcess = ProcessManager::GetInstance()->CreateProcess(SystemEntry, true);
 
 	if (pProcess)
 		console.Print("Create Success System Process\n");
 
-	Thread* newThread = ProcessManager::GetInstance()->CreateThread(pProcess, SampleLoop, pProcess);
-	Thread* newThread2 = ProcessManager::GetInstance()->CreateThread(pProcess, TaskProcessor, pProcess);
+	//Thread* newThread = ProcessManager::GetInstance()->CreateThread(pProcess, SampleLoop, pProcess);
+	//Thread* newThread2 = ProcessManager::GetInstance()->CreateThread(pProcess, TaskProcessor, pProcess);
 	
 	Thread* pThread = pProcess->GetThread(0);
-	pThread->state = PROCESS_STATE_RUNNING;		
+	pThread->m_taskState = TASK_STATE_RUNNING;
 
-	CreateTestKernelProcess();
+	//CreateTestKernelProcess();
 
 	int entryPoint = (int)pThread->frame.eip;
 	unsigned int procStack = pThread->frame.esp;
 
-	InterruptDisable();
+	EnterCriticalSection();
 
 	systemOn = true;
 	

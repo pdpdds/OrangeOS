@@ -31,13 +31,18 @@
 #define KERNEL_SS				KERNEL_DS
 #define USER_SS					USER_DS
 
+#define PROCESS_USER 0
+#define PROCESS_KERNEL 1
 
-#define PROCESS_STATE_INIT  0
-#define PROCESS_STATE_WAIT  1
-#define PROCESS_STATE_RUNNING 2
-#define PROCESS_STATE_SLEEP  3
+#define DEFAULT_HEAP_PAGE_COUNT 256
 
+#define TASK_STATE_INIT		0 //태스크가 초기화된 상태
+#define TASK_STATE_WAIT		1 //실행을 위해 대기중인 상태
+#define TASK_STATE_RUNNING	2 //태스크가 실행중인 상태
+#define TASK_STATE_SLEEP	3 //태스크가 태스크 스케쥴러에서 제외된 상태
+#define TASK_STATE_END		4 //태스크가 종료된 상태   
 
+#define TASK_RUNNING_TIME 2   //태스크가 CPU를 사용하는 시간
 
 //! set access bit
 #define I86_GDT_DESC_ACCESS			0x0001			//00000001

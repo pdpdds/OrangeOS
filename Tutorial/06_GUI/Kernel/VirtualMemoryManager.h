@@ -58,7 +58,7 @@ public:
 	bool AllocPage(PTE* e);
 	void FreePage(PTE* e);
 
-	bool SwitchPageDirectory(PageDirectory* dir);
+	bool SetPageDirectoryInfo(PageDirectory* dir);
 
 	PageDirectory* GetCurPageDirectory();
 

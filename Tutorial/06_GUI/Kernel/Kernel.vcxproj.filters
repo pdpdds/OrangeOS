@@ -218,9 +218,6 @@
     <ClInclude Include="task.h">
       <Filter>Process</Filter>
     </ClInclude>
-    <ClInclude Include="TaskStateSegment.h">
-      <Filter>Process</Filter>
-    </ClInclude>
     <ClInclude Include="image.h">
       <Filter>Process</Filter>
     </ClInclude>

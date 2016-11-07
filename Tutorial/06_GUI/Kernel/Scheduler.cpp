@@ -8,9 +8,12 @@
 #include "tss.h"
 
 Scheduler* Scheduler::m_pScheduler = 0;
-extern tss_entry TSS;
 extern Console console;
+extern bool systemOn;
 
+uint32_t lastTickCount = 0;
+extern int g_esp;
+extern uint32_t g_pageDirectory;
 
 void SwitchTask(int tick, registers_t& registers)
 {
@@ -21,15 +24,11 @@ Scheduler::Scheduler()
 {
 }
 
-
 Scheduler::~Scheduler()
 {
 }
 
-extern bool systemOn;
-uint32_t lastTickCount = 0;
-extern int g_esp;
-extern uint32_t g_pageDirectory;
+
 
 bool  Scheduler::DoSchedule(int tick, registers_t& registers)
 {
@@ -37,12 +36,11 @@ bool  Scheduler::DoSchedule(int tick, registers_t& registers)
 		return false;
 
 #ifdef _ORANGE_DEBUG
-	uint32_t currentTickCount = GetSysytemTickCount();
-	lastTickCount = currentTickCount;
+	uint32_t currentTickCount = GetTickCount();
 
 	if (currentTickCount - lastTickCount > 300)
 	{
-		/*console.Print("\nSwitch Stack Report\n");
+		console.Print("\nSwitch Stack Report\n");
 
 		console.Print("EDI : %x\n", registers.edi);
 		console.Print("ESI : %x\n", registers.esi);
@@ -57,7 +55,9 @@ bool  Scheduler::DoSchedule(int tick, registers_t& registers)
 		console.Print("CS : %x\n", registers.cs);
 		console.Print("EFLAGS : %x\n", registers.eflags);
 		console.Print("USERESP : %x\n", registers.useresp);
-		console.Print("SS : %x\n", registers.ss);*/
+		console.Print("SS : %x\n", registers.ss);
+
+		lastTickCount = currentTickCount;
 	}
 #endif
 
@@ -65,48 +65,45 @@ bool  Scheduler::DoSchedule(int tick, registers_t& registers)
 
 	int taskCount = pTaskList->CountItems();
 
-	if (taskCount == 0)
+	if (taskCount == 0 || taskCount == 1)
 		return true;
 
 	ListNode* pNode = pTaskList->GetHead();
-	Thread* pThread = (Thread*)pNode->_data;
-
-	if (taskCount == 1)
-		return true;
+	Thread* pThread = (Thread*)pNode->_data;	
 
 	pThread->m_waitingTime--;
 
 	if (pThread->m_waitingTime > 0)
 		return true;
 
-	pThread->state = PROCESS_STATE_WAIT;
-	pThread->m_regs = registers;
-	pThread->curESP = g_esp;
+	pThread->m_taskState = TASK_STATE_WAIT;
+	pThread->m_contextSnapshot = registers;
+	pThread->m_esp = g_esp;
 	pTaskList->Remove(pNode);
 	pTaskList->AddToTail(pNode);
 
 	ListNode* pCandidate = pTaskList->GetHead();
 	Thread* pNextThread = (Thread*)pCandidate->_data;
 
-	if (pNextThread->state == PROCESS_STATE_INIT)
+	if (pNextThread->m_taskState == TASK_STATE_INIT)
 	{
-		pNextThread->m_waitingTime = 2;
-		pNextThread->state = PROCESS_STATE_RUNNING;
-
+		pNextThread->m_waitingTime = TASK_RUNNING_TIME;
+		pNextThread->m_taskState = TASK_STATE_RUNNING;
 
 		int entryPoint = (int)pNextThread->frame.eip;
 		unsigned int procStack = pNextThread->frame.esp;
-		LPVOID param = pNextThread->startParam;			
+		LPVOID param = pNextThread->m_startParam;
 	
-		uint32_t physicalAddr = (uint32_t)pNextThread->m_pParent->m_pPageDirectory;
-		VirtualMemoryManager::GetInstance()->SwitchPageDirectory(pNextThread->m_pParent->m_pPageDirectory);
+		PageDirectory* pageDirectory = pNextThread->m_pParent->m_pPageDirectory;
+		VirtualMemoryManager::GetInstance()->SetPageDirectoryInfo(pageDirectory);
+
 		_asm
 		{
 			mov ecx, [entryPoint]
 			mov esp, procStack			
 			mov ebx, [param]
 
-			mov	eax, [physicalAddr]
+			mov	eax, [pageDirectory]
 			mov	cr3, eax	 	// PDBR is cr3 register in i86
 		}
 
@@ -135,10 +132,8 @@ bool  Scheduler::DoSchedule(int tick, registers_t& registers)
 	}
 	else
 	{
-
-
 #ifdef _ORANGE_DEBUG
-		/*console.Print("EDI : %x\n", pNextThread->m_regs.edi);
+		console.Print("EDI : %x\n", pNextThread->m_regs.edi);
 		console.Print("ESI : %x\n", pNextThread->m_regs.esi);
 		console.Print("EBP : %x\n", pNextThread->m_regs.ebp);
 		console.Print("ESP : %x\n", pNextThread->m_regs.esp);
@@ -154,16 +149,15 @@ bool  Scheduler::DoSchedule(int tick, registers_t& registers)
 		console.Print("ds : %x\n", pNextThread->m_regs.ds);
 		console.Print("gs : %x\n", pNextThread->m_regs.gs);
 		console.Print("es : %x\n", pNextThread->m_regs.es);
-		console.Print("fs : %x\n", pNextThread->m_regs.fs);*/
+		console.Print("fs : %x\n", pNextThread->m_regs.fs);
 #endif		
-		pNextThread->m_waitingTime = 2;
-		pNextThread->state = PROCESS_STATE_RUNNING;			
+		pNextThread->m_waitingTime = TASK_RUNNING_TIME;
+		pNextThread->m_taskState = TASK_STATE_RUNNING;
 
-		g_esp = pNextThread->curESP;
+		g_esp = pNextThread->m_esp;
 		g_pageDirectory = (uint32_t)pNextThread->m_pParent->m_pPageDirectory;
-		VirtualMemoryManager::GetInstance()->SwitchPageDirectory(pNextThread->m_pParent->m_pPageDirectory);		
+		VirtualMemoryManager::GetInstance()->SetPageDirectoryInfo(pNextThread->m_pParent->m_pPageDirectory);
 	}
-
 
 	return true;
 }

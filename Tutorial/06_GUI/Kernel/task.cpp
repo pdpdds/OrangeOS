@@ -1,13 +1,3 @@
-//****************************************************************************
-//**
-//**    task.cpp
-//**		-Task Manager
-//**
-//****************************************************************************
-//============================================================================
-//    IMPLEMENTATION HEADERS
-//============================================================================
-
 #include <string.h>
 #include "fsys.h"
 #include "image.h"
@@ -18,224 +8,100 @@
 #include "ProcessManager.h"
 #include "fsys.h"
 #include "defines.h"
-
-//============================================================================
-//    IMPLEMENTATION PRIVATE DEFINITIONS / ENUMERATIONS / SIMPLE TYPEDEFS
-//============================================================================
-
-#ifndef PAGE_SIZE
-#define PAGE_SIZE 4096
-#endif
+#include "pit.h"
 
 extern Console console;
 
-//============================================================================
-//    IMPLEMENTATION PRIVATE CLASS PROTOTYPES / EXTERNAL CLASS REFERENCES
-//============================================================================
-//============================================================================
-//    IMPLEMENTATION PRIVATE STRUCTURES / UTILITY CLASSES
-//============================================================================
-//============================================================================
-//    IMPLEMENTATION REQUIRED EXTERNAL REFERENCES (AVOID)
-//============================================================================
-//============================================================================
-//    IMPLEMENTATION PRIVATE DATA
-//============================================================================
-
-
-/**
-* Validate image
-* \param image Base of image
-* \ret Status code
-*/
-int validateImage (void* image) {
+//32비트 PE파일 이미지 유효성 검사
+bool ValidatePEImage(void* image) 
+{
     IMAGE_DOS_HEADER* dosHeader = 0;
     IMAGE_NT_HEADERS* ntHeaders = 0;
-
-    /* validate program file */
-    dosHeader = (IMAGE_DOS_HEADER*) image;
-    if (dosHeader->e_magic != IMAGE_DOS_SIGNATURE) {
-            return 0;
-    }
-    if (dosHeader->e_lfanew == 0) {
-            return 0;
-    }
-
-    /* make sure header is valid */
+    
+    dosHeader = (IMAGE_DOS_HEADER*)image;
+    if (dosHeader->e_magic != IMAGE_DOS_SIGNATURE)             
+		return false;
+    
+	if (dosHeader->e_lfanew == 0)
+		return false;
+    
+    //NT Header 체크
     ntHeaders = (IMAGE_NT_HEADERS*)(dosHeader->e_lfanew + (uint32_t)image);
-    if (ntHeaders->Signature != IMAGE_NT_SIGNATURE) {
-            return 0;
-    }
+    if (ntHeaders->Signature != IMAGE_NT_SIGNATURE)            
+		return false;    
 
     /* only supporting for i386 archs */
-    if (ntHeaders->FileHeader.Machine != IMAGE_FILE_MACHINE_I386) {
-            return 0;
-    }
+    if (ntHeaders->FileHeader.Machine != IMAGE_FILE_MACHINE_I386)             
+		return false;    
 
     /* only support 32 bit executable images */
-    if (! (ntHeaders->FileHeader.Characteristics &
-            (IMAGE_FILE_EXECUTABLE_IMAGE | IMAGE_FILE_32BIT_MACHINE))) {
-            return 0;
-    }
+    if (! (ntHeaders->FileHeader.Characteristics & (IMAGE_FILE_EXECUTABLE_IMAGE | IMAGE_FILE_32BIT_MACHINE)))             
+		return false;
+    
     /*
             Note: 1st 4 MB remains idenitity mapped as kernel pages as it contains
             kernel stack and page directory. If you want to support loading below 1MB,
             make sure to move these into kernel land
     */
-    if ( (ntHeaders->OptionalHeader.ImageBase < 0x400000)
-            || (ntHeaders->OptionalHeader.ImageBase > 0x80000000)) {
-            return 0;
-    }
 
+	//로드되는 프로세스의 베이스 주소는 0x00400000다. 
+	//비쥬얼 스튜디오에서 속성=> 링커 => 고급의 기준주소 항목에서 확인 가능하다
+    if ( (ntHeaders->OptionalHeader.ImageBase < 0x400000) || (ntHeaders->OptionalHeader.ImageBase > 0x80000000))
+		return false;
+    
     /* only support 32 bit optional header format */
-    if (ntHeaders->OptionalHeader.Magic != IMAGE_NT_OPTIONAL_HDR32_MAGIC) {
-            return 0;
-    }
-	return 1;
+    if (ntHeaders->OptionalHeader.Magic != IMAGE_NT_OPTIONAL_HDR32_MAGIC) 
+            return false;
+
+//유효한 32비트 PE 파일이다.
+	return true;
 }
 
-/* kernel command shell */
-extern void run ();
-
-/**
-* TerminateProcess system call
-*/
-extern "C" void TerminateProcess () 
+extern "C" 
 {
-	InterruptDisable();
-	
-	Process* cur = ProcessManager::GetInstance()->GetCurrentProcess();
-	
-	if (cur == NULL || cur->m_processId == PROC_INVALID_ID)
+	uint32_t MemoryAlloc(size_t size)
 	{
-		console.Print("Invailid Process Id\n");
-		return;
-	}
+		Process* pProcess = ProcessManager::GetInstance()->GetCurrentProcess();
+		void *addr = alloc(size, (u8int)0, (heap_t*)pProcess->m_lpHeap);
 
-//프로세스 매니저에서 해당 프로세스를 완전히 제거한다.
-//태스크 목록에서도 제거되어 해당 프로세스는 더이상 스케쥴링 되지 않는다.
-	ProcessManager::GetInstance()->DestroyProcess(cur);	
-	
-	InterruptEnable();
-	
-	for (;;);
-}
-
-//============================================================================
-//    INTERFACE CLASS BODIES
-//============================================================================
-//****************************************************************************
-//**
-//**    END[task.cpp]
-//**
-//****************************************************************************
-extern "C" {
-	void TerminateMemoryProcess() {
-		
-		Orange::LinkedList *pProcessList = ProcessManager::GetInstance()->GetProcessList();
-		Process* pProcess = (Process*)pProcessList->Get(0);
-
-		if (pProcess->m_processId == PROC_INVALID_ID)
-		{
-			console.Print("Invalid Memory Process Id\n");
-			return;
-		}
-
-		/* release threads */
-		int i = 0;
-
-		Thread* pThread = pProcess->GetThread(0);
-		
-		/* get physical address of stack */
-		
-		void* stackFrame = VirtualMemoryManager::GetInstance()->GetPhysicalAddressFromVirtualAddress(pProcess->m_pPageDirectory,
-			(uint32_t)pThread->initialStack);
-
-		console.Print("Plane X : %d, Plane Y : %d\n", 1, 1);
-		/* unmap and release stack memory */
-		
-		VirtualMemoryManager::GetInstance()->UnmapPhysicalAddress(pProcess->m_pPageDirectory, (uint32_t)pThread->initialStack);
-		//pmmngr_free_block(stackFrame);
-
-		/* unmap and release image memory */
-		for (uint32_t page = 0; page < pThread->imageSize / PAGE_SIZE; page++) {
-			uint32_t phys = 0;
-			uint32_t virt = 0;
-
-			/* get virtual address of page */
-			virt = pThread->imageBase + (page * PAGE_SIZE);
-
-			/* get physical address of page */
-			phys = (uint32_t)VirtualMemoryManager::GetInstance()->GetPhysicalAddressFromVirtualAddress(pProcess->m_pPageDirectory, virt);
-
-			/* unmap and release page */
-			VirtualMemoryManager::GetInstance()->UnmapPhysicalAddress(pProcess->m_pPageDirectory, virt);
-			//pmmngr_free_block((void*)phys);
-		}		
-
-		/* restore kernel selectors */
-		__asm {
-			cli
-				mov eax, 0x10
-				mov ds, ax
-				mov es, ax
-				mov fs, ax
-				mov gs, ax
-				sti
-		}
-		
-		PhysicalMemoryManager::GetInstance()->LoadPDBR((uint32_t)pProcess->m_pPageDirectory);
-
-		/* return to kernel command shell */
-		//run();
-
-		console.Print("Exit command recieved; demo halted\n");
-		for (;;);
-	}
-} // extern "C"
-
-extern "C" {
-	uint32_t MemoryAlloc(size_t size) {
-		Process* pProcess = ProcessManager::GetInstance()->GetCurrentProcess();		
-		console.Print("process heap alloc, %d %x\n", size, pProcess->lpHeap);
-		void *addr = alloc(size, (u8int)0, (heap_t*)pProcess->lpHeap);
-		console.Print("process heap alloc, %d %x\n", size, pProcess->lpHeap);
-		
+#ifdef _ORANGE_DEBUG
+		console.Print("process heap alloc, %d %x\n", size, pProcess->m_lpHeap);
+		console.Print("process heap alloc, %d %x\n", size, pProcess->m_lpHeap);
+#endif			
 		return (u32int)addr;
 	}
-} // extern "C"
 
-
-extern "C" {
-	void MemoryFree(void* p) {
-		Process* pProcess = ProcessManager::GetInstance()->GetCurrentProcess();		
-		free(p, (heap_t*)pProcess->lpHeap);
+	void MemoryFree(void* p)
+	{
+		//힙은 스레드가 모두 공유한다.
+		//따라서 메모리를 해제할시 컨텍스트 스위칭이 일어나서 다른 스레드가 같은 자원(힙)에 접근할 수 있는 가능성이 생기므로
+		//인터럽트가 일어나지 않게 처리한다.
+		EnterCriticalSection();
+		Process* pProcess = ProcessManager::GetInstance()->GetCurrentProcess();
+		free(p, (heap_t*)pProcess->m_lpHeap);
+		LeaveCriticalSection();
 	}
-} // extern "C"
-#include "pit.h"
-extern "C" {
-	uint32_t GetSysytemTickCount() {
-		return GetTickCount();
-	}
-} // extern "C"
 
-
-extern "C" {
-	void CreateDefaultHeap() {
-
-		InterruptDisable();
+	//프로세스 전용의 디폴트 힙을 생성한다
+	void CreateDefaultHeap() 
+	{
+		EnterCriticalSection();
 		
 		Process* pProcess = ProcessManager::GetInstance()->GetCurrentProcess();
 		Thread* pThread = pProcess->GetThread(0);
 		
-		void* pHeapPhys = PhysicalMemoryManager::GetInstance()->AllocBlocks(256);
+	//1메가 바이트의 힙을 생성
+		void* pHeapPhys = PhysicalMemoryManager::GetInstance()->AllocBlocks(DEFAULT_HEAP_PAGE_COUNT);
+		u32int heapAddess = pThread->m_imageBase + pThread->m_imageSize + PAGE_SIZE + PAGE_SIZE * 2;
 		
-		u32int heapAddess = pThread->imageBase + pThread->imageSize + PAGE_SIZE + PAGE_SIZE * 2;
-		heapAddess = heapAddess - (heapAddess % PAGE_SIZE);
-		//u32int heapAddess = 0xB0000000;
+	//힙 주소를 4K에 맞춰 Align	
+		heapAddess -= (heapAddess % PAGE_SIZE);
+		
+#ifdef _ORANGE_DEBUG
 		console.Print("heap adress %x\n", heapAddess);
-		
-		for (int i = 0; i < 300; i++)
+#endif // _ORANGE_DEBUG
+				
+		for (int i = 0; i < DEFAULT_HEAP_PAGE_COUNT; i++)
 		{
 			VirtualMemoryManager::GetInstance()->MapPhysicalAddressToVirtualAddresss(pProcess->m_pPageDirectory,
 				(uint32_t)heapAddess + i * PAGE_SIZE,
@@ -243,11 +109,33 @@ extern "C" {
 				I86_PTE_PRESENT | I86_PTE_WRITABLE | I86_PTE_USER);
 		}
 		
-		memset((void*)heapAddess, 0, 300 * PAGE_SIZE);
-		console.Print("imageSize %x\n", pThread->imageSize);
-		pProcess->lpHeap = create_heap((u32int)heapAddess, (uint32_t)heapAddess + 256 * 4096, (uint32_t)heapAddess + 256 * 4096, 0, 0);
-
-		InterruptEnable();
+		memset((void*)heapAddess, 0, DEFAULT_HEAP_PAGE_COUNT * PAGE_SIZE);
 		
+		pProcess->m_lpHeap = create_heap((u32int)heapAddess, (uint32_t)heapAddess + DEFAULT_HEAP_PAGE_COUNT * PAGE_SIZE, 
+			                             (uint32_t)heapAddess + DEFAULT_HEAP_PAGE_COUNT * PAGE_SIZE, 0, 0);
+
+		LeaveCriticalSection();		
 	}
-} // extern "C"
+	
+	//프로세스 종료	
+	extern "C" void TerminateProcess()
+	{
+		EnterCriticalSection();
+
+		Process* cur = ProcessManager::GetInstance()->GetCurrentProcess();
+
+		if (cur == NULL || cur->m_processId == PROC_INVALID_ID)
+		{
+			console.Print("Invailid Process Termination\n");
+			return;
+		}
+
+		//프로세스 매니저에서 해당 프로세스를 완전히 제거한다.
+		//태스크 목록에서도 제거되어 해당 프로세스는 더이상 스케쥴링 되지 않는다.
+		ProcessManager::GetInstance()->DestroyProcess(cur);
+
+		LeaveCriticalSection();
+
+		for (;;);
+	}	
+}
