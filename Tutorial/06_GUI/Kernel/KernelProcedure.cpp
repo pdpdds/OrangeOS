@@ -11,6 +11,7 @@ extern Console console;
 
 void NativeConsole()
 {
+	systemOn = true;
 	ConsoleManager manager;
 
 	char	commandBuffer[MAXPATH];
