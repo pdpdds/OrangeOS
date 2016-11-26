@@ -3,8 +3,9 @@
 #include "Console.h"
 
 #ifdef _ORANGE_DEBUG
-extern Console console;
+
 #endif // ORANGE_DEBUG
+extern Console console;
 
 PhysicalMemoryManager PhysicalMemoryManager::m_physicsMemoryManager;
 
@@ -25,9 +26,8 @@ PhysicalMemoryManager::~PhysicalMemoryManager()
 void PhysicalMemoryManager::Initialize(size_t memorySize, uint32_t bitmapAddr)
 {
 	m_memorySize = memorySize;
-	m_pMemoryMap = (uint32_t*)bitmapAddr;
-	//m_maxBlocks = (pmmngr_get_memory_size() * 1024) / PMM_BLOCK_SIZE;
 	m_maxBlocks = m_memorySize / PMM_BLOCK_SIZE;
+	m_pMemoryMap = (uint32_t*)bitmapAddr;	
 
 	//블럭들의 최대 수는 8의 배수로 맞추고 나머지는 버린다
 	//m_maxBlocks = m_maxBlocks - (m_maxBlocks % PMM_BLOCKS_PER_BYTE);
@@ -37,7 +37,7 @@ void PhysicalMemoryManager::Initialize(size_t memorySize, uint32_t bitmapAddr)
 	m_usedBlocks = GetTotalBlockCount();
 	
 	//모든 메모리 블럭들이 사용중에 있다고 설정한다.	
-	memset((char*)m_pMemoryMap, 0xFF, m_memoryMapSize);
+	memset((char*)m_pMemoryMap, 0x00, m_memoryMapSize);
 }
 
 //8번째 메모리 블럭이 사용중임을 표시하기 위해 1로 세팅하려면 배열 첫번째 요소(4바이트) 바이트의 8번째 비트에 접근해야 한다
@@ -277,7 +277,7 @@ void PhysicalMemoryManager::InitMemoryRegion(uint32_t base, size_t size)
 		m_usedBlocks--;
 	}
 
-	SetBit(0);	//first block is always set. This insures allocs cant be 0
+	//SetBit(0);	//first block is always set. This insures allocs cant be 0
 }
 void PhysicalMemoryManager::DeinitMemoryRegion(uint32_t base, size_t size)
 {
@@ -289,13 +289,13 @@ void PhysicalMemoryManager::DeinitMemoryRegion(uint32_t base, size_t size)
 		m_usedBlocks++;
 	}
 
-	SetBit(0);	//first block is always set. This insures allocs cant be 0
+	//SetBit(0);	//first block is always set. This insures allocs cant be 0
 
 }
 
 void PhysicalMemoryManager::Dump()
 {
-#ifdef _ORANGE_DEBUG
+//#ifdef _ORANGE_DEBUG
 	console.Print("Physical Memory Manager Init..\n");
 	console.Print("Memory Size : 0x%x\n", m_memorySize);
 	console.Print("Memory Map Address : 0x%x\n", m_pMemoryMap);
@@ -303,5 +303,5 @@ void PhysicalMemoryManager::Dump()
 	console.Print("Max Block Count : 0x%x\n", m_maxBlocks);
 
 	console.Print("Used Block Count : 0x%x\n", m_usedBlocks);	
-#endif // _ORANGE_DEBUG
+//#endif // _ORANGE_DEBUG
 }

@@ -6,6 +6,7 @@
 #include "Thread.h"
 #include "Hal.h"
 #include "tss.h"
+#include "sysapi.h"
 
 Scheduler* Scheduler::m_pScheduler = 0;
 extern Console console;
@@ -36,7 +37,7 @@ bool  Scheduler::DoSchedule(int tick, registers_t& registers)
 		return false;
 
 #ifdef _ORANGE_DEBUG
-	uint32_t currentTickCount = GetTickCount();
+	/*uint32_t currentTickCount = GetTickCount();
 
 	if (currentTickCount - lastTickCount > 300)
 	{
@@ -58,7 +59,7 @@ bool  Scheduler::DoSchedule(int tick, registers_t& registers)
 		console.Print("SS : %x\n", registers.ss);
 
 		lastTickCount = currentTickCount;
-	}
+	}*/
 #endif
 
 	DoubleLinkedList* pTaskList = ProcessManager::GetInstance()->GetTaskList();
@@ -122,10 +123,10 @@ bool  Scheduler::DoSchedule(int tick, registers_t& registers)
 			push    0x200; EFLAGS
 			push    0x08; CS
 			push ecx; EIP
-
-			sti
+			
 			mov al, 0x20
 			out 0x20, al
+			sti
 
 			iretd
 		}
@@ -133,7 +134,7 @@ bool  Scheduler::DoSchedule(int tick, registers_t& registers)
 	else
 	{
 #ifdef _ORANGE_DEBUG
-		console.Print("EDI : %x\n", pNextThread->m_regs.edi);
+		/*console.Print("EDI : %x\n", pNextThread->m_regs.edi);
 		console.Print("ESI : %x\n", pNextThread->m_regs.esi);
 		console.Print("EBP : %x\n", pNextThread->m_regs.ebp);
 		console.Print("ESP : %x\n", pNextThread->m_regs.esp);
@@ -149,7 +150,7 @@ bool  Scheduler::DoSchedule(int tick, registers_t& registers)
 		console.Print("ds : %x\n", pNextThread->m_regs.ds);
 		console.Print("gs : %x\n", pNextThread->m_regs.gs);
 		console.Print("es : %x\n", pNextThread->m_regs.es);
-		console.Print("fs : %x\n", pNextThread->m_regs.fs);
+		console.Print("fs : %x\n", pNextThread->m_regs.fs);*/
 #endif		
 		pNextThread->m_waitingTime = TASK_RUNNING_TIME;
 		pNextThread->m_taskState = TASK_STATE_RUNNING;

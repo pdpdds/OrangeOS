@@ -321,6 +321,7 @@ void CreateCentralSystem()
 		; push   0x10;
 		; push procStack; stack
 			mov esp, procStack
+			push   0x10;
 			push    0x200; EFLAGS
 			push    0x08; CS
 			push entryPoint; EIP

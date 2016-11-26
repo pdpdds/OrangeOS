@@ -120,7 +120,7 @@ void interrupt _cdecl stack_fault ( unsigned int cs,unsigned int err, unsigned i
 //! general protection fault
 void interrupt _cdecl general_protection_fault (unsigned int cs,unsigned int err, unsigned int eip, unsigned int eflags) {
 
-	intstart ();
+	intstart ();	
 	kernel_panic ("General Protection Fault");
 	for (;;);
 }

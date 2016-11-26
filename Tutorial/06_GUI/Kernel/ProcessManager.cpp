@@ -132,10 +132,16 @@ Thread* ProcessManager::CreateThread(Process* pProcess, LPTHREAD_START_ROUTINE l
 	memset(&pThread->frame, 0, sizeof(trapFrame));
 	pThread->frame.eip = (uint32_t)lpStartAddress;
 	pThread->frame.flags = 0x200;
-	pThread->m_startParam = param;
+	pThread->m_startParam = param;	
 	
+
+	//20161109
+
+	static int kernelStackIndex = 0;
+
 //스택을 생성하고 주소공간에 매핑한다.
-	void* stackVirtual = (void*)(KERNEL_VIRTUAL_STACK_ADDRESS + PAGE_SIZE * pProcess->m_kernelStackIndex++);
+	void* stackVirtual = (void*)(KERNEL_VIRTUAL_STACK_ADDRESS + PAGE_SIZE * kernelStackIndex++);
+	//void* stackVirtual = (void*)(KERNEL_VIRTUAL_STACK_ADDRESS + PAGE_SIZE * pProcess->m_kernelStackIndex++);
 	void* stackPhys = (void*)PhysicalMemoryManager::GetInstance()->AllocBlock();	
 
 	console.Print("Virtual Stack : %x\n", stackVirtual);
@@ -259,12 +265,12 @@ Process* ProcessManager::CreateProcess(LPTHREAD_START_ROUTINE lpStartAddress, bo
 		pProcess->m_dwRunState = TASK_STATE_INIT;
 		strcpy(pProcess->m_processName, "System");
 		
-			PageTable* identityPageTable = (PageTable*)PhysicalMemoryManager::GetInstance()->AllocBlock();
+		PageTable* identityPageTable = (PageTable*)PhysicalMemoryManager::GetInstance()->AllocBlock();
 		if (identityPageTable == NULL)
 			return false;
 
 
-		//0-4MB 의 물리 주소를 가상 주소와 동일하게 매핑시킨다
+		//0-1MB 의 물리 주소를 가상 주소와 동일하게 매핑시킨다
 		for (int i = 0, frame = 0x0, virt = 0x00000000; i<PAGES_PER_TABLE; i++, frame += PAGE_SIZE, virt += PAGE_SIZE)
 		{
 			PTE page = 0;
@@ -272,56 +278,31 @@ Process* ProcessManager::CreateProcess(LPTHREAD_START_ROUTINE lpStartAddress, bo
 			PageTableEntry::SetFrame(&page, frame);
 
 			identityPageTable->m_entries[PAGE_TABLE_INDEX(virt)] = page;
-		}
-
-		
-
-		//물리 공간 1MB 이후의 공간을 가상주소 공간 0XC0000000(3GB) 이후의 공간과 매핑시킨다
-		//커널이 로드된 물리 어드레스 주소 0x100000
-		// 가상주소 0XC0000000, 0X100000는 물리주소 0x100000에 매핑된다
-		//최초 커널을 위한 PDE, PTE
-		for (int y = 0; y < 1; y++)
-		{
-			PageTable* pTable = (PageTable*)PhysicalMemoryManager::GetInstance()->AllocBlock();
-			if (!pTable)
-				return false;
-
-#ifdef _ORANGE_DEBUG
-			console.Print("Page Table For Kernel Mapping: 0x%x\n", pTable);
-#endif // _ORANGE_DEBUG
-
-			//! clear page table
-			memset(pTable, 0, sizeof(PageTable));
-
-			int virt = KERNEL_VIRTUAL_BASE_ADDRESS + y * PAGES_PER_TABLE * PAGE_SIZE;
-
-			//커널의 사이즈는 4메가가 넘지 않는다고 가정한다
-			int frame = KERNEL_PHYSICAL_BASE_ADDRESS;
-
-			for (int i = 0; i < PAGES_PER_TABLE; i++, frame += PAGE_SIZE, virt += PAGE_SIZE)
-			{
-				PTE page = 0;
-				PageTableEntry::AddAttribute(&page, I86_PTE_PRESENT);
-				PageTableEntry::SetFrame(&page, frame);
-
-				pTable->m_entries[PAGE_TABLE_INDEX(virt)] = page;
-			}
-
-			//! get first entry in dir table and set it up to point to our table
-			PDE* entry = &pProcess->m_pPageDirectory->m_entries[PAGE_DIRECTORY_INDEX(KERNEL_VIRTUAL_BASE_ADDRESS + y * PAGES_PER_TABLE * PAGE_SIZE)];
-			PageDirectoryEntry::AddAttribute(entry, I86_PDE_PRESENT);
-			PageDirectoryEntry::AddAttribute(entry, I86_PDE_WRITABLE);
-			PageDirectoryEntry::SetFrame(entry, (uint32_t)pTable);
-		}
+		}				
 
 		PDE* identityEntry = &pProcess->m_pPageDirectory->m_entries[PAGE_DIRECTORY_INDEX(0x00000000)];
 		PageDirectoryEntry::AddAttribute(identityEntry, I86_PDE_PRESENT);
 		PageDirectoryEntry::AddAttribute(identityEntry, I86_PDE_WRITABLE);
 		PageDirectoryEntry::SetFrame(identityEntry, (uint32_t)identityPageTable);
 
-	}
+		
+		int flags = I86_PTE_PRESENT | I86_PTE_WRITABLE;
 
-	MapKernelSpace(pProcess->m_pPageDirectory);
+		//커널 이미지를 주소공간에 매핑. 커널 크기는 4메가가 넘지 않는다고 가정한다
+		//1024 * PAGE_SIZE = 4MB
+		uint32_t virtualAddr = KERNEL_VIRTUAL_BASE_ADDRESS;
+		uint32_t physAddr = KERNEL_PHYSICAL_BASE_ADDRESS;
+
+		for (uint32_t i = 0; i < PAGES_PER_TABLE; i++)
+		{
+			VirtualMemoryManager::GetInstance()->MapPhysicalAddressToVirtualAddresss(pProcess->m_pPageDirectory, virtualAddr + (i*PAGE_SIZE), physAddr + (i*PAGE_SIZE), flags);
+		}
+		
+		VirtualMemoryManager::GetInstance()->MapPhysicalAddressToVirtualAddresss(pProcess->m_pPageDirectory, (uint32_t)pProcess->m_pPageDirectory, (uint32_t)pProcess->m_pPageDirectory, I86_PTE_PRESENT | I86_PTE_WRITABLE);		
+
+//20161109
+		pProcess->m_pPageDirectory = VirtualMemoryManager::GetInstance()->GetCurPageDirectory();
+	}	
 
 	if (firstProcess == false)
 	{		
@@ -446,7 +427,7 @@ bool ProcessManager::DestroyProcess(Process* pProcess)
 	m_processList.Delete(pProcess);
 	//프로세스 객체 완전히 제거	
 #ifdef _ORANGE_DEBUG
-	console.Print("terminate %s\n", pProces->m_processName);
+	console.Print("terminate %s\n", pProcess->m_processName);
 #endif // _ORANGE_DEBUG
 
 	delete pProcess;
@@ -470,7 +451,7 @@ bool ProcessManager::DestroyKernelProcess(Process* pProcess)
 	m_processList.Delete(pProcess);
 	//프로세스 객체 완전히 제거	
 #ifdef _ORANGE_DEBUG
-	console.Print("terminate %s\n", pProces->m_processName);
+	console.Print("terminate %s\n", pProcess->m_processName);
 #endif // _ORANGE_DEBUG
 
 	delete pProcess;

@@ -7,6 +7,7 @@
 
 #define KERNEL_VIRTUAL_BASE_ADDRESS 0xC0000000
 #define KERNEL_VIRTUAL_HEAP_ADDRESS 0xD0000000
+#define KERNEL_VIRTUAL_PAGEDIRECTORY_ADDRESS 0xCE000000
 #define KERNEL_VIRTUAL_STACK_ADDRESS 0xCF000000
 #define KERNEL_PHYSICAL_BASE_ADDRESS 0x100000
 
@@ -46,6 +47,13 @@ typedef struct tag_PageDirectory
 {
 	PDE m_entries[PAGES_PER_DIRECTORY];
 }PageDirectory;
+
+typedef struct tag_TaskSwitch
+{
+	int entryPoint;
+	unsigned int procStack;
+	LPVOID param;
+}TaskSwitch;
 
 class VirtualMemoryManager
 {

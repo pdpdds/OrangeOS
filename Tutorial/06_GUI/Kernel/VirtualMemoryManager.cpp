@@ -91,7 +91,7 @@ PageDirectory* VirtualMemoryManager::CreateAddressSpace()
 	if (!dir)
 		return NULL;
 	
-	memset(dir, 0, sizeof(PageDirectory));
+	//memset(dir, 0, sizeof(PageDirectory));
 
 	return dir;
 }
