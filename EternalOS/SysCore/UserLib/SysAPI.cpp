@@ -51,6 +51,11 @@ void operator delete(void *p)
 	free(p);
 }
 
+void operator delete(void *p, unsigned int)
+{
+	free(p);
+}
+
 int __cdecl _purecall()
 {
 	// Do nothing or print an error message.

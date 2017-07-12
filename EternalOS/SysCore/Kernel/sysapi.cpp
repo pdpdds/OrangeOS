@@ -70,6 +70,11 @@ void operator delete(void *p)
 	kfree(p);
 }
 
+void operator delete(void *p, unsigned int size)
+{
+	kfree(p);
+}
+
 int __cdecl _purecall()
 {
 	// Do nothing or print an error message.
@@ -135,7 +140,7 @@ void CreateKernelHeap(int kernelSize)
 void sleep(int ms) 
 {
 
-	static int ticks = ms + get_tick_count();
+	int ticks = ms + get_tick_count();
 	while (ticks > get_tick_count())
 		;
 }

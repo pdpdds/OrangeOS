@@ -106,6 +106,13 @@ void* memset(void *dest, char val, size_t count)
 	return dest;
 }
 
+void* memset(void *dest, int val, unsigned int count)
+{
+	unsigned char *temp = (unsigned char *)dest;
+	for (; count != 0; count--, temp[count] = val);
+	return dest;
+}
+
 //! sets count bytes of dest to val
 unsigned short *memsetw(unsigned short *dest, unsigned short val, size_t count)
 {
@@ -116,7 +123,7 @@ unsigned short *memsetw(unsigned short *dest, unsigned short val, size_t count)
 }
 
 //! locates first occurance of character in string
-char* strchr (char * str, int character ) {
+char* strchr (char const* str, int character ) {
 
 	do {
 		if ( *str == character )

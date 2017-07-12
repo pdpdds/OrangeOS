@@ -9,5 +9,6 @@ u32int malloc(u32int sz);
 void *operator new(size_t size);
 void *operator new[](size_t size);
 void operator delete(void *p);
+void operator delete(void *p, unsigned int);
 int __cdecl _purecall();
 void operator delete[](void *p);

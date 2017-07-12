@@ -112,6 +112,7 @@ int __cdecl ::_purecall() { for (;;); return 0; }
 void* __cdecl ::operator new (unsigned int size) { return 0; }
 void* __cdecl operator new[] (unsigned int size) { return 0; }
 void __cdecl ::operator delete (void * p) {}
+void __cdecl ::operator delete (void * p, unsigned int size) {}
 void __cdecl operator delete[] (void * p) { }
 
 extern "C" float __declspec(naked) _CIcos() {

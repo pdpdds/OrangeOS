@@ -14,7 +14,7 @@ extern "C" int _outl(unsigned short, int);
 extern "C" unsigned short _outpw(unsigned short, unsigned short);
 extern "C" int _inp(unsigned short);
 extern "C" unsigned short _inpw(unsigned short);
-
+extern UINT GetTickCount();
 
 #pragma intrinsic(_inp, _inpw, _outp, _outpw)
 
@@ -166,7 +166,7 @@ void _HDDInterruptHandler(void)
 //---------------------------------------------------------------------
 //              This function returns the number harddisks founded
 //---------------------------------------------------------------------
-inline BYTE HardDiskHandler::GetTotalDevices()
+BYTE HardDiskHandler::GetTotalDevices()
 {
 	return HDDs.Count();
 }

@@ -18,7 +18,8 @@ static void* _syscalls[] = {
 
 void *operator new(size_t size);
 void *operator new[](size_t size);
-void operator delete(void *p);
+void __cdecl operator delete(void *p);
+void __cdecl operator delete(void *p, unsigned int);
 int __cdecl _purecall();
 void operator delete[](void *p);
 
@@ -27,4 +28,4 @@ void InitializeSysCall();
 
 void CreateKernelHeap(int kernelSize);
 
-void sleep(int ms);
+void __cdecl sleep(int ms);
