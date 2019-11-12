@@ -1,9 +1,9 @@
-/**
+ï»¿/**
  *  file    Queue.h
  *  date    2009/01/25
  *  author  kkamagui 
  *          Copyright(c)2008 All rights reserved by kkamagui
- *  brief   Å¥¿¡ °ü·ÃµÈ ÇÔ¼ö¸¦ Á¤ÀÇÇÑ Çì´õ ÆÄÀÏ
+ *  brief   íì— ê´€ë ¨ëœ í•¨ìˆ˜ë¥¼ ì •ì˜í•œ í—¤ë” íŒŒì¼
  */
 
 #ifndef __QUEUE_H__
@@ -13,40 +13,40 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// ±¸Á¶Ã¼
+// êµ¬ì¡°ì²´
 //
 ////////////////////////////////////////////////////////////////////////////////
-// 1¹ÙÀÌÆ®·Î Á¤·Ä
+// 1ë°”ì´íŠ¸ë¡œ ì •ë ¬
 #pragma pack( push, 1 )
 
-// Å¥¿¡ ´ëÇÑ ±¸Á¶Ã¼
+// íì— ëŒ€í•œ êµ¬ì¡°ì²´
 typedef struct kQueueManagerStruct
 {
-    // Å¥¸¦ ±¸¼ºÇÏ´Â µ¥ÀÌÅÍ ÇÏ³ªÀÇ Å©±â¿Í ÃÖ´ë °³¼ö
+    // íë¥¼ êµ¬ì„±í•˜ëŠ” ë°ì´í„° í•˜ë‚˜ì˜ í¬ê¸°ì™€ ìµœëŒ€ ê°œìˆ˜
     int iDataSize;
     int iMaxDataCount;
 
-    // Å¥ ¹öÆÛÀÇ Æ÷ÀÎÅÍ¿Í »ğÀÔ/Á¦°Å ÀÎµ¦½º
+    // í ë²„í¼ì˜ í¬ì¸í„°ì™€ ì‚½ì…/ì œê±° ì¸ë±ìŠ¤
     void* pvQueueArray;
     int iPutIndex;
     int iGetIndex;
     
-    // Å¥¿¡ ¼öÇàµÈ ¸¶Áö¸· ¸í·ÉÀÌ »ğÀÔÀÎÁö¸¦ ÀúÀå
-    BOOL bLastOperationPut;
+    // íì— ìˆ˜í–‰ëœ ë§ˆì§€ë§‰ ëª…ë ¹ì´ ì‚½ì…ì¸ì§€ë¥¼ ì €ì¥
+	bool bLastOperationPut;
 } QUEUE;
 
 #pragma pack( pop )
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// ÇÔ¼ö
+// í•¨ìˆ˜
 //
 ////////////////////////////////////////////////////////////////////////////////
 void kInitializeQueue( QUEUE* pstQueue, void* pvQueueBuffer, int iMaxDataCount, 
 		int iDataSize );
-BOOL kIsQueueFull( const QUEUE* pstQueue );
-BOOL kIsQueueEmpty( const QUEUE* pstQueue );
-BOOL kPutQueue( QUEUE* pstQueue, const void* pvData );
-BOOL kGetQueue( QUEUE* pstQueue, void* pvData );
+bool kIsQueueFull( const QUEUE* pstQueue );
+bool kIsQueueEmpty( const QUEUE* pstQueue );
+bool kPutQueue( QUEUE* pstQueue, const void* pvData );
+bool kGetQueue( QUEUE* pstQueue, void* pvData );
 
 #endif /*__QUEUE_H__*/

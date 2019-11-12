@@ -150,13 +150,13 @@ LoadFile:
 
 .FIND_FILE:
 
-	push	bx						; BX=>BP points to buffer to write to; store it for later
+	push	ebx						; BX=>BP points to buffer to write to; store it for later
 	push	bp
 	call	FindFile				; find our file. ES:SI contains our filename
 	cmp		ax, -1
 	jne		.LOAD_IMAGE_PRE
 	pop		bp
-	pop		bx
+	pop		ebx
 	pop		ecx
 	mov		ax, -1
 	ret
@@ -172,9 +172,9 @@ LoadFile:
 	pop		es
 	mov		dx, WORD [es:di + 0x001A]	; DI points to file entry in root directory table. Refrence the table...
 	mov		WORD [cluster], dx			; file's first cluster
-	pop		bx							; get location to write to so we dont screw up the stack
+	pop		ebx							; get location to write to so we dont screw up the stack
 	pop		es
-	push    bx							; store location for later again
+	push    ebx							; store location for later again
 	push	es
 	call	LoadFAT
 
@@ -183,8 +183,10 @@ LoadFile:
 	; load the cluster
 
 	mov		ax, WORD [cluster]		; cluster to read
-	pop		es						; bx:bp=es:bx
-	pop		bx
+	mov 	bx, 6000
+	mov		es, bx						; bx:bp=es:bx
+	pop		ebx
+	mov ebx, 0
 	call	ClusterLBA
 	xor		cx, cx
 	mov     cl, BYTE [bpbSectorsPerCluster]
@@ -195,12 +197,12 @@ LoadFile:
 	inc		ecx
 	push	ecx
 
-	push	bx
+	push	ebx
 	push	es
 
 	mov		ax, FAT_SEG						;start reading from fat
 	mov		es, ax
-	xor		bx, bx
+	xor		ebx, ebx
 
 	; get next cluster
 
@@ -233,7 +235,7 @@ LoadFile:
 
 .SUCCESS:
 	pop		es
-	pop		bx
+	pop		ebx
 	pop		ecx
 	xor		ax, ax
 	ret

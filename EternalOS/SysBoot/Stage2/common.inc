@@ -8,7 +8,7 @@
 
 
 ; where the kernel is to be loaded to in real mode
-%define IMAGE_RMODE_BASE 0x3000
+%define IMAGE_RMODE_BASE 0x60000
 
 ; kernel name
 ImageName     db "KRNL32  EXE"

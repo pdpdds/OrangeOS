@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "windef.h"
 #include "VirtualMemoryManager.h"
 #include "kheap.h"
@@ -12,27 +12,27 @@ public:
 	Process();
 	virtual ~Process();
 
-	BOOL AddThread(Thread* pThread); //½º·¹µå¸¦ Ãß°¡ÇÑ´Ù.
-	Thread* GetThread(int index); //½º·¹µå¸¦ »èÁ¦ÇÑ´Ù.
+	bool AddThread(Thread* pThread); //ìŠ¤ë ˆë“œë¥¼ ì¶”ê°€í•œë‹¤.
+	Thread* GetThread(int index); //ìŠ¤ë ˆë“œë¥¼ ì‚­ì œí•œë‹¤.
 
 	void SetPDBR();
 
-	UINT32		m_processId; //ÇÁ·Î¼¼½º ¾ÆÀÌµğ
-	char		m_processName[256]; //ÇÁ·Î¼¼½º ÀÌ¸§
-	UINT32		m_dwRunState; //ÇÁ·Î¼¼½º »óÅÂ
-	UINT32		m_dwPriority; //ÇÁ·Î¼¼½º ¿ì¼±¼øÀ§
-	int			m_dwRunningTime; // ÇÁ·Î¼¼½º CPU ¼±Á¡ ½Ã°£
-	UINT32		m_dwPageCount; //ÇÁ·Î¼¼½º°¡ Â÷ÁöÇÏ´Â ÆäÀÌÁö ¼ö
-	UINT32		m_dwProcessType; //ÇÁ·Î¼¼½º Å¸ÀÔ	
+	UINT32		m_processId; //í”„ë¡œì„¸ìŠ¤ ì•„ì´ë””
+	char		m_processName[256]; //í”„ë¡œì„¸ìŠ¤ ì´ë¦„
+	UINT32		m_dwRunState; //í”„ë¡œì„¸ìŠ¤ ìƒíƒœ
+	UINT32		m_dwPriority; //í”„ë¡œì„¸ìŠ¤ ìš°ì„ ìˆœìœ„
+	int			m_dwRunningTime; // í”„ë¡œì„¸ìŠ¤ CPU ì„ ì  ì‹œê°„
+	UINT32		m_dwPageCount; //í”„ë¡œì„¸ìŠ¤ê°€ ì°¨ì§€í•˜ëŠ” í˜ì´ì§€ ìˆ˜
+	UINT32		m_dwProcessType; //í”„ë¡œì„¸ìŠ¤ íƒ€ì…	
 
-	PageDirectory* m_pPageDirectory; //ÀÌ ÇÁ·Î¼¼½º°¡ »ç¿ëÇÏ´Â ÆäÀÌÁö µğ·ºÅä¸®	
-	void*		m_lpHeap; //ÇÁ·Î¼¼½º°¡ »ç¿ëÇÏ´Â Èü
+	PageDirectory* m_pPageDirectory; //ì´ í”„ë¡œì„¸ìŠ¤ê°€ ì‚¬ìš©í•˜ëŠ” í˜ì´ì§€ ë””ë ‰í† ë¦¬	
+	void*		m_lpHeap; //í”„ë¡œì„¸ìŠ¤ê°€ ì‚¬ìš©í•˜ëŠ” í™
 		
-	int			m_kernelStackIndex; //½º·¹µå°¡ »ı¼ºµÉ¶§ ¸¶´Ù »õ ½ºÅÃÀ» ÇÒ´çÇØ ÁÖ¾î¾ß ÇÏ´Âµ¥ ±×¶§ »ç¿ëµÇ´Â ÀÎµ¦½º
-	DoubleLinkedList m_threadList; //ÇÁ·Î¼¼½º³»¿¡ ¼ÓÇÑ ½º·¹µå ¸®½ºÆ®
+	int			m_kernelStackIndex; //ìŠ¤ë ˆë“œê°€ ìƒì„±ë ë•Œ ë§ˆë‹¤ ìƒˆ ìŠ¤íƒì„ í• ë‹¹í•´ ì£¼ì–´ì•¼ í•˜ëŠ”ë° ê·¸ë•Œ ì‚¬ìš©ë˜ëŠ” ì¸ë±ìŠ¤
+	DoubleLinkedList m_threadList; //í”„ë¡œì„¸ìŠ¤ë‚´ì— ì†í•œ ìŠ¤ë ˆë“œ ë¦¬ìŠ¤íŠ¸
 
-	uint32_t	m_imageBase; //ÆÄÀÏ·Î ºÎÅÍ ÄÚµå¸¦ ·ÎµåÇÒ °æ¿ì »ç¿ëµÊ. ÆÄÀÏ¿¡ ¸Ş¸ğ¸®¿¡ ·ÎµåµÈ ÁÖ¼Ò
-	uint32_t	m_imageSize; //ÆÄÀÏÀÇ Å©±â
+	uint32_t	m_imageBase; //íŒŒì¼ë¡œ ë¶€í„° ì½”ë“œë¥¼ ë¡œë“œí•  ê²½ìš° ì‚¬ìš©ë¨. íŒŒì¼ì— ë©”ëª¨ë¦¬ì— ë¡œë“œëœ ì£¼ì†Œ
+	uint32_t	m_imageSize; //íŒŒì¼ì˜ í¬ê¸°
 
 private:
 	

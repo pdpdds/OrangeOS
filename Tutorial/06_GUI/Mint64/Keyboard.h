@@ -1,9 +1,9 @@
-/**
+ï»¿/**
  *  file    Keyboard.h
  *  date    2009/01/09
  *  author  kkamagui 
  *          Copyright(c)2008 All rights reserved by kkamagui
- *  brief   Å°º¸µå µğ¹ÙÀÌ½º µå¶óÀÌ¹ö ÇÔ¼öµéÀ» Á¤ÀÇÇÑ ÆÄÀÏ
+ *  brief   í‚¤ë³´ë“œ ë””ë°”ì´ìŠ¤ ë“œë¼ì´ë²„ í•¨ìˆ˜ë“¤ì„ ì •ì˜í•œ íŒŒì¼
  */
 
 #ifndef __KEYBOARD_H__
@@ -14,18 +14,18 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// ¸ÅÅ©·Î
+// ë§¤í¬ë¡œ
 //
 ////////////////////////////////////////////////////////////////////////////////
-// Pause Å°¸¦ Ã³¸®ÇÏ±â À§ÇØ ¹«½ÃÇØ¾ß ÇÏ´Â ³ª¸ÓÁö ½ºÄµ ÄÚµåÀÇ ¼ö
+// Pause í‚¤ë¥¼ ì²˜ë¦¬í•˜ê¸° ìœ„í•´ ë¬´ì‹œí•´ì•¼ í•˜ëŠ” ë‚˜ë¨¸ì§€ ìŠ¤ìº” ì½”ë“œì˜ ìˆ˜
 #define KEY_SKIPCOUNTFORPAUSE       2
 
-// Å° »óÅÂ¿¡ ´ëÇÑ ÇÃ·¡±×
+// í‚¤ ìƒíƒœì— ëŒ€í•œ í”Œë˜ê·¸
 #define KEY_FLAGS_UP             0x00
 #define KEY_FLAGS_DOWN           0x01
 #define KEY_FLAGS_EXTENDEDKEY    0x02
 
-// ½ºÄµ ÄÚµå ¸ÅÇÎ Å×ÀÌºí¿¡ ´ëÇÑ ¸ÅÅ©·Î
+// ìŠ¤ìº” ì½”ë“œ ë§¤í•‘ í…Œì´ë¸”ì— ëŒ€í•œ ë§¤í¬ë¡œ
 #define KEY_MAPPINGTABLEMAXCOUNT    89
 
 #define KEY_NONE        0x00
@@ -67,53 +67,53 @@
 #define KEY_F12         0x9F
 #define KEY_PAUSE       0xA0
 
-// Å° Å¥¿¡ ´ëÇÑ ¸ÅÅ©·Î
-// Å° Å¥ÀÇ ÃÖ´ë Å©±â
+// í‚¤ íì— ëŒ€í•œ ë§¤í¬ë¡œ
+// í‚¤ íì˜ ìµœëŒ€ í¬ê¸°
 #define KEY_MAXQUEUECOUNT	100
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// ±¸Á¶Ã¼
+// êµ¬ì¡°ì²´
 //
 ////////////////////////////////////////////////////////////////////////////////
-// 1¹ÙÀÌÆ®·Î Á¤·Ä
+// 1ë°”ì´íŠ¸ë¡œ ì •ë ¬
 #pragma pack( push, 1 )
 
-// ½ºÄµ ÄÚµå Å×ÀÌºíÀ» ±¸¼ºÇÏ´Â Ç×¸ñ
+// ìŠ¤ìº” ì½”ë“œ í…Œì´ë¸”ì„ êµ¬ì„±í•˜ëŠ” í•­ëª©
 typedef struct kKeyMappingEntryStruct
 {
-    // Shift Å°³ª Caps Lock Å°¿Í Á¶ÇÕµÇÁö ¾Ê´Â ASCII ÄÚµå
+    // Shift í‚¤ë‚˜ Caps Lock í‚¤ì™€ ì¡°í•©ë˜ì§€ ì•ŠëŠ” ASCII ì½”ë“œ
     BYTE bNormalCode;
     
-    // Shift Å°³ª Caps Lock Å°¿Í Á¶ÇÕµÈ ASCII ÄÚµå
+    // Shift í‚¤ë‚˜ Caps Lock í‚¤ì™€ ì¡°í•©ëœ ASCII ì½”ë“œ
     BYTE bCombinedCode;
 } KEYMAPPINGENTRY;
 
-// Å°º¸µåÀÇ »óÅÂ¸¦ °ü¸®ÇÏ´Â ÀÚ·á±¸Á¶
+// í‚¤ë³´ë“œì˜ ìƒíƒœë¥¼ ê´€ë¦¬í•˜ëŠ” ìë£Œêµ¬ì¡°
 typedef struct kKeyboardManagerStruct
 {
-    // ÀÚ·á±¸Á¶ µ¿±âÈ­¸¦ À§ÇÑ ½ºÇÉ¶ô
+    // ìë£Œêµ¬ì¡° ë™ê¸°í™”ë¥¼ ìœ„í•œ ìŠ¤í•€ë½
     SPINLOCK stSpinLock;
     
-    // Á¶ÇÕ Å° Á¤º¸
-    BOOL bShiftDown;
-    BOOL bCapsLockOn;
-    BOOL bNumLockOn;
-    BOOL bScrollLockOn;
+    // ì¡°í•© í‚¤ ì •ë³´
+	bool bShiftDown;
+	bool bCapsLockOn;
+	bool bNumLockOn;
+	bool bScrollLockOn;
     
-    // È®Àå Å°¸¦ Ã³¸®ÇÏ±â À§ÇÑ Á¤º¸
-    BOOL bExtendedCodeIn;
+    // í™•ì¥ í‚¤ë¥¼ ì²˜ë¦¬í•˜ê¸° ìœ„í•œ ì •ë³´
+	bool bExtendedCodeIn;
     int iSkipCountForPause;
 } KEYBOARDMANAGER;
 
-// Å° Å¥¿¡ »ğÀÔÇÒ µ¥ÀÌÅÍ ±¸Á¶Ã¼
+// í‚¤ íì— ì‚½ì…í•  ë°ì´í„° êµ¬ì¡°ì²´
 typedef struct kKeyDataStruct
 {
-    // Å°º¸µå¿¡¼­ Àü´ŞµÈ ½ºÄµ ÄÚµå
+    // í‚¤ë³´ë“œì—ì„œ ì „ë‹¬ëœ ìŠ¤ìº” ì½”ë“œ
 	BYTE bScanCode;
-    // ½ºÄµ ÄÚµå¸¦ º¯È¯ÇÑ ASCII ÄÚµå
+    // ìŠ¤ìº” ì½”ë“œë¥¼ ë³€í™˜í•œ ASCII ì½”ë“œ
 	BYTE bASCIICode;
-    // Å° »óÅÂ¸¦ ÀúÀåÇÏ´Â ÇÃ·¡±×(´­¸²/¶³¾îÁü/È®Àå Å° ¿©ºÎ)
+    // í‚¤ ìƒíƒœë¥¼ ì €ì¥í•˜ëŠ” í”Œë˜ê·¸(ëˆŒë¦¼/ë–¨ì–´ì§/í™•ì¥ í‚¤ ì—¬ë¶€)
 	BYTE bFlags;
 } KEYDATA;
 
@@ -121,26 +121,26 @@ typedef struct kKeyDataStruct
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-//  ÇÔ¼ö
+//  í•¨ìˆ˜
 //
 ////////////////////////////////////////////////////////////////////////////////
-BOOL kIsOutputBufferFull( void );
-BOOL kIsInputBufferFull( void );
-BOOL kActivateKeyboard( void );
+bool kIsOutputBufferFull( void );
+bool kIsInputBufferFull( void );
+bool kActivateKeyboard( void );
 BYTE kGetKeyboardScanCode( void );
-BOOL kChangeKeyboardLED( BOOL bCapsLockOn, BOOL bNumLockOn, BOOL bScrollLockOn );
+bool kChangeKeyboardLED(bool bCapsLockOn, bool bNumLockOn, bool bScrollLockOn );
 void kEnableA20Gate( void );
 void kReboot( void );
-BOOL kIsAlphabetScanCode( BYTE bScanCode );
-BOOL kIsNumberOrSymbolScanCode( BYTE bScanCode );
-BOOL kIsNumberPadScanCode( BYTE bScanCode );
-BOOL kIsUseCombinedCode( BOOL bScanCode );
+bool kIsAlphabetScanCode( BYTE bScanCode );
+bool kIsNumberOrSymbolScanCode( BYTE bScanCode );
+bool kIsNumberPadScanCode( BYTE bScanCode );
+bool kIsUseCombinedCode(bool bScanCode );
 void UpdateCombinationKeyStatusAndLED( BYTE bScanCode );
-BOOL kConvertScanCodeToASCIICode( BYTE bScanCode, BYTE* pbASCIICode, BOOL* pbFlags );
-BOOL kInitializeKeyboard( void );
-BOOL kConvertScanCodeAndPutQueue( BYTE bScanCode );
-BOOL kGetKeyFromKeyQueue( KEYDATA* pstData );
-BOOL kWaitForACKAndPutOtherScanCode( void );
+bool kConvertScanCodeToASCIICode( BYTE bScanCode, BYTE* pbASCIICode, bool* pbFlags );
+bool kInitializeKeyboard( void );
+bool kConvertScanCodeAndPutQueue( BYTE bScanCode );
+bool kGetKeyFromKeyQueue( KEYDATA* pstData );
+bool kWaitForACKAndPutOtherScanCode( void );
 
 #endif /*__KEYBOARD_H__*/
 

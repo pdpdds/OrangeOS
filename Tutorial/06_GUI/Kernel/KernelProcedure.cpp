@@ -99,7 +99,7 @@ DWORD WINAPI TestKernelProcess(LPVOID parameter)
 {		
 	Process* pProcess = (Process*)parameter;
 	console.Print("Test Second Kernel Process %x\n", pProcess);
-	BOOL bExit = false;
+	bool bExit = false;
 	int first = GetTickCount();
 
 	while (bExit == false)

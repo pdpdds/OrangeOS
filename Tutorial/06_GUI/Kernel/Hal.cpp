@@ -1,4 +1,4 @@
-#include "Hal.h"
+ï»¿#include "Hal.h"
 #include "pic.h"
 #include "IDT.h"
 
@@ -49,19 +49,19 @@ DWORD kReadFLAGS()
 	UINT flag = 0;
 	__asm
 	{
-		pushf; RFLAGS ·¹Áö½ºÅÍ¸¦ ½ºÅÃ¿¡ ÀúÀå
-		pop eax; ½ºÅÃ¿¡ ÀúÀåµÈ RFLAGS ·¹Áö½ºÅÍ¸¦ RAX ·¹Áö½ºÅÍ¿¡ ÀúÀåÇÏ¿©		
+		pushf; RFLAGS ë ˆì§€ìŠ¤í„°ë¥¼ ìŠ¤íƒì— ì €ì¥
+		pop eax; ìŠ¤íƒì— ì €ì¥ëœ RFLAGS ë ˆì§€ìŠ¤í„°ë¥¼ RAX ë ˆì§€ìŠ¤í„°ì— ì €ì¥í•˜ì—¬		
 		mov [flag], eax
 	}
 
 	return flag;
 }
 
-BOOL kSetInterruptFlag(BOOL bEnableInterrupt)
+bool kSetInterruptFlag(bool bEnableInterrupt)
 {
 	DWORD dwRFLAGS;
 
-	// ÀÌÀüÀÇ RFLAGS ·¹Áö½ºÅÍ °ªÀ» ÀĞÀº µÚ¿¡ ÀÎÅÍ·´Æ® °¡´É/ºÒ°¡ Ã³¸®
+	// ì´ì „ì˜ RFLAGS ë ˆì§€ìŠ¤í„° ê°’ì„ ì½ì€ ë’¤ì— ì¸í„°ëŸ½íŠ¸ ê°€ëŠ¥/ë¶ˆê°€ ì²˜ë¦¬
 	dwRFLAGS = kReadFLAGS();
 	if (bEnableInterrupt == TRUE)
 	{
@@ -72,7 +72,7 @@ BOOL kSetInterruptFlag(BOOL bEnableInterrupt)
 		EnterCriticalSection();
 	}
 
-	// ÀÌÀü RFLAGS ·¹Áö½ºÅÍÀÇ IF ºñÆ®(ºñÆ® 9)¸¦ È®ÀÎÇÏ¿© ÀÌÀüÀÇ ÀÎÅÍ·´Æ® »óÅÂ¸¦ ¹İÈ¯
+	// ì´ì „ RFLAGS ë ˆì§€ìŠ¤í„°ì˜ IF ë¹„íŠ¸(ë¹„íŠ¸ 9)ë¥¼ í™•ì¸í•˜ì—¬ ì´ì „ì˜ ì¸í„°ëŸ½íŠ¸ ìƒíƒœë¥¼ ë°˜í™˜
 	if (dwRFLAGS & 0x0200)
 	{
 		return TRUE;

@@ -23,7 +23,7 @@ void _cdecl divide_by_zero_fault (uint32_t eflags,uint32_t cs,uint32_t eip, uint
 		pushad
 	}
 
-	console.Print("Divide by 0 at physical address[0x%x:0x%x] EFLAGS[0x%x] other: 0x%x",cs, eip, eflags, other);
+	//console.Print("Divide by 0 at physical address[0x%x:0x%x] EFLAGS[0x%x] other: 0x%x",cs, eip, eflags, other);
 	//kernel_panic ("Divide by 0 at physical address [0x%x:0x%x] EFLAGS [0x%x] other: 0x%x",cs,eip, eflags, other);
 	for (;;);
 }

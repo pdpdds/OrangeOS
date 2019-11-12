@@ -1,6 +1,8 @@
 #include "Process.h"
 #include "Thread.h"
 
+extern Console console;
+
 Process::Process()
 {
 	m_processId = -1;	
@@ -14,8 +16,11 @@ Process::~Process()
 {
 }
 
-BOOL Process::AddThread(Thread* pThread)
+bool Process::AddThread(Thread* pThread)
 {
+	if (pThread == NULL)
+		console.Print("Thread is Null!!\n");
+
 	ListNode* node = new ListNode();
 	node->_data = pThread;
 

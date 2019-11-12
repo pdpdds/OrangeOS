@@ -45,6 +45,7 @@
     <LinkIncremental>false</LinkIncremental>
     <GenerateManifest>false</GenerateManifest>
     <TargetName>KRNL32</TargetName>
+    <TargetExt>.EXE</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IntDir>$(Configuration)\</IntDir>
@@ -57,7 +58,7 @@
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
-      <AdditionalIncludeDirectories>../mint64;../commonlib;./;../hal;..\Include\;..\Keyboard;..\FloppyDisk;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../svgagui;../svgagui/src;./desktop;../mint64;../commonlib;./;../hal;..\Include\;..\Keyboard;..\FloppyDisk;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_ORANGE_DEBUG;ARCH_X86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <IgnoreStandardIncludePath>true</IgnoreStandardIncludePath>
       <StringPooling>false</StringPooling>
@@ -102,12 +103,41 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\Desktop\desq.cpp" />
+    <ClCompile Include="..\Include\math.cpp" />
+    <ClCompile Include="..\Include\vesa.cpp" />
     <ClCompile Include="..\Mint64\HardDisk.cpp" />
     <ClCompile Include="..\Mint64\Keyboard.cpp" />
     <ClCompile Include="..\Mint64\kList.cpp" />
-    <ClCompile Include="..\Mint64\Mouse.cpp" />
+    <ClCompile Include="..\Mint64\GUIMouse.cpp" />
     <ClCompile Include="..\Mint64\Queue.cpp" />
     <ClCompile Include="..\Mint64\Synchronization.cpp" />
+    <ClCompile Include="..\svgagui\src\browser.cpp" />
+    <ClCompile Include="..\svgagui\src\button.cpp" />
+    <ClCompile Include="..\svgagui\src\check.cpp" />
+    <ClCompile Include="..\svgagui\src\choice.cpp" />
+    <ClCompile Include="..\svgagui\src\dialog.cpp" />
+    <ClCompile Include="..\svgagui\src\filedialog.cpp" />
+    <ClCompile Include="..\svgagui\src\general.cpp" />
+    <ClCompile Include="..\svgagui\src\iconlist.cpp" />
+    <ClCompile Include="..\svgagui\src\image.cpp" />
+    <ClCompile Include="..\svgagui\src\info.cpp" />
+    <ClCompile Include="..\svgagui\src\input.cpp" />
+    <ClCompile Include="..\svgagui\src\listbox.cpp" />
+    <ClCompile Include="..\svgagui\src\mouse.cpp" />
+    <ClCompile Include="..\svgagui\src\number.cpp" />
+    <ClCompile Include="..\svgagui\src\object.cpp" />
+    <ClCompile Include="..\svgagui\src\progress.cpp" />
+    <ClCompile Include="..\svgagui\src\pulldown.cpp" />
+    <ClCompile Include="..\svgagui\src\screen.cpp" />
+    <ClCompile Include="..\svgagui\src\slider.cpp" />
+    <ClCompile Include="..\svgagui\src\sscanf.cpp" />
+    <ClCompile Include="..\svgagui\src\svgalib.cpp" />
+    <ClCompile Include="..\svgagui\src\text.cpp" />
+    <ClCompile Include="..\svgagui\src\window.cpp" />
+    <ClCompile Include="..\svgagui\src\window_draw.cPP" />
+    <ClCompile Include="..\svgagui\src\window_thread.cpp" />
+    <ClCompile Include="..\svgagui\src\xlib.cpp" />
     <ClCompile Include="Console.cpp" />
     <ClCompile Include="ConsoleManager.cpp" />
     <ClCompile Include="DebugDisplay.cpp" />
@@ -146,13 +176,18 @@
     <ClCompile Include="ZetPlane.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Desktop\desq.h" />
+    <ClInclude Include="..\Include\math.h" />
+    <ClInclude Include="..\Include\stdlib.h" />
+    <ClInclude Include="..\Include\vesa.h" />
     <ClInclude Include="..\Mint64\HardDisk.h" />
     <ClInclude Include="..\Mint64\Keyboard.h" />
     <ClInclude Include="..\Mint64\kList.h" />
-    <ClInclude Include="..\Mint64\Mouse.h" />
+    <ClInclude Include="..\Mint64\GUIMouse.h" />
     <ClInclude Include="..\Mint64\Queue.h" />
     <ClInclude Include="..\Mint64\Synchronization.h" />
     <ClInclude Include="..\Mint64\KTask.h" />
+    <ClInclude Include="..\svgagui\svgagui.h" />
     <ClInclude Include="Collect.h" />
     <ClInclude Include="Console.h" />
     <ClInclude Include="ConsoleManager.h" />

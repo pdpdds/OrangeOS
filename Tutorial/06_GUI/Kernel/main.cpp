@@ -1,4 +1,4 @@
-#include "header.h"
+ï»¿#include "header.h"
 #include "DebugDisplay.h"
 #include "string.h"
 #include "sprintf.h"
@@ -117,8 +117,8 @@ int _cdecl kmain(multiboot_info* bootinfo)
 	SetInterruptVector();
 	//setvect(32, scheduler_isr, 0x80);
 
-	//Ä¿³Î»çÀÌÁî¿¡ 512¸¦ °öÇÏ¸é ¹ÙÀÌÆ®·Î È¯»êµÈ´Ù.
-	//ÇöÀç Ä¿³ÎÀÇ »çÀÌÁî´Â 4096¹ÙÀÌÆ®´Ù.
+	//ì»¤ë„ì‚¬ì´ì¦ˆì— 512ë¥¼ ê³±í•˜ë©´ ë°”ì´íŠ¸ë¡œ í™˜ì‚°ëœë‹¤.
+	//í˜„ì¬ ì»¤ë„ì˜ ì‚¬ì´ì¦ˆëŠ” 4096ë°”ì´íŠ¸ë‹¤.
 	g_kernelSize *= 512;
 	InitializeMemorySystem(bootinfo, g_kernelSize);	
 
@@ -129,7 +129,7 @@ int _cdecl kmain(multiboot_info* bootinfo)
 	//kkybrd_install(33);
 	setvect(33, kKeyboardHandler);
 	
-	// Å°º¸µå¸¦ È°¼ºÈ­
+	// í‚¤ë³´ë“œë¥¼ í™œì„±í™”
 	if (kInitializeKeyboard() == TRUE)
 	{		
 		kChangeKeyboardLED(FALSE, FALSE, FALSE);
@@ -143,9 +143,9 @@ int _cdecl kmain(multiboot_info* bootinfo)
 	install_tss(5, 0x10, 0);
 
 	/* set video mode and map framebuffer. */
-	VbeBochsSetMode(WIDTH, HEIGHT, BPP);
-	VbeBochsMapLFB();
-	fillScreen32();
+	//VbeBochsSetMode(WIDTH, HEIGHT, BPP);
+	//VbeBochsMapLFB();
+	//fillScreen32();
 
 	//HardDiskHandler hardHandler;
 	//hardHandler.Initialize();		
@@ -164,7 +164,7 @@ int _cdecl kmain(multiboot_info* bootinfo)
 	console.Print("Orange OS Console System Initialize\n");
 	console.Print("KernelSize : %d Bytes\n", g_kernelSize);	
 
-	//Çí»ç¸¦ Ç¥½ÃÇÒ ¶§ %X´Â integer, %x´Â unsigned integerÀÇ Çí»ç°ªÀ» Ç¥½ÃÇÑ´Ù.	
+	//í—¥ì‚¬ë¥¼ í‘œì‹œí•  ë•Œ %XëŠ” integer, %xëŠ” unsigned integerì˜ í—¥ì‚¬ê°’ì„ í‘œì‹œí•œë‹¤.	
 
 	char str[256];
 	memset(str, 0, 256);
@@ -175,7 +175,7 @@ int _cdecl kmain(multiboot_info* bootinfo)
 	sprintf(str, "LocalTime : %d %d/%d %d:%d %d\n", sysTime.wYear, sysTime.wMonth, sysTime.wDay, sysTime.wHour, sysTime.wMinute, sysTime.wSecond);
 	console.Print("%s", str);
 
-	//ÆÄ¶ó¸ŞÅÍ kernelSize´Â ½ºÅÃ¿¡ Á¸ÀçÇÑ´Ù. stackÀÇ º£ÀÌ½º ÁÖ¼Ò´Â 0x9000ÀÌ´Ù.
+	//íŒŒë¼ë©”í„° kernelSizeëŠ” ìŠ¤íƒì— ì¡´ì¬í•œë‹¤. stackì˜ ë² ì´ìŠ¤ ì£¼ì†ŒëŠ” 0x9000ì´ë‹¤.
 	sprintf(str, "Parameter kernelSize Variable Address : %x\n", (unsigned int)&g_kernelSize);
 	console.Print("%s", str);
 

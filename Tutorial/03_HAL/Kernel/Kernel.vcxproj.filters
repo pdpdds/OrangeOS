@@ -36,5 +36,8 @@
     <ClInclude Include="pic.h" />
     <ClInclude Include="PIT.h" />
     <ClInclude Include="RTC.H" />
+    <ClInclude Include="main.h">
+      <Filter>Entry</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

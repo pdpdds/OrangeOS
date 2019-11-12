@@ -48,6 +48,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IntDir>$(Configuration)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -60,7 +61,8 @@
       <AdditionalIncludeDirectories>../commonlib;./;../hal;..\Include\;..\Keyboard;..\FloppyDisk;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>ARCH_X86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <IgnoreStandardIncludePath>true</IgnoreStandardIncludePath>
-      <StringPooling>false</StringPooling>
+      <StringPooling>
+      </StringPooling>
       <ExceptionHandling />
       <StructMemberAlignment>1Byte</StructMemberAlignment>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -70,27 +72,34 @@
       <DebugInformationFormat />
       <CallingConvention>Cdecl</CallingConvention>
       <DisableSpecificWarnings>4457;4189;4100;4702</DisableSpecificWarnings>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
     </ClCompile>
     <ProjectReference>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
     <Link>
-      <AdditionalOptions>/ALIGN:512 /safeseh:no %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/safeseh:no
+/ALIGN:1024
+ /SUBSYSTEM:CONSOLE
+/NODEFAULTLIB:LIBC %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>CommonLib.lib;</AdditionalDependencies>
-      <OutputFile>$(OutDir)KRNL32$(TargetExt)</OutputFile>
+      <OutputFile>$(OutDir)kernel.sys</OutputFile>
       <AdditionalLibraryDirectories>..\Lib\;..\debug\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <GenerateMapFile>true</GenerateMapFile>
       <MapFileName>Kernel.map</MapFileName>
-      <SubSystem>Native</SubSystem>
-      <Driver>Driver</Driver>
+      <SubSystem>Console</SubSystem>
+      <Driver>NotSet</Driver>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <FunctionOrder />
-      <EntryPointSymbol>kernel_entry</EntryPointSymbol>
+      <FunctionOrder>@order.txt</FunctionOrder>
+      <EntryPointSymbol>multiboot_entry</EntryPointSymbol>
       <NoEntryPoint>false</NoEntryPoint>
-      <BaseAddress>0xC0000000</BaseAddress>
-      <FixedBaseAddress>false</FixedBaseAddress>
+      <BaseAddress>0x00100000</BaseAddress>
+      <FixedBaseAddress>
+      </FixedBaseAddress>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <GenerateDebugInformation>No</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
       <Command />
@@ -100,6 +109,18 @@
     <ClCompile>
       <DisableSpecificWarnings>4457</DisableSpecificWarnings>
     </ClCompile>
+    <Link>
+      <EntryPointSymbol>multiboot_entry</EntryPointSymbol>
+    </Link>
+    <Link>
+      <BaseAddress>0x00100000</BaseAddress>
+      <AdditionalOptions>/safeseh:no
+/ALIGN:1024
+ /SUBSYSTEM:CONSOLE
+/NODEFAULTLIB:LIBC %(AdditionalOptions)</AdditionalOptions>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+    </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Console.cpp" />
@@ -121,6 +142,7 @@
     <ClInclude Include="GDT.h" />
     <ClInclude Include="Hal.h" />
     <ClInclude Include="IDT.h" />
+    <ClInclude Include="main.h" />
     <ClInclude Include="pic.h" />
     <ClInclude Include="PIT.h" />
     <ClInclude Include="RTC.H" />

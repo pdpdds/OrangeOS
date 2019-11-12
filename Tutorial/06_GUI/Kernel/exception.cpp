@@ -1,7 +1,9 @@
-#include "exception.h"
+﻿#include "exception.h"
 #include <hal.h>
 #include <stdint.h>
 #include "Console.h"
+#include "../Mint64/GUIMouse.h"
+#include "../Mint64/Keyboard.h"
 
 extern Console console;
 
@@ -180,9 +182,13 @@ void interrupt _cdecl simd_fpu_fault (unsigned int cs, unsigned int eip, unsigne
 	for (;;);
 }
 
+void error(char *s)
+{
 
-#include "Keyboard.h"
-#include "Mouse.h"
+}
+
+
+
 void _cdecl kKeyboardHandler()
 {
 	_asm add esp, 12
@@ -192,26 +198,26 @@ void _cdecl kKeyboardHandler()
 	//char vcBuffer[] = "[INT:  , ]";	
 	static BYTE bTemp;
 	
-	// ��� ����(��Ʈ 0x60)�� ���ŵ� �����Ͱ� �ִ��� ���θ� Ȯ���Ͽ� ���� �����͸� 
-	// Ű ť �Ǵ� ���콺 ť�� ����
+	// 출력 버퍼(포트 0x60)에 수신된 데이터가 있는지 여부를 확인하여 읽은 데이터를 
+	// 키 큐 또는 마우스 큐에 삽입
 	if (kIsOutputBufferFull() == TRUE)
 	{
-		// ���콺 �����Ͱ� �ƴϸ� Ű ť�� ����
+		// 마우스 데이터가 아니면 키 큐에 삽입
 		if (kIsMouseDataInOutputBuffer() == FALSE)
 		{
-			// ��� ����(��Ʈ 0x60)���� Ű ��ĵ �ڵ带 �д� �뵵�� �Լ����� Ű����� ���콺
-			// �����ʹ� ��� ���۸� �������� ����ϹǷ� ���콺 �����͸� �дµ��� ��� ����
+			// 출력 버퍼(포트 0x60)에서 키 스캔 코드를 읽는 용도의 함수지만 키보드와 마우스
+			// 데이터는 출력 버퍼를 공통으로 사용하므로 마우스 데이터를 읽는데도 사용 가능
 			bTemp = kGetKeyboardScanCode();
-			// Ű ť�� ����
+			// 키 큐에 삽입
 			kConvertScanCodeAndPutQueue(bTemp);
 		}
-		// ���콺 �������̸� ���콺 ť�� ����
+		// 마우스 데이터이면 마우스 큐에 삽입
 		else
 		{
-			// ��� ����(��Ʈ 0x60)���� Ű ��ĵ �ڵ带 �д� �뵵�� �Լ����� Ű����� ���콺
-			// �����ʹ� ��� ���۸� �������� ����ϹǷ� ���콺 �����͸� �дµ��� ��� ����
+			// 출력 버퍼(포트 0x60)에서 키 스캔 코드를 읽는 용도의 함수지만 키보드와 마우스
+			// 데이터는 출력 버퍼를 공통으로 사용하므로 마우스 데이터를 읽는데도 사용 가능
 			bTemp = kGetKeyboardScanCode();
-			// ���콺 ť�� ����
+			// 마우스 큐에 삽입
 			kAccumulateMouseDataAndPutQueue(bTemp);
 		}
 	}

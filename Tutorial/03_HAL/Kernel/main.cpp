@@ -1,4 +1,4 @@
-#include "header.h"
+ï»¿#include "header.h"
 #include "DebugDisplay.h"
 #include "string.h"
 #include "Console.h"
@@ -9,31 +9,69 @@
 #include "PIT.h"
 #include "PIC.h"
 #include "exception.h"
+#include "main.h"
 
 bool systemOn = false;
-Console console;
+
 extern uint32_t g_kernelSize;
+extern void __cdecl  InitializeConstructors();
 
 void SetInterruptVector();
 
-int _cdecl kmain(multiboot_info* bootinfo) {
+__declspec(naked) void multiboot_entry(void)
+{
+	__asm {
+		align 4
 
+		multiboot_header:
+		dd(MULTIBOOT_HEADER_MAGIC); magic number
+			dd(MULTIBOOT_HEADER_FLAGS); flags
+			dd(CHECKSUM); checksum
+			dd(HEADER_ADRESS); header address
+			dd(LOADBASE); load address
+			dd(00); load end address : not used
+			dd(00); bss end addr : not used
+			dd(HEADER_ADRESS + 0x20); entry_addr: equ kernel entry
+			; 0x20 is the size of multiboot header
 
+			kernel_entry :
+		mov     esp, KERNEL_STACK; Setup the stack
+
+			push    0; Reset EFLAGS
+			popf
+
+			push    ebx; Push multiboot info address
+			push    eax; and magic number
+			; which are loaded in registers
+			; eax and ebx before jump to
+			; entry adress
+			; [HEADER_ADRESS + 0x20]
+			call    main; kernel entry
+			halt :
+		jmp halt; halt processor
+
+	}
+}
+
+void main(unsigned long magic, unsigned long addr){
+//int _cdecl kmain(multiboot_info* bootinfo) {
+	Console console;
+	InitializeConstructors();
 	InterruptDisable();
 
 	i86_gdt_initialize();
 	i86_idt_initialize(0x8);
 	i86_pic_initialize(0x20, 0x28);
 	i86_pit_initialize();
+
+	SetInterruptVector();
 	
 	i86_pit_start_counter(100, I86_PIT_OCW_COUNTER_0, I86_PIT_OCW_MODE_SQUAREWAVEGEN);
 	
-	InterruptEnable();
+	InterruptEnable();	
 
-	SetInterruptVector();
-
-//Ä¿³Î»çÀÌÁî¿¡ 512¸¦ °öÇÏ¸é ¹ÙÀÌÆ®·Î È¯»êµÈ´Ù.
-//ÇöÀç Ä¿³ÎÀÇ »çÀÌÁî´Â 4096¹ÙÀÌÆ®´Ù.
+//ì»¤ë„ì‚¬ì´ì¦ˆì— 512ë¥¼ ê³±í•˜ë©´ ë°”ì´íŠ¸ë¡œ í™˜ì‚°ëœë‹¤.
+//í˜„ì¬ ì»¤ë„ì˜ ì‚¬ì´ì¦ˆëŠ” 4096ë°”ì´íŠ¸ë‹¤.
 	g_kernelSize *= 512;
 	
 	console.SetBackColor(ConsoleColor::Blue);
@@ -42,17 +80,19 @@ int _cdecl kmain(multiboot_info* bootinfo) {
 	console.Print("Orange OS Console System Initialize\n");
 	console.Print("KernelSize : %d Bytes\n", g_kernelSize);
 
-	//Çí»ç¸¦ Ç¥½ÃÇÒ ¶§ %X´Â integer, %x´Â unsigned integerÀÇ Çí»ç°ªÀ» Ç¥½ÃÇÑ´Ù.
-	//ÁÖ¼Ò°ªÀ» Ç¥±âÇØ¾ß ÇÏ¹Ç·Î %x¸¦ »ç¿ëÇÑ´Ù.
+	//í—¥ì‚¬ë¥¼ í‘œì‹œí•  ë•Œ %XëŠ” integer, %xëŠ” unsigned integerì˜ í—¥ì‚¬ê°’ì„ í‘œì‹œí•œë‹¤.
+	//ì£¼ì†Œê°’ì„ í‘œê¸°í•´ì•¼ í•˜ë¯€ë¡œ %xë¥¼ ì‚¬ìš©í•œë‹¤.
 	console.Print("systemOn Variable Address : 0x%x\n", &systemOn);
 
 	char str[256];
 	memset(str, 0, 256);
 
-	int j = 0;
-	int k = 50 / j;
+	//int j = 0;
+	//int k = 50 / j;
 
-	return 0;
+	for (;;);
+
+	//return 0;
 }
 
 void SetInterruptVector()

@@ -1,4 +1,7 @@
 #pragma once
+#include "Console.h"
+
+extern Console console;
 
 struct ListNode {
 public:
@@ -65,6 +68,8 @@ inline ListNode* DoubleLinkedList::AddToTail(ListNode *node)
 	node->fPrev = fDummyHead.fPrev;
 	node->fNext->fPrev = node;
 	node->fPrev->fNext = node;
+
+	//console.Print("DoubleLinkedList AddToTail, Count : %d\n", CountItems());
 	return node;
 }
 
@@ -79,7 +84,8 @@ inline ListNode* DoubleLinkedList::AddToHead(ListNode *node)
 
 inline ListNode* DoubleLinkedList::Remove(ListNode *node)
 {
-	node->RemoveFromList();
+	node->RemoveFromList();	
+
 	return node;
 }
 
@@ -88,7 +94,7 @@ inline ListNode* DoubleLinkedList::Remove(void* data)
 	for (ListNode *node = fDummyHead.fNext; node != &fDummyHead; node = node->fNext)
 	{
 		if (data == node->_data)
-		{
+		{			
 			node->RemoveFromList();
 			return node;
 		}

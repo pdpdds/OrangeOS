@@ -1,4 +1,4 @@
-/******************************************************************************
+ï»¿/******************************************************************************
    entry.cpp
 		-Kernel entry point
 
@@ -13,11 +13,11 @@
 //! basic crt initilization stuff
 extern void __cdecl  InitializeConstructors ();
 extern void __cdecl  Exit ();
-extern Console console;
+//extern Console console;
 uint32_t g_kernelSize = 0;
 
 //! main
-extern int _cdecl kmain (multiboot_info* bootinfo);
+//extern int _cdecl kmain (multiboot_info* bootinfo);
 
 //! kernel entry point is called by boot loader
 void __cdecl  kernel_entry (multiboot_info* bootinfo) {
@@ -35,14 +35,14 @@ void __cdecl  kernel_entry (multiboot_info* bootinfo) {
 	}
 #endif //ARCH_X86
 
-	//dx ·¹Áö½ºÅÍ¿¡´Â Ä¿³ÎÀÇ Å©±â°¡ ´ã°Ü ÀÖ´Ù.
-	//´Ù¸¥°ªÀ¸·Î ¾º¿öÁö±â Àü¿¡ °ªÀ» ¾ò¾î³½´Ù.
+	//dx ë ˆì§€ìŠ¤í„°ì—ëŠ” ì»¤ë„ì˜ í¬ê¸°ê°€ ë‹´ê²¨ ìˆë‹¤.
+	//ë‹¤ë¥¸ê°’ìœ¼ë¡œ ì”Œì›Œì§€ê¸° ì „ì— ê°’ì„ ì–»ì–´ë‚¸ë‹¤.
 	_asm	mov	word ptr[g_kernelSize], dx
 	InitializeConstructors();
-	kmain (bootinfo);
+	//kmain (bootinfo);
 	Exit ();
 
-	console.Print("kernel_entry : Shutdown Complete. Halting system\n");
+	//console.Print("kernel_entry : Shutdown Complete. Halting system\n");
 
 #ifdef ARCH_X86
 	_asm {

@@ -1,4 +1,4 @@
-#include "List.h"
+ï»¿#include "List.h"
 #include "string.h"
 #include "sprintf.h"
 
@@ -28,8 +28,8 @@ namespace Orange
 		return count + 1;
 	}
 	
-//Áßº¹ÇØ¼­ °°Àº °ªÀ» Áı¾î ³ÖÀ»¼ö ÀÖÀ¸¹Ç·Î ÁÖÀÇÇÑ´Ù.
-	BOOL LinkedList::Add(void * ptrData)
+//ì¤‘ë³µí•´ì„œ ê°™ì€ ê°’ì„ ì§‘ì–´ ë„£ì„ìˆ˜ ìˆìœ¼ë¯€ë¡œ ì£¼ì˜í•œë‹¤.
+	bool LinkedList::Add(void * ptrData)
 	{
 		ListNode* pList = NULL;
 		ListNode* newNode = NULL;
@@ -52,7 +52,7 @@ namespace Orange
 		return true;
 	}
 	
-	BOOL LinkedList::Delete(void* ptrData)
+	bool LinkedList::Delete(void* ptrData)
 	{
 		ListNode* pList;
 		ListNode* tmpList;		

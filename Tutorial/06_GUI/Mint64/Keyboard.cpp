@@ -1,28 +1,28 @@
-/**
+ï»¿/**
  *  file    Main.c
  *  date    2009/01/09
  *  author  kkamagui 
  *          Copyright(c)2008 All rights reserved by kkamagui
- *  brief   Å°º¸µå µğ¹ÙÀÌ½º µå¶óÀÌ¹ö¿¡ °ü·ÃµÈ ¼Ò½º ÆÄÀÏ
+ *  brief   í‚¤ë³´ë“œ ë””ë°”ì´ìŠ¤ ë“œë¼ì´ë²„ì— ê´€ë ¨ëœ ì†ŒìŠ¤ íŒŒì¼
  */
 #include "Keyboard.h"
 #include "Queue.h"
 #include "Hal.h"
 #include "Synchronization.h"
-#include "Mouse.h"
+#include "GUIMouse.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Å°º¸µå ÄÁÆ®·Ñ·¯ ¹× Å°º¸µå Á¦¾î¿¡ °ü·ÃµÈ ÇÔ¼öµé 
+// í‚¤ë³´ë“œ ì»¨íŠ¸ë¡¤ëŸ¬ ë° í‚¤ë³´ë“œ ì œì–´ì— ê´€ë ¨ëœ í•¨ìˆ˜ë“¤ 
 //
 ////////////////////////////////////////////////////////////////////////////////
 /**
- *  Ãâ·Â ¹öÆÛ(Æ÷Æ® 0x60)¿¡ ¼ö½ÅµÈ µ¥ÀÌÅÍ°¡ ÀÖ´ÂÁö ¿©ºÎ¸¦ ¹İÈ¯
+ *  ì¶œë ¥ ë²„í¼(í¬íŠ¸ 0x60)ì— ìˆ˜ì‹ ëœ ë°ì´í„°ê°€ ìˆëŠ”ì§€ ì—¬ë¶€ë¥¼ ë°˜í™˜
  */
-BOOL kIsOutputBufferFull( void )
+bool kIsOutputBufferFull( void )
 {
-    // »óÅÂ ·¹Áö½ºÅÍ(Æ÷Æ® 0x64)¿¡¼­ ÀĞÀº °ª¿¡ Ãâ·Â ¹öÆÛ »óÅÂ ºñÆ®(ºñÆ® 0)°¡
-    // 1·Î ¼³Á¤µÇ¾î ÀÖÀ¸¸é Ãâ·Â ¹öÆÛ¿¡ Å°º¸µå°¡ Àü¼ÛÇÑ µ¥ÀÌÅÍ°¡ Á¸ÀçÇÔ
+    // ìƒíƒœ ë ˆì§€ìŠ¤í„°(í¬íŠ¸ 0x64)ì—ì„œ ì½ì€ ê°’ì— ì¶œë ¥ ë²„í¼ ìƒíƒœ ë¹„íŠ¸(ë¹„íŠ¸ 0)ê°€
+    // 1ë¡œ ì„¤ì •ë˜ì–´ ìˆìœ¼ë©´ ì¶œë ¥ ë²„í¼ì— í‚¤ë³´ë“œê°€ ì „ì†¡í•œ ë°ì´í„°ê°€ ì¡´ì¬í•¨
     if(InPortByte( 0x64 ) & 0x01 )
     {
         return TRUE;
@@ -31,12 +31,12 @@ BOOL kIsOutputBufferFull( void )
 }
 
 /**
- * ÀÔ·Â ¹öÆÛ(Æ÷Æ® 0x60)¿¡ ÇÁ·Î¼¼¼­°¡ ¾´ µ¥ÀÌÅÍ°¡ ³²¾ÆÀÖ´ÂÁö ¿©ºÎ¸¦ ¹İÈ¯
+ * ì…ë ¥ ë²„í¼(í¬íŠ¸ 0x60)ì— í”„ë¡œì„¸ì„œê°€ ì“´ ë°ì´í„°ê°€ ë‚¨ì•„ìˆëŠ”ì§€ ì—¬ë¶€ë¥¼ ë°˜í™˜
  */
-BOOL kIsInputBufferFull( void )
+bool kIsInputBufferFull( void )
 {
-    // »óÅÂ ·¹Áö½ºÅÍ(Æ÷Æ® 0x64)¿¡¼­ ÀĞÀº °ª¿¡ ÀÔ·Â ¹öÆÛ »óÅÂ ºñÆ®(ºñÆ® 1)°¡
-    // 1·Î ¼³Á¤µÇ¾î ÀÖÀ¸¸é ¾ÆÁ÷ Å°º¸µå°¡ µ¥ÀÌÅÍ¸¦ °¡Á®°¡Áö ¾Ê¾ÒÀ½
+    // ìƒíƒœ ë ˆì§€ìŠ¤í„°(í¬íŠ¸ 0x64)ì—ì„œ ì½ì€ ê°’ì— ì…ë ¥ ë²„í¼ ìƒíƒœ ë¹„íŠ¸(ë¹„íŠ¸ 1)ê°€
+    // 1ë¡œ ì„¤ì •ë˜ì–´ ìˆìœ¼ë©´ ì•„ì§ í‚¤ë³´ë“œê°€ ë°ì´í„°ë¥¼ ê°€ì ¸ê°€ì§€ ì•Šì•˜ìŒ
     if(InPortByte( 0x64 ) & 0x02 )
     {
         return TRUE;
@@ -45,33 +45,33 @@ BOOL kIsInputBufferFull( void )
 }
 
 /**
- *  ACK¸¦ ±â´Ù¸²
- *      ACK°¡ ¾Æ´Ñ ´Ù¸¥ ÄÚµå´Â Å°º¸µå µ¥ÀÌÅÍ¿Í ¸¶¿ì½º µ¥ÀÌÅÍ¸¦ ±¸ºĞÇÏ¿© Å¥¿¡ »ğÀÔ
+ *  ACKë¥¼ ê¸°ë‹¤ë¦¼
+ *      ACKê°€ ì•„ë‹Œ ë‹¤ë¥¸ ì½”ë“œëŠ” í‚¤ë³´ë“œ ë°ì´í„°ì™€ ë§ˆìš°ìŠ¤ ë°ì´í„°ë¥¼ êµ¬ë¶„í•˜ì—¬ íì— ì‚½ì…
  */
-BOOL kWaitForACKAndPutOtherScanCode( void )
+bool kWaitForACKAndPutOtherScanCode( void )
 {
     int i, j;
     BYTE bData;
-    BOOL bResult = FALSE;
-    BOOL bMouseData;
+	bool bResult = FALSE;
+	bool bMouseData;
     
-    // ACK°¡ ¿À±â Àü¿¡ Å°º¸µå Ãâ·Â ¹öÆÛ(Æ÷Æ® 0x60)¿¡ Å° µ¥ÀÌÅÍ°¡ ÀúÀåµÇ¾î ÀÖÀ» ¼ö ÀÖÀ¸¹Ç·Î
-    // Å°º¸µå¿¡¼­ Àü´ŞµÈ µ¥ÀÌÅÍ¸¦ ÃÖ´ë 100°³±îÁö ¼ö½ÅÇÏ¿© ACK¸¦ È®ÀÎ
+    // ACKê°€ ì˜¤ê¸° ì „ì— í‚¤ë³´ë“œ ì¶œë ¥ ë²„í¼(í¬íŠ¸ 0x60)ì— í‚¤ ë°ì´í„°ê°€ ì €ì¥ë˜ì–´ ìˆì„ ìˆ˜ ìˆìœ¼ë¯€ë¡œ
+    // í‚¤ë³´ë“œì—ì„œ ì „ë‹¬ëœ ë°ì´í„°ë¥¼ ìµœëŒ€ 100ê°œê¹Œì§€ ìˆ˜ì‹ í•˜ì—¬ ACKë¥¼ í™•ì¸
     for( j = 0 ; j < 100 ; j++ )
     {
-        // 0xFFFF¸¸Å­ ·çÇÁ¸¦ ¼öÇàÇÒ ½Ã°£ÀÌ¸é ÃæºĞÈ÷ Ä¿¸ÇµåÀÇ ÀÀ´äÀÌ ¿Ã ¼ö ÀÖÀ½
-        // 0xFFFF ·çÇÁ¸¦ ¼öÇàÇÑ ÀÌÈÄ¿¡µµ Ãâ·Â ¹öÆÛ(Æ÷Æ® 0x60)°¡ Â÷ ÀÖÁö ¾ÊÀ¸¸é ¹«½ÃÇÏ°í ÀĞÀ½
+        // 0xFFFFë§Œí¼ ë£¨í”„ë¥¼ ìˆ˜í–‰í•  ì‹œê°„ì´ë©´ ì¶©ë¶„íˆ ì»¤ë§¨ë“œì˜ ì‘ë‹µì´ ì˜¬ ìˆ˜ ìˆìŒ
+        // 0xFFFF ë£¨í”„ë¥¼ ìˆ˜í–‰í•œ ì´í›„ì—ë„ ì¶œë ¥ ë²„í¼(í¬íŠ¸ 0x60)ê°€ ì°¨ ìˆì§€ ì•Šìœ¼ë©´ ë¬´ì‹œí•˜ê³  ì½ìŒ
         for( i = 0 ; i < 0xFFFF ; i++ )
         {
-            // Ãâ·Â ¹öÆÛ(Æ÷Æ® 0x60)°¡ Â÷ÀÖÀ¸¸é µ¥ÀÌÅÍ¸¦ ÀĞÀ» ¼ö ÀÖÀ½
+            // ì¶œë ¥ ë²„í¼(í¬íŠ¸ 0x60)ê°€ ì°¨ìˆìœ¼ë©´ ë°ì´í„°ë¥¼ ì½ì„ ìˆ˜ ìˆìŒ
             if( kIsOutputBufferFull() == TRUE )
             {
                 break;
             }
         }    
              
-        // Ãâ·Â ¹öÆÛ(Æ÷Æ® 0x60À» ÀĞ±â Àü¿¡ ¸ÕÀú »óÅÂ ·¹Áö½ºÅÍ(Æ÷Æ® 0x64)¸¦ ÀĞ¾î¼­
-        // ¸¶¿ì½º µ¥ÀÌÅÍÀÎÁö¸¦ È®ÀÎ
+        // ì¶œë ¥ ë²„í¼(í¬íŠ¸ 0x60ì„ ì½ê¸° ì „ì— ë¨¼ì € ìƒíƒœ ë ˆì§€ìŠ¤í„°(í¬íŠ¸ 0x64)ë¥¼ ì½ì–´ì„œ
+        // ë§ˆìš°ìŠ¤ ë°ì´í„°ì¸ì§€ë¥¼ í™•ì¸
         if( kIsMouseDataInOutputBuffer() == TRUE )
         {
             bMouseData = TRUE;
@@ -81,14 +81,14 @@ BOOL kWaitForACKAndPutOtherScanCode( void )
             bMouseData = FALSE;
         }
             
-        // Ãâ·Â ¹öÆÛ(Æ÷Æ® 0x60)¿¡¼­ ÀĞÀº µ¥ÀÌÅÍ°¡ ACK(0xFA)ÀÌ¸é ¼º°ø
+        // ì¶œë ¥ ë²„í¼(í¬íŠ¸ 0x60)ì—ì„œ ì½ì€ ë°ì´í„°ê°€ ACK(0xFA)ì´ë©´ ì„±ê³µ
         bData = InPortByte( 0x60 );
         if( bData == 0xFA )
         {
             bResult = TRUE;
             break;
         }
-        // ACK(0xFA)°¡ ¾Æ´Ï¸é µ¥ÀÌÅÍ°¡ ¼ö½ÅµÈ µğ¹ÙÀÌ½º¿¡ µû¶ó Å°º¸µå Å¥³ª ¸¶¿ì½º Å¥¿¡ »ğÀÔ
+        // ACK(0xFA)ê°€ ì•„ë‹ˆë©´ ë°ì´í„°ê°€ ìˆ˜ì‹ ëœ ë””ë°”ì´ìŠ¤ì— ë”°ë¼ í‚¤ë³´ë“œ íë‚˜ ë§ˆìš°ìŠ¤ íì— ì‚½ì…
         else
         {
             if( bMouseData == FALSE )
@@ -105,48 +105,48 @@ BOOL kWaitForACKAndPutOtherScanCode( void )
 }
 
 /**
- *  Å°º¸µå¸¦ È°¼ºÈ­ ÇÔ
+ *  í‚¤ë³´ë“œë¥¼ í™œì„±í™” í•¨
  */
-BOOL kActivateKeyboard( void )
+bool kActivateKeyboard( void )
 {
     int i = 0;
-    BOOL bPreviousInterrupt;
-    BOOL bResult;
+	bool bPreviousInterrupt;
+	bool bResult;
     
-    // ÀÎÅÍ·´Æ® ºÒ°¡
+    // ì¸í„°ëŸ½íŠ¸ ë¶ˆê°€
     bPreviousInterrupt = kSetInterruptFlag( FALSE );
     
-    // ÄÁÆ®·Ñ ·¹Áö½ºÅÍ(Æ÷Æ® 0x64)¿¡ Å°º¸µå È°¼ºÈ­ Ä¿¸Çµå(0xAE)¸¦ Àü´ŞÇÏ¿© Å°º¸µå µğ¹ÙÀÌ½º È°¼ºÈ­
+    // ì»¨íŠ¸ë¡¤ ë ˆì§€ìŠ¤í„°(í¬íŠ¸ 0x64)ì— í‚¤ë³´ë“œ í™œì„±í™” ì»¤ë§¨ë“œ(0xAE)ë¥¼ ì „ë‹¬í•˜ì—¬ í‚¤ë³´ë“œ ë””ë°”ì´ìŠ¤ í™œì„±í™”
 	OutPortByte( 0x64, 0xAE );
         
-    // ÀÔ·Â ¹öÆÛ(Æ÷Æ® 0x60)°¡ ºô ¶§±îÁö ±â´Ù·È´Ù°¡ Å°º¸µå¿¡ È°¼ºÈ­ Ä¿¸Çµå¸¦ Àü¼Û
-    // 0xFFFF¸¸Å­ ·çÇÁ¸¦ ¼öÇàÇÒ ½Ã°£ÀÌ¸é ÃæºĞÈ÷ Ä¿¸Çµå°¡ Àü¼ÛµÉ ¼ö ÀÖÀ½
-    // 0xFFFF ·çÇÁ¸¦ ¼öÇàÇÑ ÀÌÈÄ¿¡µµ ÀÔ·Â ¹öÆÛ(Æ÷Æ® 0x60)°¡ ºñÁö ¾ÊÀ¸¸é ¹«½ÃÇÏ°í Àü¼Û
+    // ì…ë ¥ ë²„í¼(í¬íŠ¸ 0x60)ê°€ ë¹Œ ë•Œê¹Œì§€ ê¸°ë‹¤ë ¸ë‹¤ê°€ í‚¤ë³´ë“œì— í™œì„±í™” ì»¤ë§¨ë“œë¥¼ ì „ì†¡
+    // 0xFFFFë§Œí¼ ë£¨í”„ë¥¼ ìˆ˜í–‰í•  ì‹œê°„ì´ë©´ ì¶©ë¶„íˆ ì»¤ë§¨ë“œê°€ ì „ì†¡ë  ìˆ˜ ìˆìŒ
+    // 0xFFFF ë£¨í”„ë¥¼ ìˆ˜í–‰í•œ ì´í›„ì—ë„ ì…ë ¥ ë²„í¼(í¬íŠ¸ 0x60)ê°€ ë¹„ì§€ ì•Šìœ¼ë©´ ë¬´ì‹œí•˜ê³  ì „ì†¡
     for( i = 0 ; i < 0xFFFF ; i++ )
     {
-        // ÀÔ·Â ¹öÆÛ(Æ÷Æ® 0x60)°¡ ºñ¾îÀÖÀ¸¸é Å°º¸µå Ä¿¸Çµå Àü¼Û °¡´É
+        // ì…ë ¥ ë²„í¼(í¬íŠ¸ 0x60)ê°€ ë¹„ì–´ìˆìœ¼ë©´ í‚¤ë³´ë“œ ì»¤ë§¨ë“œ ì „ì†¡ ê°€ëŠ¥
         if( kIsInputBufferFull() == FALSE )
         {
             break;
         }
     }
-    // ÀÔ·Â ¹öÆÛ(Æ÷Æ® 0x60)·Î Å°º¸µå È°¼ºÈ­(0xF4) Ä¿¸Çµå¸¦ Àü´ŞÇÏ¿© Å°º¸µå·Î Àü¼Û
+    // ì…ë ¥ ë²„í¼(í¬íŠ¸ 0x60)ë¡œ í‚¤ë³´ë“œ í™œì„±í™”(0xF4) ì»¤ë§¨ë“œë¥¼ ì „ë‹¬í•˜ì—¬ í‚¤ë³´ë“œë¡œ ì „ì†¡
 	OutPortByte( 0x60, 0xF4 );
     
-    // ACK°¡ ¿Ã ¶§±îÁö ´ë±âÇÔ
+    // ACKê°€ ì˜¬ ë•Œê¹Œì§€ ëŒ€ê¸°í•¨
     bResult = kWaitForACKAndPutOtherScanCode();
     
-    // ÀÌÀü ÀÎÅÍ·´Æ® »óÅÂ º¹¿ø
+    // ì´ì „ ì¸í„°ëŸ½íŠ¸ ìƒíƒœ ë³µì›
     kSetInterruptFlag( bPreviousInterrupt );
     return bResult;
 }
 
 /**
- *  Ãâ·Â ¹öÆÛ(Æ÷Æ® 0x60)¿¡¼­ Å°¸¦ ÀĞÀ½
+ *  ì¶œë ¥ ë²„í¼(í¬íŠ¸ 0x60)ì—ì„œ í‚¤ë¥¼ ì½ìŒ
  */
 BYTE kGetKeyboardScanCode( void )
 {
-    // Ãâ·Â ¹öÆÛ(Æ÷Æ® 0x60)¿¡ µ¥ÀÌÅÍ°¡ ÀÖÀ» ¶§±îÁö ´ë±â
+    // ì¶œë ¥ ë²„í¼(í¬íŠ¸ 0x60)ì— ë°ì´í„°ê°€ ìˆì„ ë•Œê¹Œì§€ ëŒ€ê¸°
     while( kIsOutputBufferFull() == FALSE )
     {
         ;
@@ -155,131 +155,131 @@ BYTE kGetKeyboardScanCode( void )
 }
 
 /**
- *  Å°º¸µå LEDÀÇ ON/OFF¸¦ º¯°æ
+ *  í‚¤ë³´ë“œ LEDì˜ ON/OFFë¥¼ ë³€ê²½
  */
-BOOL kChangeKeyboardLED( BOOL bCapsLockOn, BOOL bNumLockOn, BOOL bScrollLockOn )
+bool kChangeKeyboardLED(bool bCapsLockOn, bool bNumLockOn, bool bScrollLockOn )
 {
     int i = 0;
-    BOOL bPreviousInterrupt;
-    BOOL bResult;
+	bool bPreviousInterrupt;
+	bool bResult;
     
-    // ÀÎÅÍ·´Æ® ºÒ°¡
+    // ì¸í„°ëŸ½íŠ¸ ë¶ˆê°€
     bPreviousInterrupt = kSetInterruptFlag( FALSE );    
         
-    // Å°º¸µå¿¡ LED º¯°æ Ä¿¸Çµå Àü¼ÛÇÏ°í Ä¿¸Çµå°¡ Ã³¸®µÉ ¶§±îÁö ´ë±â
+    // í‚¤ë³´ë“œì— LED ë³€ê²½ ì»¤ë§¨ë“œ ì „ì†¡í•˜ê³  ì»¤ë§¨ë“œê°€ ì²˜ë¦¬ë  ë•Œê¹Œì§€ ëŒ€ê¸°
     for( i = 0 ; i < 0xFFFF ; i++ )
     {
-        // Ãâ·Â ¹öÆÛ(Æ÷Æ® 0x60)°¡ ºñ¾úÀ¸¸é Ä¿¸Çµå Àü¼Û °¡´É
+        // ì¶œë ¥ ë²„í¼(í¬íŠ¸ 0x60)ê°€ ë¹„ì—ˆìœ¼ë©´ ì»¤ë§¨ë“œ ì „ì†¡ ê°€ëŠ¥
         if( kIsInputBufferFull() == FALSE )
         {
             break;
         }
     }
     
-    // Ãâ·Â ¹öÆÛ(Æ÷Æ® 0x60)·Î LED »óÅÂ º¯°æ Ä¿¸Çµå(0xED) Àü¼Û
+    // ì¶œë ¥ ë²„í¼(í¬íŠ¸ 0x60)ë¡œ LED ìƒíƒœ ë³€ê²½ ì»¤ë§¨ë“œ(0xED) ì „ì†¡
 	OutPortByte( 0x60, 0xED );
     for( i = 0 ; i < 0xFFFF ; i++ )
     {
-        // ÀÔ·Â ¹öÆÛ(Æ÷Æ® 0x60)°¡ ºñ¾îÀÖÀ¸¸é Å°º¸µå°¡ Ä¿¸Çµå¸¦ °¡Á®°£ °ÍÀÓ
+        // ì…ë ¥ ë²„í¼(í¬íŠ¸ 0x60)ê°€ ë¹„ì–´ìˆìœ¼ë©´ í‚¤ë³´ë“œê°€ ì»¤ë§¨ë“œë¥¼ ê°€ì ¸ê°„ ê²ƒì„
         if( kIsInputBufferFull() == FALSE )
         {
             break;
         }
     }
     
-    // ACK°¡ ¿Ã¶§±îÁö ´ë±âÇÔ
+    // ACKê°€ ì˜¬ë•Œê¹Œì§€ ëŒ€ê¸°í•¨
     bResult = kWaitForACKAndPutOtherScanCode();
 
     if( bResult == FALSE )
     {
-        // ÀÌÀü ÀÎÅÍ·´Æ® »óÅÂ º¹¿ø
+        // ì´ì „ ì¸í„°ëŸ½íŠ¸ ìƒíƒœ ë³µì›
         kSetInterruptFlag( bPreviousInterrupt );
         return FALSE;
     }
     
-    // LED º¯°æ °ªÀ» Å°º¸µå·Î Àü¼ÛÇÏ°í µ¥ÀÌÅÍ°¡ Ã³¸®°¡ ¿Ï·áµÉ ¶§±îÁö ´ë±â
+    // LED ë³€ê²½ ê°’ì„ í‚¤ë³´ë“œë¡œ ì „ì†¡í•˜ê³  ë°ì´í„°ê°€ ì²˜ë¦¬ê°€ ì™„ë£Œë  ë•Œê¹Œì§€ ëŒ€ê¸°
 	OutPortByte( 0x60, ( bCapsLockOn << 2 ) | ( bNumLockOn << 1 ) | bScrollLockOn );
     for( i = 0 ; i < 0xFFFF ; i++ )
     {
-        // ÀÔ·Â ¹öÆÛ(Æ÷Æ® 0x60)°¡ ºñ¾îÀÖÀ¸¸é Å°º¸µå°¡ LED µ¥ÀÌÅÍ¸¦ °¡Á®°£ °ÍÀÓ
+        // ì…ë ¥ ë²„í¼(í¬íŠ¸ 0x60)ê°€ ë¹„ì–´ìˆìœ¼ë©´ í‚¤ë³´ë“œê°€ LED ë°ì´í„°ë¥¼ ê°€ì ¸ê°„ ê²ƒì„
         if( kIsInputBufferFull() == FALSE )
         {
             break;
         }
     }
     
-    // ACK°¡ ¿Ã ¶§±îÁö ´ë±âÇÔ
+    // ACKê°€ ì˜¬ ë•Œê¹Œì§€ ëŒ€ê¸°í•¨
     bResult = kWaitForACKAndPutOtherScanCode();
 
-    // ÀÌÀü ÀÎÅÍ·´Æ® »óÅÂ º¹¿ø
+    // ì´ì „ ì¸í„°ëŸ½íŠ¸ ìƒíƒœ ë³µì›
     kSetInterruptFlag( bPreviousInterrupt );
     return bResult;
 }
 
 /**
- *  A20 °ÔÀÌÆ®¸¦ È°¼ºÈ­
+ *  A20 ê²Œì´íŠ¸ë¥¼ í™œì„±í™”
  */
 void kEnableA20Gate( void )
 {
     BYTE bOutputPortData;
     int i;
     
-    // ÄÁÆ®·Ñ ·¹Áö½ºÅÍ(Æ÷Æ® 0x64)¿¡ Å°º¸µå ÄÁÆ®·Ñ·¯ÀÇ Ãâ·Â Æ÷Æ® °ªÀ» ÀĞ´Â Ä¿¸Çµå(0xD0) Àü¼Û
+    // ì»¨íŠ¸ë¡¤ ë ˆì§€ìŠ¤í„°(í¬íŠ¸ 0x64)ì— í‚¤ë³´ë“œ ì»¨íŠ¸ë¡¤ëŸ¬ì˜ ì¶œë ¥ í¬íŠ¸ ê°’ì„ ì½ëŠ” ì»¤ë§¨ë“œ(0xD0) ì „ì†¡
 	OutPortByte( 0x64, 0xD0 );
     
-    // Ãâ·Â Æ÷Æ®ÀÇ µ¥ÀÌÅÍ¸¦ ±â´Ù·È´Ù°¡ ÀĞÀ½
+    // ì¶œë ¥ í¬íŠ¸ì˜ ë°ì´í„°ë¥¼ ê¸°ë‹¤ë ¸ë‹¤ê°€ ì½ìŒ
     for( i = 0 ; i < 0xFFFF ; i++ )
     {
-        // Ãâ·Â ¹öÆÛ(Æ÷Æ® 0x60)°¡ Â÷ÀÖÀ¸¸é µ¥ÀÌÅÍ¸¦ ÀĞÀ» ¼ö ÀÖÀ½ 
+        // ì¶œë ¥ ë²„í¼(í¬íŠ¸ 0x60)ê°€ ì°¨ìˆìœ¼ë©´ ë°ì´í„°ë¥¼ ì½ì„ ìˆ˜ ìˆìŒ 
         if( kIsOutputBufferFull() == TRUE )
         {
             break;
         }
     }
-    // Ãâ·Â Æ÷Æ®(Æ÷Æ® 0x60)¿¡ ¼ö½ÅµÈ Å°º¸µå ÄÁÆ®·Ñ·¯ÀÇ Ãâ·Â Æ÷Æ® °ªÀ» ÀĞÀ½
+    // ì¶œë ¥ í¬íŠ¸(í¬íŠ¸ 0x60)ì— ìˆ˜ì‹ ëœ í‚¤ë³´ë“œ ì»¨íŠ¸ë¡¤ëŸ¬ì˜ ì¶œë ¥ í¬íŠ¸ ê°’ì„ ì½ìŒ
     bOutputPortData = InPortByte( 0x60 );
     
-    // A20 °ÔÀÌÆ® ºñÆ® ¼³Á¤
+    // A20 ê²Œì´íŠ¸ ë¹„íŠ¸ ì„¤ì •
     bOutputPortData |= 0x01;
     
-    // ÀÔ·Â ¹öÆÛ(Æ÷Æ® 0x60)¿¡ µ¥ÀÌÅÍ°¡ ºñ¾îÀÖÀ¸¸é Ãâ·Â Æ÷Æ®¿¡ °ªÀ» ¾²´Â Ä¿¸Çµå¿Í Ãâ·Â Æ÷Æ® µ¥ÀÌÅÍ Àü¼Û
+    // ì…ë ¥ ë²„í¼(í¬íŠ¸ 0x60)ì— ë°ì´í„°ê°€ ë¹„ì–´ìˆìœ¼ë©´ ì¶œë ¥ í¬íŠ¸ì— ê°’ì„ ì“°ëŠ” ì»¤ë§¨ë“œì™€ ì¶œë ¥ í¬íŠ¸ ë°ì´í„° ì „ì†¡
     for( i = 0 ; i < 0xFFFF ; i++ )
     {
-        // ÀÔ·Â ¹öÆÛ(Æ÷Æ® 0x60)°¡ ºñ¾úÀ¸¸é Ä¿¸Çµå Àü¼Û °¡´É
+        // ì…ë ¥ ë²„í¼(í¬íŠ¸ 0x60)ê°€ ë¹„ì—ˆìœ¼ë©´ ì»¤ë§¨ë“œ ì „ì†¡ ê°€ëŠ¥
         if( kIsInputBufferFull() == FALSE )
         {
             break;
         }
     }
     
-    // Ä¿¸Çµå ·¹Áö½ºÅÍ(0x64)¿¡ Ãâ·Â Æ÷Æ® ¼³Á¤ Ä¿¸Çµå(0xD1)À» Àü´Ş
+    // ì»¤ë§¨ë“œ ë ˆì§€ìŠ¤í„°(0x64)ì— ì¶œë ¥ í¬íŠ¸ ì„¤ì • ì»¤ë§¨ë“œ(0xD1)ì„ ì „ë‹¬
 	OutPortByte( 0x64, 0xD1 );
     
-    // ÀÔ·Â ¹öÆÛ(0x60)¿¡ A20 °ÔÀÌÆ® ºñÆ®°¡ 1·Î ¼³Á¤µÈ °ªÀ» Àü´Ş
+    // ì…ë ¥ ë²„í¼(0x60)ì— A20 ê²Œì´íŠ¸ ë¹„íŠ¸ê°€ 1ë¡œ ì„¤ì •ëœ ê°’ì„ ì „ë‹¬
 	OutPortByte( 0x60, bOutputPortData );
 }
 
 /**
- *  ÇÁ·Î¼¼¼­¸¦ ¸®¼Â(Reset)
+ *  í”„ë¡œì„¸ì„œë¥¼ ë¦¬ì…‹(Reset)
  */
 void kReboot( void )
 {
     int i;
     
-    // ÀÔ·Â ¹öÆÛ(Æ÷Æ® 0x60)¿¡ µ¥ÀÌÅÍ°¡ ºñ¾îÀÖÀ¸¸é Ãâ·Â Æ÷Æ®¿¡ °ªÀ» ¾²´Â Ä¿¸Çµå¿Í Ãâ·Â Æ÷Æ® µ¥ÀÌÅÍ Àü¼Û
+    // ì…ë ¥ ë²„í¼(í¬íŠ¸ 0x60)ì— ë°ì´í„°ê°€ ë¹„ì–´ìˆìœ¼ë©´ ì¶œë ¥ í¬íŠ¸ì— ê°’ì„ ì“°ëŠ” ì»¤ë§¨ë“œì™€ ì¶œë ¥ í¬íŠ¸ ë°ì´í„° ì „ì†¡
     for( i = 0 ; i < 0xFFFF ; i++ )
     {
-        // ÀÔ·Â ¹öÆÛ(Æ÷Æ® 0x60)°¡ ºñ¾úÀ¸¸é Ä¿¸Çµå Àü¼Û °¡´É
+        // ì…ë ¥ ë²„í¼(í¬íŠ¸ 0x60)ê°€ ë¹„ì—ˆìœ¼ë©´ ì»¤ë§¨ë“œ ì „ì†¡ ê°€ëŠ¥
         if( kIsInputBufferFull() == FALSE )
         {
             break;
         }
     }
     
-    // Ä¿¸Çµå ·¹Áö½ºÅÍ(0x64)¿¡ Ãâ·Â Æ÷Æ® ¼³Á¤ Ä¿¸Çµå(0xD1)À» Àü´Ş
+    // ì»¤ë§¨ë“œ ë ˆì§€ìŠ¤í„°(0x64)ì— ì¶œë ¥ í¬íŠ¸ ì„¤ì • ì»¤ë§¨ë“œ(0xD1)ì„ ì „ë‹¬
 	OutPortByte( 0x64, 0xD1 );
     
-    // ÀÔ·Â ¹öÆÛ(0x60)¿¡ 0À» Àü´ŞÇÏ¿© ÇÁ·Î¼¼¼­¸¦ ¸®¼Â(Reset)ÇÔ
+    // ì…ë ¥ ë²„í¼(0x60)ì— 0ì„ ì „ë‹¬í•˜ì—¬ í”„ë¡œì„¸ì„œë¥¼ ë¦¬ì…‹(Reset)í•¨
 	OutPortByte( 0x60, 0x00 );
     
     while( 1 )
@@ -290,16 +290,16 @@ void kReboot( void )
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// ½ºÄµ ÄÚµå¸¦ ASCII ÄÚµå·Î º¯È¯ÇÏ´Â ±â´É¿¡ °ü·ÃµÈ ÇÔ¼öµé
+// ìŠ¤ìº” ì½”ë“œë¥¼ ASCII ì½”ë“œë¡œ ë³€í™˜í•˜ëŠ” ê¸°ëŠ¥ì— ê´€ë ¨ëœ í•¨ìˆ˜ë“¤
 //
 ////////////////////////////////////////////////////////////////////////////////
-// Å°º¸µå »óÅÂ¸¦ °ü¸®ÇÏ´Â Å°º¸µå ¸Å´ÏÀú
+// í‚¤ë³´ë“œ ìƒíƒœë¥¼ ê´€ë¦¬í•˜ëŠ” í‚¤ë³´ë“œ ë§¤ë‹ˆì €
 static KEYBOARDMANAGER gs_stKeyboardManager = { 0, };
-// Å°¸¦ ÀúÀåÇÏ´Â Å¥¿Í ¹öÆÛ Á¤ÀÇ
+// í‚¤ë¥¼ ì €ì¥í•˜ëŠ” íì™€ ë²„í¼ ì •ì˜
 static QUEUE gs_stKeyQueue;
 static KEYDATA gs_vstKeyQueueBuffer[ KEY_MAXQUEUECOUNT ];
 
-// ½ºÄµ ÄÚµå¸¦ ASCII ÄÚµå·Î º¯È¯ÇÏ´Â Å×ÀÌºí
+// ìŠ¤ìº” ì½”ë“œë¥¼ ASCII ì½”ë“œë¡œ ë³€í™˜í•˜ëŠ” í…Œì´ë¸”
 static KEYMAPPINGENTRY gs_vstKeyMappingTable[ KEY_MAPPINGTABLEMAXCOUNT ] =
 {
     /*  0   */  {   KEY_NONE        ,   KEY_NONE        },
@@ -395,11 +395,11 @@ static KEYMAPPINGENTRY gs_vstKeyMappingTable[ KEY_MAPPINGTABLEMAXCOUNT ] =
 };
 
 /**
- *  ½ºÄµ ÄÚµå°¡ ¾ËÆÄºª ¹üÀ§ÀÎÁö ¿©ºÎ¸¦ ¹İÈ¯
+ *  ìŠ¤ìº” ì½”ë“œê°€ ì•ŒíŒŒë²³ ë²”ìœ„ì¸ì§€ ì—¬ë¶€ë¥¼ ë°˜í™˜
  */
-BOOL kIsAlphabetScanCode( BYTE bScanCode )
+bool kIsAlphabetScanCode( BYTE bScanCode )
 {
-    // º¯È¯ Å×ÀÌºíÀ» °ªÀ» Á÷Á¢ ÀĞ¾î¼­ ¾ËÆÄºª ¹üÀ§ÀÎÁö È®ÀÎ
+    // ë³€í™˜ í…Œì´ë¸”ì„ ê°’ì„ ì§ì ‘ ì½ì–´ì„œ ì•ŒíŒŒë²³ ë²”ìœ„ì¸ì§€ í™•ì¸
     if( ( 'a' <= gs_vstKeyMappingTable[ bScanCode ].bNormalCode ) &&
         ( gs_vstKeyMappingTable[ bScanCode ].bNormalCode <= 'z' ) )
     {
@@ -409,12 +409,12 @@ BOOL kIsAlphabetScanCode( BYTE bScanCode )
 }
 
 /**
- *  ¼ıÀÚ ¶Ç´Â ±âÈ£ ¹üÀ§ÀÎÁö ¿©ºÎ¸¦ ¹İÈ¯
+ *  ìˆ«ì ë˜ëŠ” ê¸°í˜¸ ë²”ìœ„ì¸ì§€ ì—¬ë¶€ë¥¼ ë°˜í™˜
  */
-BOOL kIsNumberOrSymbolScanCode( BYTE bScanCode )
+bool kIsNumberOrSymbolScanCode( BYTE bScanCode )
 {
-    // ¼ıÀÚ ÆĞµå³ª È®Àå Å° ¹üÀ§¸¦ Á¦¿ÜÇÑ ¹üÀ§(½ºÄµ ÄÚµå 2~53)¿¡¼­ ¿µ¹®ÀÚ°¡ ¾Æ´Ï¸é
-    // ¼ıÀÚ ¶Ç´Â ±âÈ£ÀÓ
+    // ìˆ«ì íŒ¨ë“œë‚˜ í™•ì¥ í‚¤ ë²”ìœ„ë¥¼ ì œì™¸í•œ ë²”ìœ„(ìŠ¤ìº” ì½”ë“œ 2~53)ì—ì„œ ì˜ë¬¸ìê°€ ì•„ë‹ˆë©´
+    // ìˆ«ì ë˜ëŠ” ê¸°í˜¸ì„
     if( ( 2 <= bScanCode ) && ( bScanCode <= 53 ) && 
         ( kIsAlphabetScanCode( bScanCode ) == FALSE ) )
     {
@@ -425,11 +425,11 @@ BOOL kIsNumberOrSymbolScanCode( BYTE bScanCode )
 }
 
 /**
- * ¼ıÀÚ ÆĞµå ¹üÀ§ÀÎÁö ¿©ºÎ¸¦ ¹İÈ¯
+ * ìˆ«ì íŒ¨ë“œ ë²”ìœ„ì¸ì§€ ì—¬ë¶€ë¥¼ ë°˜í™˜
  */
-BOOL kIsNumberPadScanCode( BYTE bScanCode )
+bool kIsNumberPadScanCode( BYTE bScanCode )
 {
-    // ¼ıÀÚ ÆĞµå´Â ½ºÄµ ÄÚµåÀÇ 71~83¿¡ ÀÖÀ½
+    // ìˆ«ì íŒ¨ë“œëŠ” ìŠ¤ìº” ì½”ë“œì˜ 71~83ì— ìˆìŒ
     if( ( 71 <= bScanCode ) && ( bScanCode <= 83 ) )
     {
         return TRUE;
@@ -439,19 +439,19 @@ BOOL kIsNumberPadScanCode( BYTE bScanCode )
 }
 
 /**
- *  Á¶ÇÕµÈ Å° °ªÀ» »ç¿ëÇØ¾ß ÇÏ´ÂÁö ¿©ºÎ¸¦ ¹İÈ¯
+ *  ì¡°í•©ëœ í‚¤ ê°’ì„ ì‚¬ìš©í•´ì•¼ í•˜ëŠ”ì§€ ì—¬ë¶€ë¥¼ ë°˜í™˜
  */
-BOOL kIsUseCombinedCode( BOOL bScanCode )
+bool kIsUseCombinedCode(bool bScanCode )
 {
     BYTE bDownScanCode;
-    BOOL bUseCombinedKey = FALSE;
+	bool bUseCombinedKey = FALSE;
     
     bDownScanCode = ((BYTE)bScanCode & 0x7F);
     
-    // ¾ËÆÄºª Å°¶ó¸é Shift Å°¿Í Caps LockÀÇ ¿µÇâÀ» ¹ŞÀ½
+    // ì•ŒíŒŒë²³ í‚¤ë¼ë©´ Shift í‚¤ì™€ Caps Lockì˜ ì˜í–¥ì„ ë°›ìŒ
     if( kIsAlphabetScanCode( bDownScanCode ) == TRUE )
     {
-        // ¸¸¾à Shift Å°¿Í Caps Lock Å° Áß¿¡ ÇÏ³ª¸¸ ´­·¯Á®ÀÖÀ¸¸é Á¶ÇÕµÈ Å°¸¦ µÇµ¹·Á ÁÜ
+        // ë§Œì•½ Shift í‚¤ì™€ Caps Lock í‚¤ ì¤‘ì— í•˜ë‚˜ë§Œ ëˆŒëŸ¬ì ¸ìˆìœ¼ë©´ ì¡°í•©ëœ í‚¤ë¥¼ ë˜ëŒë ¤ ì¤Œ
         if( gs_stKeyboardManager.bShiftDown ^ gs_stKeyboardManager.bCapsLockOn )
         {
             bUseCombinedKey = TRUE;
@@ -461,10 +461,10 @@ BOOL kIsUseCombinedCode( BOOL bScanCode )
             bUseCombinedKey = FALSE;
         }
     }
-    // ¼ıÀÚ¿Í ±âÈ£ Å°¶ó¸é Shift Å°ÀÇ ¿µÇâÀ» ¹ŞÀ½
+    // ìˆ«ìì™€ ê¸°í˜¸ í‚¤ë¼ë©´ Shift í‚¤ì˜ ì˜í–¥ì„ ë°›ìŒ
     else if( kIsNumberOrSymbolScanCode( bDownScanCode ) == TRUE )
     {
-        // Shift Å°°¡ ´­·¯Á®ÀÖÀ¸¸é Á¶ÇÕµÈ Å°¸¦ µÇµ¹·Á ÁÜ
+        // Shift í‚¤ê°€ ëˆŒëŸ¬ì ¸ìˆìœ¼ë©´ ì¡°í•©ëœ í‚¤ë¥¼ ë˜ëŒë ¤ ì¤Œ
         if( gs_stKeyboardManager.bShiftDown == TRUE )
         {
             bUseCombinedKey = TRUE;
@@ -474,13 +474,13 @@ BOOL kIsUseCombinedCode( BOOL bScanCode )
             bUseCombinedKey = FALSE;
         }
     }
-    // ¼ıÀÚ ÆĞµå Å°¶ó¸é Num Lock Å°ÀÇ ¿µÇâÀ» ¹ŞÀ½
-    // 0xE0¸¸ Á¦¿ÜÇÏ¸é È®Àå Å° ÄÚµå¿Í ¼ıÀÚ ÆĞµåÀÇ ÄÚµå°¡ °ãÄ¡¹Ç·Î, 
-    // È®Àå Å° ÄÚµå°¡ ¼ö½ÅµÇÁö ¾Ê¾ÒÀ» ¶§¸¸Ã³¸® Á¶ÇÕµÈ ÄÚµå »ç¿ë
+    // ìˆ«ì íŒ¨ë“œ í‚¤ë¼ë©´ Num Lock í‚¤ì˜ ì˜í–¥ì„ ë°›ìŒ
+    // 0xE0ë§Œ ì œì™¸í•˜ë©´ í™•ì¥ í‚¤ ì½”ë“œì™€ ìˆ«ì íŒ¨ë“œì˜ ì½”ë“œê°€ ê²¹ì¹˜ë¯€ë¡œ, 
+    // í™•ì¥ í‚¤ ì½”ë“œê°€ ìˆ˜ì‹ ë˜ì§€ ì•Šì•˜ì„ ë•Œë§Œì²˜ë¦¬ ì¡°í•©ëœ ì½”ë“œ ì‚¬ìš©
     else if( ( kIsNumberPadScanCode( bDownScanCode ) == TRUE ) && 
              ( gs_stKeyboardManager.bExtendedCodeIn == FALSE ) )
     {
-        // Num Lock Å°°¡ ´­·¯Á®ÀÖÀ¸¸é, Á¶ÇÕµÈ Å°¸¦ µÇµ¹·Á ÁÜ
+        // Num Lock í‚¤ê°€ ëˆŒëŸ¬ì ¸ìˆìœ¼ë©´, ì¡°í•©ëœ í‚¤ë¥¼ ë˜ëŒë ¤ ì¤Œ
         if( gs_stKeyboardManager.bNumLockOn == TRUE )
         {
             bUseCombinedKey = TRUE;
@@ -495,16 +495,16 @@ BOOL kIsUseCombinedCode( BOOL bScanCode )
 }
 
 /**
- *  Á¶ÇÕ Å°ÀÇ »óÅÂ¸¦ °»½ÅÇÏ°í LED »óÅÂµµ µ¿±âÈ­ ÇÔ
+ *  ì¡°í•© í‚¤ì˜ ìƒíƒœë¥¼ ê°±ì‹ í•˜ê³  LED ìƒíƒœë„ ë™ê¸°í™” í•¨
  */
 void UpdateCombinationKeyStatusAndLED( BYTE bScanCode )
 {
-    BOOL bDown; 
+	bool bDown;
     BYTE bDownScanCode;
-    BOOL bLEDStatusChanged = FALSE;
+	bool bLEDStatusChanged = FALSE;
     
-    // ´­¸² ¶Ç´Â ¶³¾îÁü »óÅÂÃ³¸®, ÃÖ»óÀ§ ºñÆ®(ºñÆ® 7)°¡ 1ÀÌ¸é Å°°¡ ¶³¾îÁ³À½À» ÀÇ¹ÌÇÏ°í
-    // 0ÀÌ¸é ¶³¾îÁ³À½À» ÀÇ¹ÌÇÔ
+    // ëˆŒë¦¼ ë˜ëŠ” ë–¨ì–´ì§ ìƒíƒœì²˜ë¦¬, ìµœìƒìœ„ ë¹„íŠ¸(ë¹„íŠ¸ 7)ê°€ 1ì´ë©´ í‚¤ê°€ ë–¨ì–´ì¡ŒìŒì„ ì˜ë¯¸í•˜ê³ 
+    // 0ì´ë©´ ë–¨ì–´ì¡ŒìŒì„ ì˜ë¯¸í•¨
     if( bScanCode & 0x80 )
     {
         bDown = FALSE;
@@ -516,32 +516,32 @@ void UpdateCombinationKeyStatusAndLED( BYTE bScanCode )
         bDownScanCode = bScanCode;
     }
     
-    // Á¶ÇÕ Å° °Ë»ö
-    // Shift Å°ÀÇ ½ºÄµ ÄÚµå(42 or 54)ÀÌ¸é Shift Å°ÀÇ »óÅÂ °»½Å
+    // ì¡°í•© í‚¤ ê²€ìƒ‰
+    // Shift í‚¤ì˜ ìŠ¤ìº” ì½”ë“œ(42 or 54)ì´ë©´ Shift í‚¤ì˜ ìƒíƒœ ê°±ì‹ 
     if( ( bDownScanCode == 42 ) || ( bDownScanCode == 54 ) )
     {
         gs_stKeyboardManager.bShiftDown = bDown;
     }
-    // Caps Lock Å°ÀÇ ½ºÄµ ÄÚµå(58)ÀÌ¸é Caps LockÀÇ »óÅÂ °»½ÅÇÏ°í LED »óÅÂ º¯°æ
+    // Caps Lock í‚¤ì˜ ìŠ¤ìº” ì½”ë“œ(58)ì´ë©´ Caps Lockì˜ ìƒíƒœ ê°±ì‹ í•˜ê³  LED ìƒíƒœ ë³€ê²½
     else if( ( bDownScanCode == 58 ) && ( bDown == TRUE ) )
     {
         gs_stKeyboardManager.bCapsLockOn ^= TRUE;
         bLEDStatusChanged = TRUE;
     }
-    // Num Lock Å°ÀÇ ½ºÄµ ÄÚµå(69)ÀÌ¸é Num LockÀÇ »óÅÂ¸¦ °»½ÅÇÏ°í LED »óÅÂ º¯°æ
+    // Num Lock í‚¤ì˜ ìŠ¤ìº” ì½”ë“œ(69)ì´ë©´ Num Lockì˜ ìƒíƒœë¥¼ ê°±ì‹ í•˜ê³  LED ìƒíƒœ ë³€ê²½
     else if( ( bDownScanCode == 69 ) && ( bDown == TRUE ) )
     {
         gs_stKeyboardManager.bNumLockOn ^= TRUE;
         bLEDStatusChanged = TRUE;
     }
-    // Scroll Lock Å°ÀÇ ½ºÄµ ÄÚµå(70)ÀÌ¸é Scroll LockÀÇ »óÅÂ¸¦ °»½ÅÇÏ°í LED »óÅÂ º¯°æ
+    // Scroll Lock í‚¤ì˜ ìŠ¤ìº” ì½”ë“œ(70)ì´ë©´ Scroll Lockì˜ ìƒíƒœë¥¼ ê°±ì‹ í•˜ê³  LED ìƒíƒœ ë³€ê²½
     else if( ( bDownScanCode == 70 ) && ( bDown == TRUE ) )
     {
         gs_stKeyboardManager.bScrollLockOn ^= TRUE;
         bLEDStatusChanged = TRUE;
     }
     
-    // LED »óÅÂ°¡ º¯ÇßÀ¸¸é Å°º¸µå·Î Ä¿¸Çµå¸¦ Àü¼ÛÇÏ¿© LED¸¦ º¯°æ
+    // LED ìƒíƒœê°€ ë³€í–ˆìœ¼ë©´ í‚¤ë³´ë“œë¡œ ì»¤ë§¨ë“œë¥¼ ì „ì†¡í•˜ì—¬ LEDë¥¼ ë³€ê²½
     if( bLEDStatusChanged == TRUE )
     {
         kChangeKeyboardLED( gs_stKeyboardManager.bCapsLockOn, 
@@ -550,20 +550,20 @@ void UpdateCombinationKeyStatusAndLED( BYTE bScanCode )
 }
 
 /**
- *  ½ºÄµ ÄÚµå¸¦ ASCII ÄÚµå·Î º¯È¯
+ *  ìŠ¤ìº” ì½”ë“œë¥¼ ASCII ì½”ë“œë¡œ ë³€í™˜
  */
-BOOL kConvertScanCodeToASCIICode( BYTE bScanCode, BYTE* pbASCIICode, BOOL* pbFlags )
+bool kConvertScanCodeToASCIICode( BYTE bScanCode, BYTE* pbASCIICode, bool* pbFlags )
 {
-    BOOL bUseCombinedKey;
+	bool bUseCombinedKey;
 
-    // ÀÌÀü¿¡ Pause Å°°¡ ¼ö½ÅµÇ¾ú´Ù¸é, PauseÀÇ ³²Àº ½ºÄµ ÄÚµå¸¦ ¹«½Ã
+    // ì´ì „ì— Pause í‚¤ê°€ ìˆ˜ì‹ ë˜ì—ˆë‹¤ë©´, Pauseì˜ ë‚¨ì€ ìŠ¤ìº” ì½”ë“œë¥¼ ë¬´ì‹œ
     if( gs_stKeyboardManager.iSkipCountForPause > 0 )
     {
         gs_stKeyboardManager.iSkipCountForPause--;
         return FALSE;
     }
     
-    // Pause Å°´Â Æ¯º°È÷ Ã³¸®
+    // Pause í‚¤ëŠ” íŠ¹ë³„íˆ ì²˜ë¦¬
     if( bScanCode == 0xE1 )
     {
         *pbASCIICode = KEY_PAUSE;
@@ -571,17 +571,17 @@ BOOL kConvertScanCodeToASCIICode( BYTE bScanCode, BYTE* pbASCIICode, BOOL* pbFla
         gs_stKeyboardManager.iSkipCountForPause = KEY_SKIPCOUNTFORPAUSE;
         return TRUE;
     }
-    // È®Àå Å° ÄÚµå°¡ µé¾î¿ÔÀ» ¶§, ½ÇÁ¦ Å° °ªÀº ´ÙÀ½¿¡ µé¾î¿À¹Ç·Î ÇÃ·¡±× ¼³Á¤¸¸ ÇÏ°í Á¾·á
+    // í™•ì¥ í‚¤ ì½”ë“œê°€ ë“¤ì–´ì™”ì„ ë•Œ, ì‹¤ì œ í‚¤ ê°’ì€ ë‹¤ìŒì— ë“¤ì–´ì˜¤ë¯€ë¡œ í”Œë˜ê·¸ ì„¤ì •ë§Œ í•˜ê³  ì¢…ë£Œ
     else if( bScanCode == 0xE0 )
     {
         gs_stKeyboardManager.bExtendedCodeIn = TRUE;
         return FALSE;
     }    
     
-    // Á¶ÇÕµÈ Å°¸¦ ¹İÈ¯ÇØ¾ß ÇÏ´Â°¡?
+    // ì¡°í•©ëœ í‚¤ë¥¼ ë°˜í™˜í•´ì•¼ í•˜ëŠ”ê°€?
     bUseCombinedKey = kIsUseCombinedCode( bScanCode );
 
-    // Å° °ª ¼³Á¤
+    // í‚¤ ê°’ ì„¤ì •
     if( bUseCombinedKey == TRUE )
     {
         *pbASCIICode = gs_vstKeyMappingTable[ bScanCode & 0x7F ].bCombinedCode;
@@ -591,10 +591,10 @@ BOOL kConvertScanCodeToASCIICode( BYTE bScanCode, BYTE* pbASCIICode, BOOL* pbFla
         *pbASCIICode = gs_vstKeyMappingTable[ bScanCode & 0x7F ].bNormalCode;
     }
 
-    // È®Àå Å° À¯¹« ¼³Á¤
+    // í™•ì¥ í‚¤ ìœ ë¬´ ì„¤ì •
     if( gs_stKeyboardManager.bExtendedCodeIn == TRUE )
     {
-        *pbFlags = (BOOL)KEY_FLAGS_EXTENDEDKEY;
+        *pbFlags = (bool)KEY_FLAGS_EXTENDEDKEY;
         gs_stKeyboardManager.bExtendedCodeIn = FALSE;
     }
     else
@@ -602,68 +602,68 @@ BOOL kConvertScanCodeToASCIICode( BYTE bScanCode, BYTE* pbASCIICode, BOOL* pbFla
         *pbFlags = 0;
     }
     
-    // ´­·¯Áü ¶Ç´Â ¶³¾îÁü À¯¹« ¼³Á¤
+    // ëˆŒëŸ¬ì§ ë˜ëŠ” ë–¨ì–´ì§ ìœ ë¬´ ì„¤ì •
     if( ( bScanCode & 0x80 ) == 0 )
     {
         *pbFlags |= KEY_FLAGS_DOWN;
     }
  
-    // Á¶ÇÕ Å° ´­¸² ¶Ç´Â ¶³¾îÁü »óÅÂ¸¦ °»½Å
+    // ì¡°í•© í‚¤ ëˆŒë¦¼ ë˜ëŠ” ë–¨ì–´ì§ ìƒíƒœë¥¼ ê°±ì‹ 
     UpdateCombinationKeyStatusAndLED( bScanCode );
     return TRUE;
 }
 
 /**
- *  Å°º¸µå ÃÊ±âÈ­
+ *  í‚¤ë³´ë“œ ì´ˆê¸°í™”
  */
-BOOL kInitializeKeyboard( void )
+bool kInitializeKeyboard( void )
 {
-    // Å¥ ÃÊ±âÈ­
+    // í ì´ˆê¸°í™”
     kInitializeQueue( &gs_stKeyQueue, gs_vstKeyQueueBuffer, KEY_MAXQUEUECOUNT, 
             sizeof( KEYDATA ) );
     
-    // ½ºÇÉ¶ô ÃÊ±âÈ­
+    // ìŠ¤í•€ë½ ì´ˆê¸°í™”
     kInitializeSpinLock( &( gs_stKeyboardManager.stSpinLock ) );
     
-    // Å°º¸µå È°¼ºÈ­
+    // í‚¤ë³´ë“œ í™œì„±í™”
     return kActivateKeyboard();
 }
 
 /**
- *  ½ºÄµ ÄÚµå¸¦ ³»ºÎÀûÀ¸·Î »ç¿ëÇÏ´Â Å° µ¥ÀÌÅÍ·Î ¹Ù²Û ÈÄ Å° Å¥¿¡ »ğÀÔ
+ *  ìŠ¤ìº” ì½”ë“œë¥¼ ë‚´ë¶€ì ìœ¼ë¡œ ì‚¬ìš©í•˜ëŠ” í‚¤ ë°ì´í„°ë¡œ ë°”ê¾¼ í›„ í‚¤ íì— ì‚½ì…
  */
-BOOL kConvertScanCodeAndPutQueue( BYTE bScanCode )
+bool kConvertScanCodeAndPutQueue( BYTE bScanCode )
 {
     KEYDATA stData;
-    BOOL bResult = FALSE;
+	bool bResult = FALSE;
 
     stData.bScanCode = bScanCode;
-    if (kConvertScanCodeToASCIICode( bScanCode, &( stData.bASCIICode ), (BOOL*)&(stData.bFlags) ) == TRUE)
+    if (kConvertScanCodeToASCIICode( bScanCode, &( stData.bASCIICode ), (bool*)&(stData.bFlags) ) == TRUE)
     {
-        // ÀÓ°è ¿µ¿ª ½ÃÀÛ
+        // ì„ê³„ ì˜ì—­ ì‹œì‘
         kLockForSpinLock( &( gs_stKeyboardManager.stSpinLock ) );
         
         bResult = kPutQueue( &gs_stKeyQueue, &stData );
 
-        // ÀÓ°è ¿µ¿ª ³¡
+        // ì„ê³„ ì˜ì—­ ë
         kUnlockForSpinLock( &( gs_stKeyboardManager.stSpinLock ) );
     }    
     return bResult;
 }
 
 /**
- *  Å° Å¥¿¡¼­ µ¥ÀÌÅÍ¸¦ Á¦°Å
+ *  í‚¤ íì—ì„œ ë°ì´í„°ë¥¼ ì œê±°
  */
-BOOL kGetKeyFromKeyQueue( KEYDATA* pstData )
+bool kGetKeyFromKeyQueue( KEYDATA* pstData )
 {
-    BOOL bResult;
+	bool bResult;
     
-    // ÀÓ°è ¿µ¿ª ½ÃÀÛ
+    // ì„ê³„ ì˜ì—­ ì‹œì‘
     kLockForSpinLock( &( gs_stKeyboardManager.stSpinLock ) );
 
     bResult = kGetQueue( &gs_stKeyQueue, pstData );
 
-    // ÀÓ°è ¿µ¿ª ³¡
+    // ì„ê³„ ì˜ì—­ ë
    kUnlockForSpinLock( &( gs_stKeyboardManager.stSpinLock ) );
     return bResult;
 }

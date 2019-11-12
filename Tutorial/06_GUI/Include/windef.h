@@ -41,6 +41,7 @@
   typedef unsigned int UINT;
   typedef unsigned long DWORD;
   
+  typedef unsigned long  ULONG;			//32 bit unsigined integer
 typedef unsigned long  ulong;			//32 bit unsigined integer
 typedef unsigned int   uint;			//32 bit unsigined integer
 typedef unsigned short ushort;			//16 bit integer
@@ -73,7 +74,7 @@ typedef          char  s8int;
   typedef long               ISIZE;
   typedef unsigned long      LSIZE;
   typedef unsigned long      USIZE;
-  typedef bool BOOL;
+  //typedef bool BOOL;
 
   /* 32 bit data types*/
   typedef long INT32;

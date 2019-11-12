@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include "windef.h"
 
 //! multiboot info structure passed from boot loader
 struct multiboot_info {
@@ -28,4 +29,54 @@ struct multiboot_info {
 	uint16_t	m_vbe_mode;
 	uint32_t	m_vbe_interface_addr;
 	uint16_t	m_vbe_interface_len;
+};
+
+struct VbeModeInfo
+{
+	UINT16 ModeAttributes;
+	char WinAAttributes;
+	char WinBAttributes;
+	UINT16 WinGranularity;
+	UINT16 WinSize;
+	UINT16 WinASegment;
+	UINT16 WinBSegment;
+	UINT32 WinFuncPtr;
+	short BytesPerScanLine;
+	short XRes;
+	short YRes;
+	char XCharSize;
+	char YCharSize;
+	char NumberOfPlanes;
+	char BitsPerPixel;
+	char NumberOfBanks;
+	char MemoryModel;
+	char BankSize;
+	char NumberOfImagePages;
+	char res1;
+	char RedMaskSize;
+	char RedFieldPosition;
+	char GreenMaskSize;
+	char GreenFieldPosition;
+	char BlueMaskSize;
+	char BlueFieldPosition;
+	char RsvedMaskSize;
+	char RsvedFieldPosition;
+	char DirectColorModeInfo; //MISSED IN THIS TUTORIAL!! SEE ABOVE
+							  //VBE 2.0
+	UINT32 PhysBasePtr;
+	UINT32 OffScreenMemOffset;
+	short OffScreenMemSize;
+	//VBE 2.1
+	short LinbytesPerScanLine;
+	char BankNumberOfImagePages;
+	char LinNumberOfImagePages;
+	char LinRedMaskSize;
+	char LinRedFieldPosition;
+	char LingreenMaskSize;
+	char LinGreenFieldPosition;
+	char LinBlueMaskSize;
+	char LinBlueFieldPosition;
+	char LinRsvdMaskSize;
+	char LinRsvdFieldPosition;
+	char res2[194];
 };

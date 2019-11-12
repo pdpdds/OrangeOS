@@ -1,9 +1,9 @@
-/**
+ï»¿/**
  *  file    Synchronization.h
  *  date    2009/03/13
  *  author  kkamagui 
  *          Copyright(c)2008 All rights reserved by kkamagui 
- *  brief   µ¿±âÈ­¸¦ Ã³¸®ÇÏ´Â ÇÔ¼ö¿¡ °ü·ÃµÈ ÆÄÀÏ
+ *  brief   ë™ê¸°í™”ë¥¼ ì²˜ë¦¬í•˜ëŠ” í•¨ìˆ˜ì— ê´€ë ¨ëœ íŒŒì¼
  */
 
 #ifndef __SYNCHRONIZATION_H__
@@ -13,40 +13,40 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// ±¸Á¶Ã¼
+// êµ¬ì¡°ì²´
 //
 ////////////////////////////////////////////////////////////////////////////////
-// 1¹ÙÀÌÆ®·Î Á¤·Ä
+// 1ë°”ì´íŠ¸ë¡œ ì •ë ¬
 #pragma pack( push, 1 )
 
-// ¹ÂÅØ½º ÀÚ·á±¸Á¶
+// ë®¤í…ìŠ¤ ìë£Œêµ¬ì¡°
 typedef struct kMutexStruct
 {
-    // ÅÂ½ºÅ© ID¿Í Àá±İÀ» ¼öÇàÇÑ È½¼ö
+    // íƒœìŠ¤í¬ IDì™€ ì ê¸ˆì„ ìˆ˜í–‰í•œ íšŸìˆ˜
     volatile DWORD dwTaskID;
     volatile DWORD dwLockCount;
 
-    // Àá±İ ÇÃ·¡±×
-    volatile BOOL bLockFlag;
+    // ì ê¸ˆ í”Œë˜ê·¸
+    volatile bool bLockFlag;
     
-    // ÀÚ·á±¸Á¶ÀÇ Å©±â¸¦ 8¹ÙÀÌÆ® ´ÜÀ§·Î ¸ÂÃß·Á°í Ãß°¡ÇÑ ÇÊµå
+    // ìë£Œêµ¬ì¡°ì˜ í¬ê¸°ë¥¼ 8ë°”ì´íŠ¸ ë‹¨ìœ„ë¡œ ë§ì¶”ë ¤ê³  ì¶”ê°€í•œ í•„ë“œ
     BYTE vbPadding[ 3 ];
 } MUTEX;
 
-// ½ºÇÉ¶ô ÀÚ·á±¸Á¶
+// ìŠ¤í•€ë½ ìë£Œêµ¬ì¡°
 typedef struct kSpinLockStruct
 {
-    // ·ÎÄÃ APIC ID¿Í Àá±İÀ» ¼öÇàÇÑ È½¼ö
+    // ë¡œì»¬ APIC IDì™€ ì ê¸ˆì„ ìˆ˜í–‰í•œ íšŸìˆ˜
     volatile DWORD dwLockCount;
     volatile BYTE bAPICID;
 
-    // Àá±İ ÇÃ·¡±×
-    volatile BOOL bLockFlag;
+    // ì ê¸ˆ í”Œë˜ê·¸
+    volatile bool bLockFlag;
     
-    // ÀÎÅÍ·´Æ® ÇÃ·¡±×
-    volatile BOOL bInterruptFlag;
+    // ì¸í„°ëŸ½íŠ¸ í”Œë˜ê·¸
+    volatile bool bInterruptFlag;
     
-    // ÀÚ·á±¸Á¶ÀÇ Å©±â¸¦ 8¹ÙÀÌÆ® ´ÜÀ§·Î ¸ÂÃß·Á°í Ãß°¡ÇÑ ÇÊµå
+    // ìë£Œêµ¬ì¡°ì˜ í¬ê¸°ë¥¼ 8ë°”ì´íŠ¸ ë‹¨ìœ„ë¡œ ë§ì¶”ë ¤ê³  ì¶”ê°€í•œ í•„ë“œ
     BYTE vbPadding[ 1 ];
 } SPINLOCK;
 
@@ -54,12 +54,12 @@ typedef struct kSpinLockStruct
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// ÇÔ¼ö
+// í•¨ìˆ˜
 //
 ////////////////////////////////////////////////////////////////////////////////
 #if 0
-BOOL kLockForSystemData( void );
-void kUnlockForSystemData( BOOL bInterruptFlag );
+bool kLockForSystemData( void );
+void kUnlockForSystemData(bool bInterruptFlag );
 #endif
 
 void kInitializeSpinLock( SPINLOCK* pstSpinLock );

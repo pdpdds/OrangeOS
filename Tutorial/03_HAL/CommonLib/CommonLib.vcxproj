@@ -104,12 +104,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="cstd.cpp" />
+    <ClCompile Include="sprintf.cpp" />
     <ClCompile Include="stdio.cpp" />
     <ClCompile Include="string.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ctype.h" />
     <ClInclude Include="size_t.h" />
+    <ClInclude Include="sprintf.h" />
     <ClInclude Include="stdarg.h" />
     <ClInclude Include="stdint.h" />
     <ClInclude Include="stdio.h" />

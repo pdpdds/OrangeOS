@@ -25,6 +25,9 @@
     <Filter Include="Mint64">
       <UniqueIdentifier>{bcab9d7b-f7f0-44c6-9503-104314014f9d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Desktop">
+      <UniqueIdentifier>{e17cef95-35c2-42b6-931b-bc274b430470}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="entry.cpp">
@@ -119,9 +122,6 @@
     <ClCompile Include="..\Mint64\Queue.cpp">
       <Filter>Mint64</Filter>
     </ClCompile>
-    <ClCompile Include="..\Mint64\Mouse.cpp">
-      <Filter>Mint64</Filter>
-    </ClCompile>
     <ClCompile Include="..\Mint64\kList.cpp">
       <Filter>Mint64</Filter>
     </ClCompile>
@@ -140,6 +140,92 @@
     </ClCompile>
     <ClCompile Include="PageDirectoryEntry.cpp">
       <Filter>Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Desktop\desq.cpp">
+      <Filter>Desktop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\svgagui\src\image.cpp">
+      <Filter>Desktop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\svgagui\src\sscanf.cpp">
+      <Filter>Desktop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\svgagui\src\iconlist.cpp">
+      <Filter>Desktop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\svgagui\src\browser.cpp">
+      <Filter>Desktop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\svgagui\src\button.cpp">
+      <Filter>Desktop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\svgagui\src\check.cpp">
+      <Filter>Desktop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\svgagui\src\choice.cpp">
+      <Filter>Desktop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\svgagui\src\dialog.cpp">
+      <Filter>Desktop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\svgagui\src\filedialog.cpp">
+      <Filter>Desktop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\svgagui\src\window_thread.cpp">
+      <Filter>Desktop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\svgagui\src\window_draw.cPP">
+      <Filter>Desktop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\svgagui\src\window.cpp">
+      <Filter>Desktop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\svgagui\src\text.cpp">
+      <Filter>Desktop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\svgagui\src\svgalib.cpp">
+      <Filter>Desktop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\svgagui\src\slider.cpp">
+      <Filter>Desktop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\svgagui\src\screen.cpp">
+      <Filter>Desktop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\svgagui\src\pulldown.cpp">
+      <Filter>Desktop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\svgagui\src\progress.cpp">
+      <Filter>Desktop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\svgagui\src\object.cpp">
+      <Filter>Desktop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\svgagui\src\number.cpp">
+      <Filter>Desktop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\svgagui\src\info.cpp">
+      <Filter>Desktop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\svgagui\src\input.cpp">
+      <Filter>Desktop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\svgagui\src\listbox.cpp">
+      <Filter>Desktop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\svgagui\src\mouse.cpp">
+      <Filter>Desktop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Include\vesa.cpp" />
+    <ClCompile Include="..\Include\math.cpp" />
+    <ClCompile Include="..\svgagui\src\general.cpp">
+      <Filter>Desktop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\svgagui\src\xlib.cpp">
+      <Filter>Desktop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Mint64\GUIMouse.cpp">
+      <Filter>Mint64</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -233,9 +319,6 @@
     <ClInclude Include="..\Mint64\Queue.h">
       <Filter>Mint64</Filter>
     </ClInclude>
-    <ClInclude Include="..\Mint64\Mouse.h">
-      <Filter>Mint64</Filter>
-    </ClInclude>
     <ClInclude Include="..\Mint64\kList.h">
       <Filter>Mint64</Filter>
     </ClInclude>
@@ -260,5 +343,17 @@
     </ClInclude>
     <ClInclude Include="DoubleLinkedList.h" />
     <ClInclude Include="OrangeQueue.h" />
+    <ClInclude Include="..\Desktop\desq.h">
+      <Filter>Desktop</Filter>
+    </ClInclude>
+    <ClInclude Include="..\svgagui\svgagui.h">
+      <Filter>Desktop</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\vesa.h" />
+    <ClInclude Include="..\Include\stdlib.h" />
+    <ClInclude Include="..\Include\math.h" />
+    <ClInclude Include="..\Mint64\GUIMouse.h">
+      <Filter>Mint64</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

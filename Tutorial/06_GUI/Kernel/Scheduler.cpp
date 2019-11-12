@@ -64,10 +64,12 @@ bool  Scheduler::DoSchedule(int tick, registers_t& registers)
 
 	DoubleLinkedList* pTaskList = ProcessManager::GetInstance()->GetTaskList();
 
-	int taskCount = pTaskList->CountItems();
+	int taskCount = pTaskList->CountItems();	
 
 	if (taskCount == 0 || taskCount == 1)
+	{		
 		return true;
+	}	
 
 	ListNode* pNode = pTaskList->GetHead();
 	Thread* pThread = (Thread*)pNode->_data;	
@@ -93,42 +95,81 @@ bool  Scheduler::DoSchedule(int tick, registers_t& registers)
 
 		int entryPoint = (int)pNextThread->frame.eip;
 		unsigned int procStack = pNextThread->frame.esp;
-		LPVOID param = pNextThread->m_startParam;
+		LPVOID param = pNextThread->m_startParam; 
+		uint32_t eflags = pNextThread->frame.flags;
+
 	
 		PageDirectory* pageDirectory = pNextThread->m_pParent->m_pPageDirectory;
 		VirtualMemoryManager::GetInstance()->SetPageDirectoryInfo(pageDirectory);
 
-		_asm
+		/*if (pNextThread->m_pParent->m_dwProcessType == PROCESS_USER)
 		{
-			mov ecx, [entryPoint]
-			mov esp, procStack			
-			mov ebx, [param]
+			
+			
 
-			mov	eax, [pageDirectory]
-			mov	cr3, eax	 	// PDBR is cr3 register in i86
+				
+			_asm
+			{
+				mov ecx, [entryPoint]
+				mov esp, procStack
+				mov ebx, [param]
+
+				mov	eax, [pageDirectory]
+				mov	cr3, eax	 	// PDBR is cr3 register in i86
+
+				mov ax, 0x23; user mode data selector is 0x20 (GDT entry 3).Also sets RPL to 3
+				mov ds, ax
+				mov es, ax
+				mov fs, ax
+				mov gs, ax
+		
+				push   ebx;
+				push   0x23; SS, notice it uses same selector as above
+				push[procStack]; stack
+				push[eflags]; EFLAGS
+				push    0x1b; CS, user mode code selector is 0x18.With RPL 3 this is 0x1b
+				push[entryPoint]; EIP
+
+				mov al, 0x20
+				out 0x20, al
+				iretd
+			}
 		}
-
-		__asm
+		else*/
 		{
-			mov     ax, 0x10;
-			mov     ds, ax
-			mov     es, ax
-			mov     fs, ax
-			mov     gs, ax
-			
-			//mov esp, procStack
 
-			push   ebx;
-			push    0x10;
-			push    0x200; EFLAGS
-			push    0x08; CS
-			push ecx; EIP
-			
-			mov al, 0x20
-			out 0x20, al
-			sti
+			_asm
+			{
+				mov ecx, [entryPoint]
+				mov esp, procStack
+				mov ebx, [param]
 
-			iretd
+				mov	eax, [pageDirectory]
+				mov	cr3, eax	 	// PDBR is cr3 register in i86
+			}
+
+			__asm
+			{
+				mov     ax, 0x10;
+				mov     ds, ax
+				mov     es, ax
+				mov     fs, ax
+				mov     gs, ax
+
+					//mov esp, procStack
+
+				push   ebx;
+				push    0x10;
+				push    0x200; EFLAGS
+				push    0x08; CS
+				push ecx; EIP
+
+				mov al, 0x20
+				out 0x20, al
+				sti
+
+				iretd
+			}
 		}
 	}
 	else

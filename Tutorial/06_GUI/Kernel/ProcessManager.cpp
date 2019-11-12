@@ -1,4 +1,4 @@
-#include "ProcessManager.h"
+ï»¿#include "ProcessManager.h"
 #include "Process.h"
 #include "Hal.h"
 #include "Task.h"
@@ -115,6 +115,10 @@ Thread* ProcessManager::CreateThread(Process* pProcess, FILE* file, LPVOID param
 	pThread->frame.esi = 0;
 	pThread->frame.edi = 0;
 
+	ListNode* node = new ListNode();
+	node->_data = pThread;
+	m_taskList.AddToTail(node);
+
 	return pThread;
 
 }
@@ -139,7 +143,7 @@ Thread* ProcessManager::CreateThread(Process* pProcess, LPTHREAD_START_ROUTINE l
 
 	static int kernelStackIndex = 0;
 
-//½ºÅÃÀ» »ı¼ºÇÏ°í ÁÖ¼Ò°ø°£¿¡ ¸ÅÇÎÇÑ´Ù.
+//ìŠ¤íƒì„ ìƒì„±í•˜ê³  ì£¼ì†Œê³µê°„ì— ë§¤í•‘í•œë‹¤.
 	void* stackVirtual = (void*)(KERNEL_VIRTUAL_STACK_ADDRESS + PAGE_SIZE * kernelStackIndex++);
 	//void* stackVirtual = (void*)(KERNEL_VIRTUAL_STACK_ADDRESS + PAGE_SIZE * pProcess->m_kernelStackIndex++);
 	void* stackPhys = (void*)PhysicalMemoryManager::GetInstance()->AllocBlock();	
@@ -192,10 +196,18 @@ Process* ProcessManager::CreateProcess(char* appName, UINT32 processType)
 	pProcess->m_processId = ProcessManager::GetInstance()->GetNextProcessId();
 	pProcess->m_pPageDirectory = addressSpace;
 	pProcess->m_dwPriority = 1;
+	pProcess->m_dwProcessType = processType;
 	pProcess->m_dwRunState = TASK_STATE_INIT;
 	strcpy(pProcess->m_processName, appName);
 
 	Thread* pThread = CreateThread(pProcess, &file, NULL);
+
+	if (pThread == NULL)
+		if (pProcess == 0)
+		{
+			console.Print("Thread Create Fail\n");
+		}
+
 	pProcess->AddThread(pThread);
 	
 	return pProcess;
@@ -245,9 +257,9 @@ bool ProcessManager::AddProcess(Process* pProcess)
 	return true;
 }
 
-//firstProcess°¡ trueÀÏ °æ¿ì Ä¿³ÎÀÇ ÃÖÃÊ ÇÁ·Î¼¼½º¸¦ »ı¼ºÇÑ´Ù.
-//ÀÌ ½ÃÁ¡¿¡¼­¸¸ ÀÌÀü¿¡ Ä¿³ÎÈüÀÌ »ı¼ºµÇ¾ú´Ù°í °¡Á¤ÇÑ´Ù.
-//ÀÌÈÄ ÇÁ·Î¼¼½º´Â ¿©±â¼­ ÈüÀ» º°µµ·Î »ı¼ºÇÑ´Ù.
+//firstProcessê°€ trueì¼ ê²½ìš° ì»¤ë„ì˜ ìµœì´ˆ í”„ë¡œì„¸ìŠ¤ë¥¼ ìƒì„±í•œë‹¤.
+//ì´ ì‹œì ì—ì„œë§Œ ì´ì „ì— ì»¤ë„í™ì´ ìƒì„±ë˜ì—ˆë‹¤ê³  ê°€ì •í•œë‹¤.
+//ì´í›„ í”„ë¡œì„¸ìŠ¤ëŠ” ì—¬ê¸°ì„œ í™ì„ ë³„ë„ë¡œ ìƒì„±í•œë‹¤.
 Process* ProcessManager::CreateProcess(LPTHREAD_START_ROUTINE lpStartAddress, bool firstProcess)
 {
 	Process* pProcess = new Process();
@@ -270,7 +282,7 @@ Process* ProcessManager::CreateProcess(LPTHREAD_START_ROUTINE lpStartAddress, bo
 			return false;
 
 
-		//0-1MB ÀÇ ¹°¸® ÁÖ¼Ò¸¦ °¡»ó ÁÖ¼Ò¿Í µ¿ÀÏÇÏ°Ô ¸ÅÇÎ½ÃÅ²´Ù
+		//0-1MB ì˜ ë¬¼ë¦¬ ì£¼ì†Œë¥¼ ê°€ìƒ ì£¼ì†Œì™€ ë™ì¼í•˜ê²Œ ë§¤í•‘ì‹œí‚¨ë‹¤
 		for (int i = 0, frame = 0x0, virt = 0x00000000; i<PAGES_PER_TABLE; i++, frame += PAGE_SIZE, virt += PAGE_SIZE)
 		{
 			PTE page = 0;
@@ -288,7 +300,7 @@ Process* ProcessManager::CreateProcess(LPTHREAD_START_ROUTINE lpStartAddress, bo
 		
 		int flags = I86_PTE_PRESENT | I86_PTE_WRITABLE;
 
-		//Ä¿³Î ÀÌ¹ÌÁö¸¦ ÁÖ¼Ò°ø°£¿¡ ¸ÅÇÎ. Ä¿³Î Å©±â´Â 4¸Ş°¡°¡ ³ÑÁö ¾Ê´Â´Ù°í °¡Á¤ÇÑ´Ù
+		//ì»¤ë„ ì´ë¯¸ì§€ë¥¼ ì£¼ì†Œê³µê°„ì— ë§¤í•‘. ì»¤ë„ í¬ê¸°ëŠ” 4ë©”ê°€ê°€ ë„˜ì§€ ì•ŠëŠ”ë‹¤ê³  ê°€ì •í•œë‹¤
 		//1024 * PAGE_SIZE = 4MB
 		uint32_t virtualAddr = KERNEL_VIRTUAL_BASE_ADDRESS;
 		uint32_t physAddr = KERNEL_PHYSICAL_BASE_ADDRESS;
@@ -331,7 +343,7 @@ bool ProcessManager::MapKernelSpace(PageDirectory* addressSpace)
 	
 	int flags = I86_PTE_PRESENT | I86_PTE_WRITABLE;
 	
-//Ä¿³Î ÀÌ¹ÌÁö¸¦ ÁÖ¼Ò°ø°£¿¡ ¸ÅÇÎ. Ä¿³Î Å©±â´Â 4¸Ş°¡°¡ ³ÑÁö ¾Ê´Â´Ù°í °¡Á¤ÇÑ´Ù
+//ì»¤ë„ ì´ë¯¸ì§€ë¥¼ ì£¼ì†Œê³µê°„ì— ë§¤í•‘. ì»¤ë„ í¬ê¸°ëŠ” 4ë©”ê°€ê°€ ë„˜ì§€ ì•ŠëŠ”ë‹¤ê³  ê°€ì •í•œë‹¤
 //1024 * PAGE_SIZE = 4MB
 	virtualAddr = KERNEL_VIRTUAL_BASE_ADDRESS;
 	physAddr = KERNEL_PHYSICAL_BASE_ADDRESS;
@@ -356,7 +368,7 @@ bool ProcessManager::MapKernelSpace(PageDirectory* addressSpace)
 		VirtualMemoryManager::GetInstance()->MapPhysicalAddressToVirtualAddresss(addressSpace, virtualAddr + (i*PAGE_SIZE), physAddr + (i*PAGE_SIZE), flags);
 	}	
 
-	//ÆäÀÌÁö µğ·ºÅä¸® ÀÚÃ¼¸¦ ÁÖ¼Ò°ø°£¿¡ ¸ÅÇÎ
+	//í˜ì´ì§€ ë””ë ‰í† ë¦¬ ìì²´ë¥¼ ì£¼ì†Œê³µê°„ì— ë§¤í•‘
 	VirtualMemoryManager::GetInstance()->MapPhysicalAddressToVirtualAddresss(addressSpace, (uint32_t)addressSpace, (uint32_t)addressSpace, I86_PTE_PRESENT | I86_PTE_WRITABLE);		
 
 	return true;
@@ -398,11 +410,11 @@ bool ProcessManager::RemoveFromTaskList(Process* pProcess)
 
 bool ProcessManager::DestroyProcess(Process* pProcess)
 {
-	//ÅÂ½ºÅ© ¸ñ·Ï¿¡¼­ ÇÁ·Î¼¼½ºÀÇ ÅÂ½ºÅ©µéÀ» Á¦°ÅÇÑ´Ù.
+	//íƒœìŠ¤í¬ ëª©ë¡ì—ì„œ í”„ë¡œì„¸ìŠ¤ì˜ íƒœìŠ¤í¬ë“¤ì„ ì œê±°í•œë‹¤.
 	RemoveFromTaskList(pProcess);
 
-	//½º·¹µå °ü·Ã Context ÀÚ¿øÀ» ÇØÁ¦ÇÑ´Ù.
-	//°¡»ó ÁÖ¼Ò¸¦ ¿î¿µÇÏ±â À§ÇØ ÇÒ´çÇß´ø ÆäÀÌÁö Å×ÀÌºí, ½ºÅÃ µîÀ» È¸¼ö µîµî
+	//ìŠ¤ë ˆë“œ ê´€ë ¨ Context ìì›ì„ í•´ì œí•œë‹¤.
+	//ê°€ìƒ ì£¼ì†Œë¥¼ ìš´ì˜í•˜ê¸° ìœ„í•´ í• ë‹¹í–ˆë˜ í˜ì´ì§€ í…Œì´ë¸”, ìŠ¤íƒ ë“±ì„ íšŒìˆ˜ ë“±ë“±
 	ReleaseThreadContext(pProcess);
 
 	for (uint32_t page = 0; page < pProcess->m_dwPageCount; page++)
@@ -412,7 +424,7 @@ bool ProcessManager::DestroyProcess(Process* pProcess)
 		VirtualMemoryManager::GetInstance()->UnmapPhysicalAddress(pProcess->m_pPageDirectory, virt);
 	}
 
-// Èü ¸Ş¸ğ¸® È¸¼ö
+// í™ ë©”ëª¨ë¦¬ íšŒìˆ˜
 	u32int heapAddess = (u32int)pProcess->m_lpHeap;
 	heapAddess = heapAddess - (heapAddess % PAGE_SIZE);
 	for (int i = 0; i < DEFAULT_HEAP_PAGE_COUNT; i++)
@@ -421,11 +433,11 @@ bool ProcessManager::DestroyProcess(Process* pProcess)
 		VirtualMemoryManager::GetInstance()->UnmapPhysicalAddress(pProcess->m_pPageDirectory, virt);
 	}
 
-	//ÆäÀÌÁö µğ·ºÅä¸® È¸¼ö
-	//ÆäÀÌÁö µğ·ºÅä¸®´Â ¹°¸® ÁÖ¼ÒÀÓ
+	//í˜ì´ì§€ ë””ë ‰í† ë¦¬ íšŒìˆ˜
+	//í˜ì´ì§€ ë””ë ‰í† ë¦¬ëŠ” ë¬¼ë¦¬ ì£¼ì†Œì„
 	PhysicalMemoryManager::GetInstance()->FreeBlock(pProcess->m_pPageDirectory);	
 	m_processList.Delete(pProcess);
-	//ÇÁ·Î¼¼½º °´Ã¼ ¿ÏÀüÈ÷ Á¦°Å	
+	//í”„ë¡œì„¸ìŠ¤ ê°ì²´ ì™„ì „íˆ ì œê±°	
 #ifdef _ORANGE_DEBUG
 	console.Print("terminate %s\n", pProcess->m_processName);
 #endif // _ORANGE_DEBUG
@@ -435,21 +447,21 @@ bool ProcessManager::DestroyProcess(Process* pProcess)
 	return true;
 }
 
-//Ä¿³Î ÇÁ·Î¼¼½º¸¦ Á¾·áÇÑ´Ù.
+//ì»¤ë„ í”„ë¡œì„¸ìŠ¤ë¥¼ ì¢…ë£Œí•œë‹¤.
 bool ProcessManager::DestroyKernelProcess(Process* pProcess)
 {
-	//ÅÂ½ºÅ© ¸ñ·Ï¿¡¼­ ÇÁ·Î¼¼½ºÀÇ ÅÂ½ºÅ©µéÀ» Á¦°ÅÇÑ´Ù.
+	//íƒœìŠ¤í¬ ëª©ë¡ì—ì„œ í”„ë¡œì„¸ìŠ¤ì˜ íƒœìŠ¤í¬ë“¤ì„ ì œê±°í•œë‹¤.
 	RemoveFromTaskList(pProcess);
 
-	//½º·¹µå °ü·Ã Context ÀÚ¿øÀ» ÇØÁ¦ÇÑ´Ù.
-	//°¡»ó ÁÖ¼Ò¸¦ ¿î¿µÇÏ±â À§ÇØ ÇÒ´çÇß´ø ÆäÀÌÁö Å×ÀÌºí, ½ºÅÃ µîÀ» È¸¼ö µîµî
+	//ìŠ¤ë ˆë“œ ê´€ë ¨ Context ìì›ì„ í•´ì œí•œë‹¤.
+	//ê°€ìƒ ì£¼ì†Œë¥¼ ìš´ì˜í•˜ê¸° ìœ„í•´ í• ë‹¹í–ˆë˜ í˜ì´ì§€ í…Œì´ë¸”, ìŠ¤íƒ ë“±ì„ íšŒìˆ˜ ë“±ë“±
 	ReleaseThreadContext(pProcess);
 	
-	//ÆäÀÌÁö µğ·ºÅä¸® È¸¼ö
-	//ÆäÀÌÁö µğ·ºÅä¸®´Â ¹°¸® ÁÖ¼ÒÀÓ
+	//í˜ì´ì§€ ë””ë ‰í† ë¦¬ íšŒìˆ˜
+	//í˜ì´ì§€ ë””ë ‰í† ë¦¬ëŠ” ë¬¼ë¦¬ ì£¼ì†Œì„
 	PhysicalMemoryManager::GetInstance()->FreeBlock(pProcess->m_pPageDirectory);
 	m_processList.Delete(pProcess);
-	//ÇÁ·Î¼¼½º °´Ã¼ ¿ÏÀüÈ÷ Á¦°Å	
+	//í”„ë¡œì„¸ìŠ¤ ê°ì²´ ì™„ì „íˆ ì œê±°	
 #ifdef _ORANGE_DEBUG
 	console.Print("terminate %s\n", pProcess->m_processName);
 #endif // _ORANGE_DEBUG
@@ -466,10 +478,10 @@ bool ProcessManager::ReleaseThreadContext(Process* pProces)
 	for (int i = 0; i < threadCount; i++)
 	{
 		Thread* pThread = pProces->GetThread(i);
-		//½ºÅÃ ÆäÀÌÁö È¸¼ö
+		//ìŠ¤íƒ í˜ì´ì§€ íšŒìˆ˜
 		VirtualMemoryManager::GetInstance()->UnmapPhysicalAddress(pProces->m_pPageDirectory, (uint32_t)pThread->m_initialStack);
 
-		// TLS µîµîÀ» È¸¼ö		
+		// TLS ë“±ë“±ì„ íšŒìˆ˜		
 	}
 
 	return true;

@@ -241,7 +241,7 @@ main:
 
      ; read image file into memory (0050:0000)
      
-          mov     ax, 0x0050
+          mov     ax, 0x0500
           mov     es, ax                              ; destination for image
           mov     bx, 0x0000                          ; destination for image
           push    bx
@@ -293,7 +293,7 @@ main:
           mov     si, msgCRLF
           call    Print
 	  mov	  dl, [bootdevice]
-          push    WORD 0x0050
+          push    WORD 0x0500
           push    WORD 0x0000
           retf
           

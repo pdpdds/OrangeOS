@@ -15,6 +15,9 @@
     <ClCompile Include="stdio.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="sprintf.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="string.h">
@@ -36,6 +39,9 @@
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="ctype.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="sprintf.h">
       <Filter>Source</Filter>
     </ClInclude>
   </ItemGroup>
