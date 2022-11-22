@@ -188,7 +188,7 @@ EXECUTE:
 	;---------------------------------------;
 
     ; parse the programs header info structures to get its entry point
-
+	
 	add		ebx, 24
 	mov		eax, [ebx]			; _IMAGE_FILE_HEADER is 20 bytes + size of sig (4 bytes)
 	add		ebx, 20-4			; address of entry point
@@ -201,11 +201,10 @@ EXECUTE:
 	mov		eax, 0x2badb002			; multiboot specs say eax should be this
 	mov		ebx, 0
 	mov		edx, [ImageSize]
-
 	push		dword boot_info
 	call		ebp               	      ; Execute Kernel
 	add		esp, 4
-
+	
     	cli
 	hlt
 

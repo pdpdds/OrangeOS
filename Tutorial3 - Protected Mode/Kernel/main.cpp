@@ -36,6 +36,7 @@ using namespace std;
 void _cdecl main() 
 {	
 	WelComeMessage();
+	
 	HalpSetupGDT();
 	idt.InitializeIDT(0x8);
 
@@ -45,9 +46,9 @@ void _cdecl main()
 	//KeyboardController::SetLEDs(true, true, true);
 
 	//PITTimer.Enable(50);	
-
-	HardDiskHandler aa;
-	aa.Initialize();
+	for (;;);
+	HardDiskHandler harddisk;
+	harddisk.Initialize();
 	enable();
 	//HalpStartIntService();
 	kkybrd_install(33);
